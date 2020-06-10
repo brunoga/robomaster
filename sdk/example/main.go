@@ -74,6 +74,7 @@ func (e *exampleVideoHandler) HandleFrame(frame *gocv.Mat, wg *sync.WaitGroup) {
 	e.window.IMShow(*frame)
 	e.window.WaitKey(1)
 
+	// Hack to detect that the window was closed.
 	if e.window.GetWindowProperty(gocv.WindowPropertyAspectRatio) == -1.0 {
 		// Window closed. Notify listeners.
 		close(e.quitChan)
