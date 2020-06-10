@@ -57,11 +57,15 @@ func main() {
 			gocv.Circle(frame, image.Point{X: int(x), Y: int(y)}, int(radius),
 				color.RGBA{R: 0, G: 255, B: 255, A: 255}, 2)
 
-			errX := float64(x-640) / 1280.0
-			errY := float64(360-y) / 720.0
+			// Get errors in the x and y axis normalized to [-0.5, 0.5]
+			errX := float64(x-(sdk.CameraHorizontalResolutionPoints/2)) /
+				sdk.CameraHorizontalResolutionPoints
+			errY := float64((sdk.CameraVerticalResolutionPoints/2)-y) /
+				sdk.CameraVerticalResolutionPoints
 
 			if math.Abs(errX) > 0.0 || math.Abs(errY) > 0.0 {
-				err = gimbalModule.SetSpeed(pidPitch.Output(errY), pidYaw.Output(errX))
+				err = gimbalModule.SetSpeed(pidPitch.Output(errY),
+						pidYaw.Output(errX))
 				if err != nil {
 					fmt.Println(err)
 				}
