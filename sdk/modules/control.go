@@ -15,7 +15,7 @@ const (
 // Control handles sending commands to and receiving responses from a robot
 // control connection.
 type Control struct {
-	robotFinder *RobotFinder
+	robotFinder *Finder
 
 	m    sync.Mutex
 	conn net.Conn
@@ -24,7 +24,7 @@ type Control struct {
 // NewControl returns a new Control instance with no associated ip. The given
 // robotFinder will be used to detect a robot broadcasting its ip in the
 // network.
-func NewControl(robotFinder *RobotFinder) *Control {
+func NewControl(robotFinder *Finder) *Control {
 	return &Control{
 		robotFinder,
 		sync.Mutex{},
@@ -114,7 +114,7 @@ func (c *Control) ReceiveData() (string, error) {
 
 	buf := make([]byte, 512)
 
-	n, err := c.conn.Read(buf)
+	_, err := c.conn.Read(buf)
 	if err != nil {
 		return "", fmt.Errorf("error reading data from control connection: %w",
 			err)
