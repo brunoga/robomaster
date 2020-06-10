@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"sync"
@@ -119,5 +120,45 @@ func (c *Control) ReceiveData() (string, error) {
 			err)
 	}
 
-	return string(buf), nil
+	return string(bytes.TrimSpace(buf)), nil
+}
+
+// SendAndReceiveData is a convenience method to send data and get the
+// response data at once. Returns the received data and a nil error on
+// success and a non-nil error on failure.
+func (c *Control) SendAndReceiveData(data string) (string, error) {
+	err := c.SendData(data)
+	if err != nil {
+		return "", fmt.Errorf("error sending data: %w", err)
+	}
+
+	rcvData, err := c.ReceiveData()
+	if err != nil {
+		return "", fmt.Errorf("error receiving data: %w", err)
+	}
+
+	return rcvData, nil
+}
+
+// SendDataExpectOk is a convenience method to send data and make sure we
+// got an ok response back. Returns a nil error on success and a non-nil
+// error on failure.
+func (c *Control) SendDataExpectOk(data string) error {
+	rcvData, err := c.SendAndReceiveData(data)
+	if err != nil {
+		fmt.Errorf("error sending and receiving data: %w", err)
+	}
+
+	if rcvData != "ok" {
+		fmt.Errorf("error checking response: not ok")
+	}
+
+	return nil
+}
+
+// IP is a convenience function to get the robot ip. Returns the robot ip
+// associated with this control instance and a nil error on success and a
+// non-nil error on failure.
+func (c *Control) IP() (net.IP, error) {
+	return c.robotFinder.GetOrFindIP(5 * time.Second)
 }
