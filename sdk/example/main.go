@@ -32,8 +32,8 @@ func newExampleVideoHandler(gimbalModule *modules.Gimbal) *exampleVideoHandler {
 		support.NewColorObjectTracker(35, 219, 90, 119, 255,
 			255, 10),
 		gimbalModule,
-		pid.NewPIDController(250, 10, 30, -400, 400),
 		pid.NewPIDController(150, 10, 20, -400, 400),
+		pid.NewPIDController(250, 10, 30, -400, 400),
 		make(chan struct{}),
 	}
 }
