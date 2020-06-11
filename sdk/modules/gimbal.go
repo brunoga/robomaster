@@ -90,5 +90,3 @@ func(g *Gimbal) GetAttitude() (int, int, error) {
 	return pitch, yaw, nil
 }
 
-// TODO(bga): Add push support.
-

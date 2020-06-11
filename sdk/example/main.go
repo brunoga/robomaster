@@ -1,9 +1,13 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"image"
 	"image/color"
 	"math"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk"
@@ -11,6 +15,14 @@ import (
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
 	"gocv.io/x/gocv"
+)
+
+// Flags.
+var (
+	hsvLower = flag.String("hsvlower", "35,219,90",
+		"lower bound for color filtering (h,s,v)")
+	hsvUpper = flag.String("hsvupper", "119,255,255",
+		"lower bound for color filtering (h,s,v)")
 )
 
 type exampleVideoHandler struct {
@@ -22,20 +34,54 @@ type exampleVideoHandler struct {
 	quitChan     chan struct{}
 }
 
-func newExampleVideoHandler(gimbalModule *modules.Gimbal) *exampleVideoHandler {
+func parseHSVValues(hsvString string) (float64, float64, float64, error) {
+	components := strings.Split(hsvString, ",")
+	if len(components) != 3 {
+		return -1, -1, -1, fmt.Errorf("invalid hsv values")
+	}
+
+	h, err := strconv.Atoi(components[0])
+	if err != nil {
+		return -1, -1, -1, fmt.Errorf("invalid h value")
+	}
+
+	s, err := strconv.Atoi(components[1])
+	if err != nil {
+		return -1, -1, -1, fmt.Errorf("invalid s value")
+	}
+
+	v, err := strconv.Atoi(components[2])
+	if err != nil {
+		return -1, -1, -1, fmt.Errorf("invalid v value")
+	}
+
+	return float64(h), float64(s), float64(v), nil
+}
+
+func newExampleVideoHandler(
+	gimbalModule *modules.Gimbal) (*exampleVideoHandler, error) {
 	window := gocv.NewWindow("Robomaster")
 	window.ResizeWindow(sdk.CameraHorizontalResolutionPoints/2,
 		sdk.CameraVerticalResolutionPoints/2)
 
+	hl, sl, vl, err := parseHSVValues(*hsvLower)
+	if err != nil {
+		return nil, err
+	}
+
+	hu, su, vu, err := parseHSVValues(*hsvUpper)
+	if err != nil {
+		return nil, err
+	}
+
 	return &exampleVideoHandler{
 		window,
-		support.NewColorObjectTracker(35, 219, 90, 119, 255,
-			255, 10),
+		support.NewColorObjectTracker(hl, sl, vl, hu, su,vu, 10),
 		gimbalModule,
 		pid.NewPIDController(150, 10, 20, -400, 400),
 		pid.NewPIDController(250, 10, 30, -400, 400),
 		make(chan struct{}),
-	}
+	}, nil
 }
 
 func (e *exampleVideoHandler) QuitChan() <-chan struct{} {
@@ -88,6 +134,8 @@ func (e *exampleVideoHandler) HandleFrame(frame *gocv.Mat, wg *sync.WaitGroup) {
 }
 
 func main() {
+	flag.Parse()
+
 	client := sdk.NewClient(nil)
 
 	err := client.Open()
@@ -113,7 +161,10 @@ func main() {
 		panic(err)
 	}
 
-	videoHandler := newExampleVideoHandler(gimbalModule)
+	videoHandler, err := newExampleVideoHandler(gimbalModule)
+	if err != nil {
+		panic(err)
+	}
 
 	token, err := videoModule.StartStream(videoHandler.HandleFrame)
 	if err != nil {
