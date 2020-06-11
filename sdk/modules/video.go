@@ -13,7 +13,7 @@ const (
 
 // VideoHandler is a handler for video streams. A handler should do its work and
 // return as fast as possible. If a handler needs to modify the given frame in
-// any way, it should first make a copy of it as the given frame is shared by\
+// any way, it should first make a copy of it as the given frame is shared by
 // all handlers.
 //
 // Even if you are not modifying the given frame but you are doing some expensive
@@ -47,14 +47,12 @@ func NewVideo(control *Control) *Video {
 }
 
 // StartStream starts the video stream (if it has not started yet) and starts
-// sending video frames to the given videoHandler. It returns an positive int
+// sending video frames to the given videoHandler. It returns a positive int
 // token (used to stop the stream when needed) and a nil error on success and
 // a non-nil error on failure.
 func (v *Video) StartStream(videoHandler VideoHandler) (int, error) {
 	v.m.Lock()
 	defer v.m.Unlock()
-
-	v.quitChan = make(chan struct{})
 
 	if len(v.videoHandlers) == 0 {
 		go v.videoLoop()
@@ -96,6 +94,8 @@ func (v *Video) StopStream(token int) error {
 }
 
 func (v *Video) videoLoop() {
+	v.quitChan = make(chan struct{})
+
 	err := v.control.SendDataExpectOk("stream on;")
 	if err != nil {
 		// TODO(bga): Log this.

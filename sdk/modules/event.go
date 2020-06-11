@@ -12,16 +12,36 @@ const (
 	eventAddrPort = ":40925"
 )
 
+// EventHandler is a handler for push events. The string parameter will contain
+// the data for the specific event being monitored usually starting with the
+// attribute name. Implementations must parse the data before using it.
 type EventHandler func(string)
 
+// Event handles robot's push events, start/stopping monitoring individual
+// events and sending them to registered EventHandlers.
 type Event struct {
 	control *Control
 
-	m sync.Mutex
-	quitChan chan struct{}
+	m             sync.Mutex
+	quitChan      chan struct{}
 	eventHandlers map[string]map[int]EventHandler
 }
 
+// NewEvent returns a new Event instance. The control parameter is used to start
+// stop the specific event pushes and setup the event connection address.
+func NewEvent(control *Control) *Event {
+	return &Event{
+		control,
+		sync.Mutex{},
+		nil,
+		make(map[string]map[int]EventHandler),
+	}
+}
+
+// StartListening starts sending events of type eventType to the given
+// eventHandler. If no one is listening to a specific event yet, starts
+// the event reporting. Returns a token (to be used to stop receiving events)
+// and a nil error on success and a non-nil error on failure.
 func (e *Event) StartListening(eventType, eventParameters string,
 	eventHandler EventHandler) (int, error) {
 	e.m.Lock()
@@ -44,7 +64,7 @@ func (e *Event) StartListening(eventType, eventParameters string,
 		go e.eventLoop()
 	}
 
-	for i := 0; i < len(tokenHandlerMap) + 1; i++ {
+	for i := 0; i < len(tokenHandlerMap)+1; i++ {
 		_, ok = tokenHandlerMap[i]
 		if ok {
 			continue
@@ -58,6 +78,10 @@ func (e *Event) StartListening(eventType, eventParameters string,
 	return -1, fmt.Errorf("event handler tokens exhausted")
 }
 
+// StopListening stops sending events of type eventType to the handler
+// represented by the given eventType and token. If all listeners of a specific
+// event are removed, stops the event reporting. Returns a nil error on success
+// and a non-nil error on failure.
 func (e *Event) StopListening(eventType, eventParameters string,
 	token int) error {
 	e.m.Lock()
@@ -77,9 +101,7 @@ func (e *Event) StopListening(eventType, eventParameters string,
 
 	if len(tokenHandlerMap) == 0 {
 		delete(e.eventHandlers, eventType)
-	}
 
-	if len(e.eventHandlers[eventType]) == 0 {
 		err := e.control.SendDataExpectOk(fmt.Sprintf(
 			"%s %s", eventType, eventParameters))
 		if err != nil {
@@ -88,10 +110,16 @@ func (e *Event) StopListening(eventType, eventParameters string,
 		}
 	}
 
+	if len(e.eventHandlers) == 0 {
+		close(e.quitChan)
+	}
+
 	return nil
 }
 
 func (e *Event) eventLoop() {
+	e.quitChan = make(chan struct{})
+
 	ip, err := e.control.IP()
 	if err != nil {
 		// TODO(bga): Log this.
@@ -129,7 +157,7 @@ L:
 			e.m.Lock()
 
 			tokenEventHandlerMap, ok := e.eventHandlers[eventType]
-			if ! ok {
+			if !ok {
 				// TODO(bga): Log this.
 				continue
 			}

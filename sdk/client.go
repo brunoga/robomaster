@@ -12,6 +12,8 @@ import (
 type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
+	eventModule   *modules.Event
+
 	robotModule   *modules.Robot
 	gimbalModule  *modules.Gimbal
 	videoModule   *modules.Video
@@ -27,13 +29,15 @@ func NewClient(ip net.IP) *Client {
 	}
 
 	controlModule := modules.NewControl(finderModule)
+	eventModule := modules.NewEvent(controlModule)
 	robotModule := modules.NewRobot(controlModule)
-	gimbalModule := modules.NewGimbal(controlModule)
+	gimbalModule := modules.NewGimbal(controlModule, eventModule)
 	videoModule := modules.NewVideo(controlModule)
 
 	return &Client{
 		finderModule,
 		controlModule,
+		eventModule,
 		robotModule,
 		gimbalModule,
 		videoModule,
