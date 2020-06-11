@@ -1,8 +1,10 @@
 package modules
 
 import (
+	"bytes"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -112,18 +114,55 @@ L:
 		case <-e.quitChan:
 			break L
 		default:
-			_, err := conn.Read(b)
+			n, err := conn.Read(b)
 			if err != nil {
 				// TODO(bga): Log this.
 				break L
 			}
 
-			//data := b[:n]
+			eventType, eventData, err := getEventTypeAndData(b[:n])
+			if err != nil {
+				// TODO(bga): Log this.
+				continue
+			}
+
 			e.m.Lock()
-			// TODO(bga): Send event to listeners here.
+
+			tokenEventHandlerMap, ok := e.eventHandlers[eventType]
+			if ! ok {
+				// TODO(bga): Log this.
+				continue
+			}
+
+			for _, eventHandler := range tokenEventHandlerMap {
+				eventHandler(eventData)
+			}
+
 			e.m.Unlock()
 		}
 	}
 
 	e.quitChan = nil
+}
+
+func getEventTypeAndData(receivedData []byte) (string, string, error) {
+	fields := bytes.Fields(receivedData)
+	if len(fields) < 3 {
+		return "", "", fmt.Errorf("invalid data received")
+	}
+
+	eventType := fmt.Sprintf("%s %s", string(fields[0]),
+		string(fields[1]))
+
+	eventDataBuilder := strings.Builder{}
+	for i := 2; i < len(fields); i++ {
+		if i != 2 {
+			eventDataBuilder.WriteByte(' ')
+		}
+		eventDataBuilder.Write(fields[i])
+	}
+
+	eventData := eventDataBuilder.String()
+
+	return eventType, eventData, nil
 }
