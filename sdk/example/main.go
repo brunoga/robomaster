@@ -76,10 +76,10 @@ func newExampleVideoHandler(
 
 	return &exampleVideoHandler{
 		window,
-		support.NewColorObjectTracker(hl, sl, vl, hu, su,vu, 10),
+		support.NewColorObjectTracker(hl, sl, vl, hu, su, vu, 10),
 		gimbalModule,
 		pid.NewPIDController(150, 10, 20, -400, 400),
-		pid.NewPIDController(250, 10, 30, -400, 400),
+		pid.NewPIDController(200, 9, 25, -400, 400),
 		make(chan struct{}),
 	}, nil
 }
@@ -155,6 +155,18 @@ func main() {
 		panic(err)
 	}
 
+	// Enable gimbal attitude push events.
+	token, err := gimbalModule.StartGimbalPush(
+		modules.GimbalPushAttributeAttitude, func(data string) {
+			// Just print all events we get.
+			fmt.Println("Push :", data)
+		})
+	if err != nil {
+		panic(err)
+	}
+	defer gimbalModule.StopGimbalPush(
+		modules.GimbalPushAttributeAttitude, token)
+
 	// Reset gimbal.
 	err = gimbalModule.Recenter()
 	if err != nil {
@@ -166,7 +178,7 @@ func main() {
 		panic(err)
 	}
 
-	token, err := videoModule.StartStream(videoHandler.HandleFrame)
+	token, err = videoModule.StartStream(videoHandler.HandleFrame)
 	if err != nil {
 		panic(err)
 	}

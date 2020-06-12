@@ -50,7 +50,7 @@ func (e *Event) StartListening(eventType, eventParameters string,
 	tokenHandlerMap, ok := e.eventHandlers[eventType]
 	if !ok {
 		err := e.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s", eventType, eventParameters))
+			"%s %s;", eventType, eventParameters))
 		if err != nil {
 			return -1, fmt.Errorf("error listening for event: %w", err)
 		}
@@ -103,7 +103,7 @@ func (e *Event) StopListening(eventType, eventParameters string,
 		delete(e.eventHandlers, eventType)
 
 		err := e.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s", eventType, eventParameters))
+			"%s %s;", eventType, eventParameters))
 		if err != nil {
 			return fmt.Errorf("error stopping listening for event: %w",
 				err)

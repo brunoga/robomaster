@@ -13,10 +13,11 @@ type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
 	eventModule   *modules.Event
+	pushModule    *modules.Push
 
-	robotModule   *modules.Robot
-	gimbalModule  *modules.Gimbal
-	videoModule   *modules.Video
+	robotModule  *modules.Robot
+	gimbalModule *modules.Gimbal
+	videoModule  *modules.Video
 }
 
 // NewClient returns a new client instance associated with the given ip. If ip
@@ -28,16 +29,18 @@ func NewClient(ip net.IP) *Client {
 		finderModule.SetIP(ip)
 	}
 
-	controlModule := modules.NewControl(finderModule)
+	controlModule := modules.NewControl(finderModule, false)
 	eventModule := modules.NewEvent(controlModule)
+	pushModule := modules.NewPush(controlModule)
 	robotModule := modules.NewRobot(controlModule)
-	gimbalModule := modules.NewGimbal(controlModule, eventModule)
+	gimbalModule := modules.NewGimbal(controlModule, pushModule)
 	videoModule := modules.NewVideo(controlModule)
 
 	return &Client{
 		finderModule,
 		controlModule,
 		eventModule,
+		pushModule,
 		robotModule,
 		gimbalModule,
 		videoModule,

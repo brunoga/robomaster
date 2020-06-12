@@ -29,8 +29,8 @@ type Push struct {
 
 // NewPush returns a new Push instance. The control parameter is used to start
 // stop the specific notification pushes.
-func NewPush(control *Control) *Event {
-	return &Event{
+func NewPush(control *Control) *Push {
+	return &Push{
 		control,
 		sync.Mutex{},
 		nil,
@@ -38,30 +38,30 @@ func NewPush(control *Control) *Event {
 	}
 }
 
-// StartListening starts sending events of type eventType to the given
-// eventHandler. If no one is listening to a specific event yet, starts
-// the event reporting. Returns a token (to be used to stop receiving events)
-// and a nil error on success and a non-nil error on failure.
-func (e *Event) StartListening(eventType, eventParameters string,
-	eventHandler EventHandler) (int, error) {
-	e.m.Lock()
-	defer e.m.Unlock()
+// StartListening starts sending push notifications of type pushType to the
+// given pushHandler. If no one is listening to a specific event yet, starts
+// the push notifications. Returns a token (to be used to stop receiving push
+// notifications) and a nil error on success and a non-nil error on failure.
+func (p *Push) StartListening(pushType, pushParameters string,
+	pushHandler PushHandler) (int, error) {
+	p.m.Lock()
+	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := e.eventHandlers[eventType]
+	tokenHandlerMap, ok := p.pushHandlers[pushType]
 	if !ok {
-		err := e.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s;", eventType, eventParameters))
+		err := p.control.SendDataExpectOk(fmt.Sprintf(
+			"%s %s;", pushType, pushParameters))
 		if err != nil {
-			return -1, fmt.Errorf("error listening for event: %w", err)
+			return -1, fmt.Errorf("error listening for push notifications: %w", err)
 		}
 
-		tokenHandlerMap = make(map[int]EventHandler)
+		tokenHandlerMap = make(map[int]PushHandler)
 
-		e.eventHandlers[eventType] = tokenHandlerMap
+		p.pushHandlers[pushType] = tokenHandlerMap
 	}
 
-	if len(e.eventHandlers[eventType]) == 1 {
-		go e.eventLoop()
+	if len(p.pushHandlers[pushType]) == 0 {
+		go p.pushLoop()
 	}
 
 	for i := 0; i < len(tokenHandlerMap)+1; i++ {
@@ -70,65 +70,57 @@ func (e *Event) StartListening(eventType, eventParameters string,
 			continue
 		}
 
-		tokenHandlerMap[i] = eventHandler
+		tokenHandlerMap[i] = pushHandler
 
 		return i, nil
 	}
 
-	return -1, fmt.Errorf("event handler tokens exhausted")
+	return -1, fmt.Errorf("push handler tokens exhausted")
 }
 
-// StopListening stops sending events of type eventType to the handler
-// represented by the given eventType and token. If all listeners of a specific
-// event are removed, stops the event reporting. Returns a nil error on success
-// and a non-nil error on failure.
-func (e *Event) StopListening(eventType, eventParameters string,
+// StopListening stops sending push notifications of type pushType to the
+// handler represented by the given pushType and token. If all listeners of a
+// specific push notification are removed, stops the push notifications.
+// Returns a nil error on success and a non-nil error on failure.
+func (p *Push) StopListening(pushType, pushParameters string,
 	token int) error {
-	e.m.Lock()
-	defer e.m.Unlock()
+	p.m.Lock()
+	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := e.eventHandlers[eventType]
+	tokenHandlerMap, ok := p.pushHandlers[pushType]
 	if !ok {
-		return fmt.Errorf("no handlers for event type")
+		return fmt.Errorf("no handlers for push type")
 	}
 
 	_, ok = tokenHandlerMap[token]
 	if !ok {
-		return fmt.Errorf("token does not match event type")
+		return fmt.Errorf("token does not match push type")
 	}
 
 	delete(tokenHandlerMap, token)
 
 	if len(tokenHandlerMap) == 0 {
-		delete(e.eventHandlers, eventType)
+		delete(p.pushHandlers, pushType)
 
-		err := e.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s", eventType, eventParameters))
+		err := p.control.SendDataExpectOk(fmt.Sprintf(
+			"%s %s;", pushType, pushParameters))
 		if err != nil {
-			return fmt.Errorf("error stopping listening for event: %w",
+			return fmt.Errorf("error stopping push notifications: %w",
 				err)
 		}
 	}
 
-	if len(e.eventHandlers) == 0 {
-		close(e.quitChan)
+	if len(p.pushHandlers) == 0 {
+		close(p.quitChan)
 	}
 
 	return nil
 }
 
-func (e *Event) eventLoop() {
-	e.quitChan = make(chan struct{})
+func (p *Push) pushLoop() {
+	p.quitChan = make(chan struct{})
 
-	ip, err := e.control.IP()
-	if err != nil {
-		// TODO(bga): Log this.
-		return
-	}
-
-	eventAddr := ip.String() + eventAddrPort
-
-	conn, err := net.Dial("tcp", eventAddr)
+	conn, err := net.ListenPacket("udp", pushAddrPort)
 	if err != nil {
 		// TODO(bga): Log this.
 		return
@@ -139,58 +131,58 @@ func (e *Event) eventLoop() {
 L:
 	for {
 		select {
-		case <-e.quitChan:
+		case <-p.quitChan:
 			break L
 		default:
-			n, err := conn.Read(b)
+			n, _, err := conn.ReadFrom(b)
 			if err != nil {
 				// TODO(bga): Log this.
 				break L
 			}
 
-			eventType, eventData, err := getEventTypeAndData(b[:n])
+			pushType, pushData, err := getPushTypeAndData(b[:n])
 			if err != nil {
 				// TODO(bga): Log this.
 				continue
 			}
 
-			e.m.Lock()
+			p.m.Lock()
 
-			tokenEventHandlerMap, ok := e.eventHandlers[eventType]
+			tokenPushHandlerMap, ok := p.pushHandlers[pushType]
 			if !ok {
 				// TODO(bga): Log this.
 				continue
 			}
 
-			for _, eventHandler := range tokenEventHandlerMap {
-				eventHandler(eventData)
+			for _, pushHandler := range tokenPushHandlerMap {
+				pushHandler(pushData)
 			}
 
-			e.m.Unlock()
+			p.m.Unlock()
 		}
 	}
 
-	e.quitChan = nil
+	p.quitChan = nil
 }
 
-func getEventTypeAndData(receivedData []byte) (string, string, error) {
+func getPushTypeAndData(receivedData []byte) (string, string, error) {
 	fields := bytes.Fields(receivedData)
 	if len(fields) < 3 {
 		return "", "", fmt.Errorf("invalid data received")
 	}
 
-	eventType := fmt.Sprintf("%s %s", string(fields[0]),
+	pushType := fmt.Sprintf("%s %s", string(fields[0]),
 		string(fields[1]))
 
-	eventDataBuilder := strings.Builder{}
+	pushDataBuilder := strings.Builder{}
 	for i := 2; i < len(fields); i++ {
 		if i != 2 {
-			eventDataBuilder.WriteByte(' ')
+			pushDataBuilder.WriteByte(' ')
 		}
-		eventDataBuilder.Write(fields[i])
+		pushDataBuilder.Write(fields[i])
 	}
 
-	eventData := eventDataBuilder.String()
+	pushData := pushDataBuilder.String()
 
-	return eventType, eventData, nil
+	return pushType, pushData, nil
 }

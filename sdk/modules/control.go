@@ -17,6 +17,8 @@ const (
 type Control struct {
 	robotFinder *Finder
 
+	debug bool
+
 	m    sync.Mutex
 	conn net.Conn
 }
@@ -24,9 +26,10 @@ type Control struct {
 // NewControl returns a new Control instance with no associated ip. The given
 // robotFinder will be used to detect a robot broadcasting its ip in the
 // network.
-func NewControl(robotFinder *Finder) *Control {
+func NewControl(robotFinder *Finder, debug bool) *Control {
 	return &Control{
 		robotFinder,
+		debug,
 		sync.Mutex{},
 		nil,
 	}
@@ -91,6 +94,10 @@ func (c *Control) SendData(data string) error {
 		return fmt.Errorf("connection not open")
 	}
 
+	if c.debug {
+		fmt.Println("Control: >>> ", data)
+	}
+
 	_, err := c.conn.Write([]byte(data))
 	if err != nil {
 		return fmt.Errorf("error writting data to control connection: %w",
@@ -114,13 +121,17 @@ func (c *Control) ReceiveData() (string, error) {
 
 	buf := make([]byte, 512)
 
-	_, err := c.conn.Read(buf)
+	n, err := c.conn.Read(buf)
 	if err != nil {
 		return "", fmt.Errorf("error reading data from control connection: %w",
 			err)
 	}
 
-	return string(bytes.TrimSpace(buf)), nil
+	if c.debug {
+		fmt.Println("Control: <<< ", string(buf[:n]))
+	}
+
+	return string(bytes.TrimSpace(buf[:n])), nil
 }
 
 // SendAndReceiveData is a convenience method to send data and get the

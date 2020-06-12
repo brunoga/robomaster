@@ -6,27 +6,27 @@ import (
 	"strings"
 )
 
-type GimbalEventPushAttribute int
+type GimbalPushAttribute int
 
 // Supported gimbal push attributes.
 const (
-	// Enables gimbal attitude push events. The events will be in the format
-	// "attitude [pitch] [yaw]" where [pitch] and [yaw] are float64s.
-	GimbalEventPushAttributeAttitude GimbalEventPushAttribute = iota
-	GimbalEventPushAttributeInvalid
+	// Enables gimbal attitude push notifications. The events will be in the
+	// format "attitude [pitch] [yaw]" where [pitch] and [yaw] are float64s.
+	GimbalPushAttributeAttitude GimbalPushAttribute = iota
+	GimbalPushAttributeInvalid
 )
 
 // Gimbal allows sending commands to control the robot's gimbal.
 type Gimbal struct {
 	control *Control
-	event   *Event
+	push   *Push
 }
 
 // NewGimbal returns a new Gimbal instance associated with the given control.
-func NewGimbal(control *Control, event *Event) *Gimbal {
+func NewGimbal(control *Control, push *Push) *Gimbal {
 	return &Gimbal{
 		control,
-		event,
+		push,
 	}
 }
 
@@ -102,21 +102,21 @@ func (g *Gimbal) GetAttitude() (int, int, error) {
 	return pitch, yaw, nil
 }
 
-// StartGimbalEventPush starts listening to updates to the given attr. Returns
+// StartGimbalPush starts listening to updates to the given attr. Returns
 // a token (used to stop receiving events) and a nil error on success and a
 // non-nil error on failure.
 //
 // TODO(bga): Add parsing of data and use a specific handler that takes parsed
 //  attributes instead of the generic EventHandler.
-func (g *Gimbal) StartGimbalEventPush(attr GimbalEventPushAttribute,
-	eventHandler EventHandler) (int, error) {
+func (g *Gimbal) StartGimbalPush(attr GimbalPushAttribute,
+	pushHandler PushHandler) (int, error) {
 	var token int
 
 	switch attr {
-	case GimbalEventPushAttributeAttitude:
+	case GimbalPushAttributeAttitude:
 		var err error
-		token, err = g.event.StartListening("gimbal push",
-			"attitude on", eventHandler)
+		token, err = g.push.StartListening("gimbal push",
+			"attitude on", pushHandler)
 		if err != nil {
 			return -1, fmt.Errorf(
 				"error listening to gimbal push event: %w", err)
@@ -128,21 +128,21 @@ func (g *Gimbal) StartGimbalEventPush(attr GimbalEventPushAttribute,
 	return token, nil
 }
 
-// StopGimbalEventPush stops sending the given event attr to the handler
+// StopGimbalPush stops sending the given event attr to the handler
 // associate with the given token. Returns a nil error on success and a non-nil
 // error on failure.
-func (g *Gimbal) StopGimbalEventPush(attr GimbalEventPushAttribute,
+func (g *Gimbal) StopGimbalPush(attr GimbalPushAttribute,
 	token int) error {
 	switch attr {
-	case GimbalEventPushAttributeAttitude:
-		err := g.event.StopListening("gimbal push",
+	case GimbalPushAttributeAttitude:
+		err := g.push.StopListening("gimbal push",
 			"attitude off", token)
 		if err != nil {
 			return fmt.Errorf(
-				"error stopping listening to gimbal push event: %w", err)
+				"error stopping listening to gimbal push notifivation: %w", err)
 		}
 	default:
-		return fmt.Errorf("invalid gimbal event push attribute")
+		return fmt.Errorf("invalid gimbal push notification attribute")
 	}
 
 	return nil

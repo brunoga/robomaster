@@ -1,2 +1,4 @@
+github.com/brunoga/robomaster v0.0.0-20200611141431-b8fc252fa67b h1:b20XC/W/IklfrfXCoS3/8SAztqxN4v1wXef6W3/LmoQ=
+github.com/brunoga/robomaster v0.0.0-20200611141431-b8fc252fa67b/go.mod h1:1tCDdjWjSol6LV8XoyX7sW/04mb2WrfQuwSn9TdT+P0=
 gocv.io/x/gocv v0.23.0 h1:3Fgbt06/uR8Zf9emWndhjbUjdrw+nto69R/b4noFydY=
 gocv.io/x/gocv v0.23.0/go.mod h1:Rar2PS6DV+T4FL+PM535EImD/h13hGVaHhnCu1xarBs=
