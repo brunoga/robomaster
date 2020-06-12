@@ -22,8 +22,8 @@ type PushHandler func(string)
 type Push struct {
 	control *Control
 
-	m             sync.Mutex
-	quitChan      chan struct{}
+	m            sync.Mutex
+	quitChan     chan struct{}
 	pushHandlers map[string]map[int]PushHandler
 }
 
@@ -134,10 +134,21 @@ L:
 		case <-p.quitChan:
 			break L
 		default:
-			n, _, err := conn.ReadFrom(b)
+			n, addr, err := conn.ReadFrom(b)
 			if err != nil {
 				// TODO(bga): Log this.
 				break L
+			}
+
+			robotIP, err := p.control.IP()
+			if err != nil {
+				// TODO(bga): Log this.
+				break L
+			}
+
+			if robotIP.String() != addr.(*net.UDPAddr).IP.String() {
+				// Got push notification from an unexpected ip. Ignore it.
+				continue
 			}
 
 			pushType, pushData, err := getPushTypeAndData(b[:n])
