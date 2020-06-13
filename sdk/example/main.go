@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules/gimbal"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"image"
 	"image/color"
 	"math"
@@ -11,7 +13,6 @@ import (
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk"
-	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
 	"gocv.io/x/gocv"
@@ -28,7 +29,7 @@ var (
 type exampleVideoHandler struct {
 	window       *gocv.Window
 	tracker      *support.ColorObjectTracker
-	gimbalModule *modules.Gimbal
+	gimbalModule *gimbal.Gimbal
 	pidPitch     pid.Controller
 	pidYaw       pid.Controller
 	quitChan     chan struct{}
@@ -59,7 +60,7 @@ func parseHSVValues(hsvString string) (float64, float64, float64, error) {
 }
 
 func newExampleVideoHandler(
-	gimbalModule *modules.Gimbal) (*exampleVideoHandler, error) {
+	gimbalModule *gimbal.Gimbal) (*exampleVideoHandler, error) {
 	window := gocv.NewWindow("Robomaster")
 	window.ResizeWindow(sdk.CameraHorizontalResolutionPoints/2,
 		sdk.CameraVerticalResolutionPoints/2)
@@ -150,22 +151,22 @@ func main() {
 	videoModule := client.VideoModule()
 
 	// Control gimbal/chassis independently.
-	err = robotModule.SetMotionMode(modules.RobotMotionModeFree)
+	err = robotModule.SetMotionMode(robot.MotionModeFree)
 	if err != nil {
 		panic(err)
 	}
 
 	// Enable gimbal attitude push events.
-	token, err := gimbalModule.StartGimbalPush(
-		modules.GimbalPushAttributeAttitude, func(data string) {
+	token, err := gimbalModule.StartPush(
+		gimbal.PushAttributeAttitude, func(data string) {
 			// Just print all events we get.
 			fmt.Println("Push :", data)
 		})
 	if err != nil {
 		panic(err)
 	}
-	defer gimbalModule.StopGimbalPush(
-		modules.GimbalPushAttributeAttitude, token)
+	defer gimbalModule.StopPush(
+		gimbal.PushAttributeAttitude, token)
 
 	// Reset gimbal.
 	err = gimbalModule.Recenter()

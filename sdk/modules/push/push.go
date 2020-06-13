@@ -1,8 +1,9 @@
-package modules
+package push
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules"
 	"net"
 	"strings"
 	"sync"
@@ -12,29 +13,29 @@ const (
 	pushAddrPort = ":40924"
 )
 
-// PushHandler is a handler for push notifications. The string parameter will contain
+// Handler is a handler for push notifications. The string parameter will contain
 // the data for the specific event being monitored usually starting with the
 // attribute name. Implementations must parse the data before using it.
-type PushHandler func(string)
+type Handler func(string)
 
 // Push handles robot's push notifications, starting/stopping monitoring individual
 // events and sending them to registered PushHandlers.
 type Push struct {
-	control *Control
+	control *modules.Control
 
 	m            sync.Mutex
 	quitChan     chan struct{}
-	pushHandlers map[string]map[int]PushHandler
+	pushHandlers map[string]map[int]Handler
 }
 
 // NewPush returns a new Push instance. The control parameter is used to start
 // stop the specific notification pushes.
-func NewPush(control *Control) *Push {
+func NewPush(control *modules.Control) *Push {
 	return &Push{
 		control,
 		sync.Mutex{},
 		nil,
-		make(map[string]map[int]PushHandler),
+		make(map[string]map[int]Handler),
 	}
 }
 
@@ -42,25 +43,27 @@ func NewPush(control *Control) *Push {
 // given pushHandler. If no one is listening to a specific event yet, starts
 // the push notifications. Returns a token (to be used to stop receiving push
 // notifications) and a nil error on success and a non-nil error on failure.
-func (p *Push) StartListening(pushType, pushParameters string,
-	pushHandler PushHandler) (int, error) {
+func (p *Push) StartListening(
+	req StartListeningRequest) (StartListeningResponse, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := p.pushHandlers[pushType]
+	tokenHandlerMap, ok := p.pushHandlers[req.Type]
 	if !ok {
 		err := p.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s;", pushType, pushParameters))
+			"%s %s;", req.Type, req.Parameters))
 		if err != nil {
-			return -1, fmt.Errorf("error listening for push notifications: %w", err)
+			return StartListeningResponse{
+				-1,
+			}, fmt.Errorf("error listening for push notifications: %w", err)
 		}
 
-		tokenHandlerMap = make(map[int]PushHandler)
+		tokenHandlerMap = make(map[int]Handler)
 
-		p.pushHandlers[pushType] = tokenHandlerMap
+		p.pushHandlers[req.Type] = tokenHandlerMap
 	}
 
-	if len(p.pushHandlers[pushType]) == 0 {
+	if len(p.pushHandlers[req.Type]) == 0 {
 		go p.pushLoop()
 	}
 
@@ -70,40 +73,43 @@ func (p *Push) StartListening(pushType, pushParameters string,
 			continue
 		}
 
-		tokenHandlerMap[i] = pushHandler
+		tokenHandlerMap[i] = req.Handler
 
-		return i, nil
+		return StartListeningResponse{
+			i,
+		}, nil
 	}
 
-	return -1, fmt.Errorf("push handler tokens exhausted")
+	return StartListeningResponse{
+		-1,
+	}, fmt.Errorf("push handler tokens exhausted")
 }
 
 // StopListening stops sending push notifications of type pushType to the
 // handler represented by the given pushType and token. If all listeners of a
 // specific push notification are removed, stops the push notifications.
 // Returns a nil error on success and a non-nil error on failure.
-func (p *Push) StopListening(pushType, pushParameters string,
-	token int) error {
+func (p *Push) StopListening(req StopListeningRequest) error {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := p.pushHandlers[pushType]
+	tokenHandlerMap, ok := p.pushHandlers[req.Type]
 	if !ok {
 		return fmt.Errorf("no handlers for push type")
 	}
 
-	_, ok = tokenHandlerMap[token]
+	_, ok = tokenHandlerMap[req.Token]
 	if !ok {
 		return fmt.Errorf("token does not match push type")
 	}
 
-	delete(tokenHandlerMap, token)
+	delete(tokenHandlerMap, req.Token)
 
 	if len(tokenHandlerMap) == 0 {
-		delete(p.pushHandlers, pushType)
+		delete(p.pushHandlers, req.Type)
 
 		err := p.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s;", pushType, pushParameters))
+			"%s %s;", req.Type, req.Parameters))
 		if err != nil {
 			return fmt.Errorf("error stopping push notifications: %w",
 				err)

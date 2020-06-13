@@ -2,6 +2,9 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules/gimbal"
+	"github.com/brunoga/robomaster/sdk/modules/push"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"net"
 
 	"github.com/brunoga/robomaster/sdk/modules"
@@ -13,10 +16,10 @@ type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
 	eventModule   *modules.Event
-	pushModule    *modules.Push
+	pushModule    *push.Push
 
-	robotModule  *modules.Robot
-	gimbalModule *modules.Gimbal
+	robotModule  *robot.Robot
+	gimbalModule *gimbal.Gimbal
 	videoModule  *modules.Video
 }
 
@@ -31,9 +34,9 @@ func NewClient(ip net.IP) *Client {
 
 	controlModule := modules.NewControl(finderModule, false)
 	eventModule := modules.NewEvent(controlModule)
-	pushModule := modules.NewPush(controlModule)
-	robotModule := modules.NewRobot(controlModule)
-	gimbalModule := modules.NewGimbal(controlModule, pushModule)
+	pushModule := push.NewPush(controlModule)
+	robotModule := robot.NewRobot(controlModule)
+	gimbalModule := gimbal.NewGimbal(controlModule, pushModule)
 	videoModule := modules.NewVideo(controlModule)
 
 	return &Client{
@@ -95,13 +98,13 @@ func (c *Client) Close() error {
 
 // RobotModule returns a pointer to the associated Robot module. Used for
 // doing generic robot-related operations.
-func (c *Client) RobotModule() *modules.Robot {
+func (c *Client) RobotModule() *robot.Robot {
 	return c.robotModule
 }
 
 // GimbalModule returns a pointer to the associated Gimbal module. Used for
 // doing gimbal-related operations.
-func (c *Client) GimbalModule() *modules.Gimbal {
+func (c *Client) GimbalModule() *gimbal.Gimbal {
 	return c.gimbalModule
 }
 
