@@ -47,9 +47,9 @@ func NewStatusFromData(data string) (*Status, error) {
 func (s *Status) UpdateFromData(data string) error {
 	var static, upHill, downHill, onSlope, pickUp, slip, impactX, impactY,
 		impactZ, rollOver, hillStatic uint8
-	n, err := fmt.Sscanf(data, "%u %u %u", &static, &upHill, &downHill,
-		&onSlope, &pickUp, &slip, &impactX, &impactY, &impactZ, &rollOver,
-		&hillStatic)
+	n, err := fmt.Sscanf(data, "%d %d %d %d %d %d %d %d %d %d %d", &static,
+		&upHill, &downHill, &onSlope, &pickUp, &slip, &impactX, &impactY, &impactZ,
+		&rollOver, &hillStatic)
 	if err != nil {
 		fmt.Errorf("error parsing data: %w", err)
 	}
@@ -59,17 +59,17 @@ func (s *Status) UpdateFromData(data string) error {
 
 	s.m.Lock()
 
-	s.static = (static == 1)
-	s.upHill = (upHill == 1)
-	s.downHill = (downHill == 1)
-	s.onSlope = (onSlope == 1)
-	s.pickUp = (pickUp == 1)
-	s.slip = (slip == 1)
-	s.impactX = (impactX == 1)
-	s.impactY = (impactY == 1)
-	s.impactZ = (impactZ == 1)
-	s.rollOver = (rollOver == 1)
-	s.hillStatic = (hillStatic == 1)
+	s.static = static == 1
+	s.upHill = upHill == 1
+	s.downHill = downHill == 1
+	s.onSlope = onSlope == 1
+	s.pickUp = pickUp == 1
+	s.slip = slip == 1
+	s.impactX = impactX == 1
+	s.impactY = impactY == 1
+	s.impactZ = impactZ == 1
+	s.rollOver = rollOver == 1
+	s.hillStatic = hillStatic == 1
 
 	s.m.Unlock()
 
@@ -151,6 +151,15 @@ func (s *Status) IsStaticOnHill() bool {
 	defer s.m.RUnlock()
 
 	return s.hillStatic
+}
+
+func (s *Status) Equals(s2 *Status) bool {
+	return s.static == s2.static && s.upHill == s2.upHill &&
+		s.downHill == s2.downHill && s.onSlope == s2.onSlope &&
+		s.pickUp == s2.pickUp && s.slip == s2.slip &&
+		s.impactX == s2.impactX && s.impactY == s2.impactY &&
+		s.impactZ == s2.impactZ && s.rollOver == s2.rollOver &&
+		s.hillStatic == s2.hillStatic
 }
 
 func (s *Status) String() string {
