@@ -22,9 +22,9 @@ type PushHandler func(string)
 type Push struct {
 	control *Control
 
-	m            sync.Mutex
+	m            sync.RWMutex
 	quitChan     chan struct{}
-	pushHandlers map[string]map[int]PushHandler
+	pushHandlers map[string]map[string]map[int]PushHandler
 }
 
 // NewPush returns a new Push instance. The control parameter is used to start
@@ -32,9 +32,9 @@ type Push struct {
 func NewPush(control *Control) *Push {
 	return &Push{
 		control,
-		sync.Mutex{},
+		sync.RWMutex{},
 		nil,
-		make(map[string]map[int]PushHandler),
+		make(map[string]map[string]map[int]PushHandler),
 	}
 }
 
@@ -42,54 +42,86 @@ func NewPush(control *Control) *Push {
 // given pushHandler. If no one is listening to a specific event yet, starts
 // the push notifications. Returns a token (to be used to stop receiving push
 // notifications) and a nil error on success and a non-nil error on failure.
-func (p *Push) StartListening(pushType, pushParameters string,
+func (p *Push) StartListening(pushType, pushAttribute, pushParameters string,
 	pushHandler PushHandler) (int, error) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := p.pushHandlers[pushType]
+	attributeTokenMap, ok := p.pushHandlers[pushType]
 	if !ok {
-		err := p.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s;", pushType, pushParameters))
-		if err != nil {
-			return -1, fmt.Errorf("error listening for push notifications: %w", err)
-		}
+		attributeTokenMap = make(map[string]map[int]PushHandler)
+	}
 
+	startTracking := false
+
+	tokenHandlerMap, ok := attributeTokenMap[pushAttribute]
+	if !ok {
+		startTracking = true
 		tokenHandlerMap = make(map[int]PushHandler)
-
-		p.pushHandlers[pushType] = tokenHandlerMap
 	}
 
-	if len(p.pushHandlers[pushType]) == 0 {
-		go p.pushLoop()
-	}
-
+	token := -1
 	for i := 0; i < len(tokenHandlerMap)+1; i++ {
 		_, ok = tokenHandlerMap[i]
 		if ok {
 			continue
 		}
 
-		tokenHandlerMap[i] = pushHandler
+		token = i
 
-		return i, nil
+		break
 	}
 
-	return -1, fmt.Errorf("push handler tokens exhausted")
+	if token == -1 {
+		// Should never happen unless there is a bug.
+		return -1, fmt.Errorf("can't obtain push handler token")
+	}
+
+	if startTracking {
+		// This eventType/eventAttribute pair is not being tracked yet. Start
+		// tracking.
+		var command string
+		if pushParameters == "" {
+			command = fmt.Sprintf("%s %s on;", pushType, pushAttribute)
+		} else {
+			command = fmt.Sprintf("%s %s on %s;", pushType, pushAttribute,
+				pushParameters)
+		}
+
+		err := p.control.SendDataExpectOk(command)
+		if err != nil {
+			return -1, fmt.Errorf("error listening for push notifications: %w", err)
+		}
+	}
+
+	if len(p.pushHandlers) == 0 {
+		go p.pushLoop()
+	}
+
+	tokenHandlerMap[token] = pushHandler
+	attributeTokenMap[pushAttribute] = tokenHandlerMap
+	p.pushHandlers[pushType] = attributeTokenMap
+
+	return token, nil
 }
 
 // StopListening stops sending push notifications of type pushType to the
 // handler represented by the given pushType and token. If all listeners of a
 // specific push notification are removed, stops the push notifications.
 // Returns a nil error on success and a non-nil error on failure.
-func (p *Push) StopListening(pushType, pushParameters string,
+func (p *Push) StopListening(pushType, pushAttribute string,
 	token int) error {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	tokenHandlerMap, ok := p.pushHandlers[pushType]
+	attributeTokenMap, ok := p.pushHandlers[pushType]
 	if !ok {
 		return fmt.Errorf("no handlers for push type")
+	}
+
+	tokenHandlerMap, ok := attributeTokenMap[pushType]
+	if !ok {
+		return fmt.Errorf("no handlers for push attribute")
 	}
 
 	_, ok = tokenHandlerMap[token]
@@ -100,14 +132,20 @@ func (p *Push) StopListening(pushType, pushParameters string,
 	delete(tokenHandlerMap, token)
 
 	if len(tokenHandlerMap) == 0 {
-		delete(p.pushHandlers, pushType)
-
+		// This pushType/pushAttribute pair is not being tracked anymore.
+		// Stop tracking.
 		err := p.control.SendDataExpectOk(fmt.Sprintf(
-			"%s %s;", pushType, pushParameters))
+			"%s %s;", pushType, pushAttribute))
 		if err != nil {
 			return fmt.Errorf("error stopping push notifications: %w",
 				err)
 		}
+
+		delete(attributeTokenMap, pushAttribute)
+	}
+
+	if len(attributeTokenMap) == 0 {
+		delete(p.pushHandlers, pushType)
 	}
 
 	if len(p.pushHandlers) == 0 {
@@ -151,15 +189,22 @@ L:
 				continue
 			}
 
-			pushType, pushData, err := getPushTypeAndData(b[:n])
+			pushType, pushAttribute, pushData, err :=
+				getPushTypeAttributeAndData(b[:n])
 			if err != nil {
 				// TODO(bga): Log this.
 				continue
 			}
 
-			p.m.Lock()
+			p.m.RLock()
 
-			tokenPushHandlerMap, ok := p.pushHandlers[pushType]
+			attributeTokenMap, ok := p.pushHandlers[pushType]
+			if !ok {
+				// TODO(bga): Log this.
+				continue
+			}
+
+			tokenPushHandlerMap, ok := attributeTokenMap[pushAttribute]
 			if !ok {
 				// TODO(bga): Log this.
 				continue
@@ -169,25 +214,28 @@ L:
 				pushHandler(pushData)
 			}
 
-			p.m.Unlock()
+			p.m.RUnlock()
 		}
 	}
 
 	p.quitChan = nil
 }
 
-func getPushTypeAndData(receivedData []byte) (string, string, error) {
+func getPushTypeAttributeAndData(
+	receivedData []byte) (string, string, string, error) {
 	fields := bytes.Fields(receivedData)
-	if len(fields) < 3 {
-		return "", "", fmt.Errorf("invalid data received")
+	if len(fields) < 4 {
+		return "", "", "", fmt.Errorf("invalid data received")
 	}
 
 	pushType := fmt.Sprintf("%s %s", string(fields[0]),
 		string(fields[1]))
 
+	pushAttribute := string(fields[2])
+
 	pushDataBuilder := strings.Builder{}
-	for i := 2; i < len(fields); i++ {
-		if i != 2 {
+	for i := 3; i < len(fields); i++ {
+		if i != 3 {
 			pushDataBuilder.WriteByte(' ')
 		}
 		pushDataBuilder.Write(fields[i])
@@ -195,5 +243,5 @@ func getPushTypeAndData(receivedData []byte) (string, string, error) {
 
 	pushData := pushDataBuilder.String()
 
-	return pushType, pushData, nil
+	return pushType, pushAttribute, pushData, nil
 }

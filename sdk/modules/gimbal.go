@@ -2,8 +2,6 @@ package modules
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 )
 
 type GimbalPushAttribute int
@@ -19,7 +17,7 @@ const (
 // Gimbal allows sending commands to control the robot's gimbal.
 type Gimbal struct {
 	control *Control
-	push   *Push
+	push    *Push
 }
 
 // NewGimbal returns a new Gimbal instance associated with the given control.
@@ -78,25 +76,20 @@ func (g *Gimbal) Recenter() error {
 
 // GetAttitude returns the current gimbal attitude. Returns pitch attitude, yaw
 // attitude and a nil error on success and a non-nil error on failure.
-func (g *Gimbal) GetAttitude() (int, int, error) {
+func (g *Gimbal) GetAttitude() (float64, float64, error) {
 	data, err := g.control.SendAndReceiveData("gimbal attitude ?;")
 	if err != nil {
 		return 0, 0, fmt.Errorf("error sending sdk command: %w", err)
 	}
 
-	fields := strings.Fields(data)
-	if len(fields) != 2 {
-		return 0, 0, fmt.Errorf("unexpected response received")
-	}
-
-	pitch, err := strconv.Atoi(fields[0])
+	var pitch, yaw float64
+	n, err := fmt.Sscanf(data, "%f, %f", &pitch, &yaw)
 	if err != nil {
-		return 0, 0, fmt.Errorf("error decoding pitch angle: %w", err)
+		return 0, 0, fmt.Errorf("error parsing data: %w", err)
 	}
-
-	yaw, err := strconv.Atoi(fields[1])
-	if err != nil {
-		return 0, 0, fmt.Errorf("error decoding yaw angle: %w", err)
+	if n != 2 {
+		return 0, 0, fmt.Errorf("unexpected number of entries in data: %w",
+			err)
 	}
 
 	return pitch, yaw, nil
@@ -116,7 +109,7 @@ func (g *Gimbal) StartGimbalPush(attr GimbalPushAttribute,
 	case GimbalPushAttributeAttitude:
 		var err error
 		token, err = g.push.StartListening("gimbal push",
-			"attitude on", pushHandler)
+			"attitude", "", pushHandler)
 		if err != nil {
 			return -1, fmt.Errorf(
 				"error listening to gimbal push event: %w", err)
@@ -136,7 +129,7 @@ func (g *Gimbal) StopGimbalPush(attr GimbalPushAttribute,
 	switch attr {
 	case GimbalPushAttributeAttitude:
 		err := g.push.StopListening("gimbal push",
-			"attitude off", token)
+			"attitude", token)
 		if err != nil {
 			return fmt.Errorf(
 				"error stopping listening to gimbal push notifivation: %w", err)
