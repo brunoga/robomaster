@@ -34,7 +34,7 @@ func NewClient(ip net.IP) *Client {
 	pushModule := modules.NewPush(controlModule)
 	robotModule := modules.NewRobot(controlModule)
 	gimbalModule := modules.NewGimbal(controlModule, pushModule)
-	chassisModule := chassis.NewChassis(controlModule, pushModule)
+	chassisModule := chassis.New(controlModule, pushModule)
 	videoModule := modules.NewVideo(controlModule)
 
 	return &Client{

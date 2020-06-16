@@ -22,8 +22,8 @@ type Chassis struct {
 	push    *modules.Push
 }
 
-// NewChassis returns a new Chassis instance associated with the given control.
-func NewChassis(control *modules.Control, push *modules.Push) *Chassis {
+// New returns a new Chassis instance associated with the given control.
+func New(control *modules.Control, push *modules.Push) *Chassis {
 	return &Chassis{
 		control,
 		push,
