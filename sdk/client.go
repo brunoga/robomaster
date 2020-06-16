@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules/chassis"
 	"net"
 
 	"github.com/brunoga/robomaster/sdk/modules"
@@ -12,12 +13,12 @@ import (
 type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
-	eventModule   *modules.Event
 	pushModule    *modules.Push
 
-	robotModule  *modules.Robot
-	gimbalModule *modules.Gimbal
-	videoModule  *modules.Video
+	robotModule   *modules.Robot
+	gimbalModule  *modules.Gimbal
+	chassisModule *chassis.Chassis
+	videoModule   *modules.Video
 }
 
 // NewClient returns a new client instance associated with the given ip. If ip
@@ -30,19 +31,19 @@ func NewClient(ip net.IP) *Client {
 	}
 
 	controlModule := modules.NewControl(finderModule, false)
-	eventModule := modules.NewEvent(controlModule)
 	pushModule := modules.NewPush(controlModule)
 	robotModule := modules.NewRobot(controlModule)
 	gimbalModule := modules.NewGimbal(controlModule, pushModule)
+	chassisModule := chassis.NewChassis(controlModule, pushModule)
 	videoModule := modules.NewVideo(controlModule)
 
 	return &Client{
 		finderModule,
 		controlModule,
-		eventModule,
 		pushModule,
 		robotModule,
 		gimbalModule,
+		chassisModule,
 		videoModule,
 	}
 }
@@ -103,6 +104,12 @@ func (c *Client) RobotModule() *modules.Robot {
 // doing gimbal-related operations.
 func (c *Client) GimbalModule() *modules.Gimbal {
 	return c.gimbalModule
+}
+
+// ChassisModule returns a pointer to the associated Chassis module. Used for
+// doing chassis-related operations.
+func (c *Client) ChassisModule() *chassis.Chassis {
+	return c.chassisModule
 }
 
 // VideoModule returns a pointer to the associated Video module. Used for
