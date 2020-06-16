@@ -3,6 +3,7 @@ package sdk
 import (
 	"fmt"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"net"
 
 	"github.com/brunoga/robomaster/sdk/modules"
@@ -16,7 +17,7 @@ type Client struct {
 	pushModule    *modules.Push
 
 	robotModule   *modules.Robot
-	gimbalModule  *modules.Gimbal
+	gimbalModule  *gimbal.Gimbal
 	chassisModule *chassis.Chassis
 	videoModule   *modules.Video
 }
@@ -33,7 +34,7 @@ func NewClient(ip net.IP) *Client {
 	controlModule := modules.NewControl(finderModule, false)
 	pushModule := modules.NewPush(controlModule)
 	robotModule := modules.NewRobot(controlModule)
-	gimbalModule := modules.NewGimbal(controlModule, pushModule)
+	gimbalModule := gimbal.New(controlModule, pushModule)
 	chassisModule := chassis.New(controlModule, pushModule)
 	videoModule := modules.NewVideo(controlModule)
 
@@ -102,7 +103,7 @@ func (c *Client) RobotModule() *modules.Robot {
 
 // GimbalModule returns a pointer to the associated Gimbal module. Used for
 // doing gimbal-related operations.
-func (c *Client) GimbalModule() *modules.Gimbal {
+func (c *Client) GimbalModule() *gimbal.Gimbal {
 	return c.gimbalModule
 }
 
