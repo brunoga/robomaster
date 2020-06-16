@@ -59,13 +59,7 @@ func (s *Speed) UpdateFromData(data string) error {
 			"unexpected number of entries in data: %w", err)
 	}
 
-	s.m.Lock()
-
-	s.x = x
-	s.y = y
-	s.z = z
-
-	s.m.Unlock()
+	s.Update(x, y, z)
 
 	return nil
 }

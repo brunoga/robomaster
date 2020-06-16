@@ -13,7 +13,8 @@ type Attitude struct {
 	yaw   float64
 }
 
-// NewAttitude returns a new default Attitude instance.
+// NewAttitude returns a new Attitude instance with the given pitch, roll and
+// yaw values (in degrees).
 func NewAttitude(pitch, roll, yaw float64) *Attitude {
 	return &Attitude{
 		sync.RWMutex{},

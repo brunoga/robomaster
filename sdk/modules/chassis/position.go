@@ -58,13 +58,7 @@ func (p *Position) UpdateFromData(data string) error {
 			"unexpected number of entries in data: %w", err)
 	}
 
-	p.m.Lock()
-
-	p.x = x
-	p.y = y
-	p.z = z
-
-	p.m.Unlock()
+	p.Update(x, y, z)
 
 	return nil
 }
