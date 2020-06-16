@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"image"
 	"image/color"
 	"math"
@@ -28,9 +30,10 @@ var (
 type exampleVideoHandler struct {
 	window       *gocv.Window
 	tracker      *support.ColorObjectTracker
-	gimbalModule *modules.Gimbal
+	gimbalModule *gimbal.Gimbal
 	pidPitch     pid.Controller
 	pidYaw       pid.Controller
+	gimbalSpeed  *gimbal.Speed
 	quitChan     chan struct{}
 }
 
@@ -59,7 +62,7 @@ func parseHSVValues(hsvString string) (float64, float64, float64, error) {
 }
 
 func newExampleVideoHandler(
-	gimbalModule *modules.Gimbal) (*exampleVideoHandler, error) {
+	gimbalModule *gimbal.Gimbal) (*exampleVideoHandler, error) {
 	window := gocv.NewWindow("Robomaster")
 	window.ResizeWindow(sdk.CameraHorizontalResolutionPoints/2,
 		sdk.CameraVerticalResolutionPoints/2)
@@ -78,8 +81,9 @@ func newExampleVideoHandler(
 		window,
 		support.NewColorObjectTracker(hl, sl, vl, hu, su, vu, 10),
 		gimbalModule,
-		pid.NewPIDController(150, 10, 20, -400, 400),
-		pid.NewPIDController(200, 9, 25, -400, 400),
+		pid.NewPIDController(100, 100, 1, -400, 400),
+		pid.NewPIDController(150, 300, 1, -400, 400),
+		gimbal.NewSpeed(0.0, 0.0),
 		make(chan struct{}),
 	}, nil
 }
@@ -114,8 +118,8 @@ func (e *exampleVideoHandler) HandleFrame(frame *gocv.Mat, wg *sync.WaitGroup) {
 		if math.Abs(errX) > 0.0 || math.Abs(errY) > 0.0 {
 			// Move the gimbal with a speed determined by the pitch and yaw PID
 			// controllers.
-			err = e.gimbalModule.SetSpeed(e.pidPitch.Output(errY),
-				e.pidYaw.Output(errX))
+			e.gimbalSpeed.Update(e.pidPitch.Output(errY), e.pidYaw.Output(errX))
+			err = e.gimbalModule.SetSpeed(e.gimbalSpeed)
 			if err != nil {
 				// TODO(bga): Log this.
 			}
@@ -147,6 +151,7 @@ func main() {
 	// Obtain references to the modules we are interested in.
 	robotModule := client.RobotModule()
 	gimbalModule := client.GimbalModule()
+	chassisModule := client.ChassisModule()
 	videoModule := client.VideoModule()
 
 	// Control gimbal/chassis independently.
@@ -155,17 +160,27 @@ func main() {
 		panic(err)
 	}
 
-	// Enable gimbal attitude push events.
-	token, err := gimbalModule.StartGimbalPush(
-		modules.GimbalPushAttributeAttitude, func(data string) {
+	// Enable chassis status push events.
+	previousStatus := &chassis.Status{}
+	currentStatus := &chassis.Status{}
+	token, err := chassisModule.StartPush(
+		chassis.PushAttributeStatus, func(data string) {
 			// Just print all events we get.
-			fmt.Println("Push :", data)
-		})
+			currentStatus.UpdateFromData(data)
+			if err != nil {
+				return
+			}
+
+			if !previousStatus.Equals(currentStatus) {
+				fmt.Println(currentStatus)
+				*previousStatus = *currentStatus
+			}
+		}, 5)
 	if err != nil {
 		panic(err)
 	}
-	defer gimbalModule.StopGimbalPush(
-		modules.GimbalPushAttributeAttitude, token)
+	defer chassisModule.StopPush(
+		chassis.PushAttributeAttitude, token)
 
 	// Reset gimbal.
 	err = gimbalModule.Recenter()
