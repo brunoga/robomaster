@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules/chassis"
-	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"image"
 	"image/color"
 	"math"
@@ -14,6 +12,8 @@ import (
 
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
 	"gocv.io/x/gocv"
