@@ -74,7 +74,7 @@ func (a *Armor) StartEvent(eventAttribute EventAttribute,
 // StopEvent stops event notifications to the handler represented by the given
 // eventAttribute and token pair. Returns a nil error on success and a non-nil
 // error on failure.
-func (a *Armor) StopPush(eventAttribute EventAttribute, token int) error {
+func (a *Armor) StopEvent(eventAttribute EventAttribute, token int) error {
 	var eventAttributeStr string
 	switch eventAttribute {
 	case EventAttributeHit:
