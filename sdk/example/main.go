@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"image"
 	"image/color"
 	"math"
@@ -11,7 +12,6 @@ import (
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk"
-	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/support"
@@ -92,16 +92,21 @@ func (e *exampleVideoHandler) QuitChan() <-chan struct{} {
 	return e.quitChan
 }
 
-func (e *exampleVideoHandler) HandleFrame(frame *gocv.Mat, wg *sync.WaitGroup) {
+func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup) {
 	// Automatically notify we processed the frame on return.
 	defer wg.Done()
+
+	inFrame, err := gocv.NewMatFromBytes(720, 1280, gocv.MatTypeCV8UC4, frame.Pix)
+	if err != nil {
+		return
+	}
 
 	// Clone frame as we are going to modify it. We could potentially call
 	// wg.Done() right after this but without implementing a queue, this is not
 	// a good idea (frames will be racing against each other).
-	outputFrame := frame.Clone()
+	outputFrame := inFrame.Clone()
 
-	x, y, radius, err := e.tracker.FindLargestObject(frame)
+	x, y, radius, err := e.tracker.FindLargestObject(&inFrame)
 	if err == nil {
 		// Found something. Draw a circle around it into our modified frame.
 		gocv.Circle(&outputFrame, image.Point{X: int(x), Y: int(y)},
@@ -140,9 +145,12 @@ func (e *exampleVideoHandler) HandleFrame(frame *gocv.Mat, wg *sync.WaitGroup) {
 func main() {
 	flag.Parse()
 
-	client := sdk.NewClient(nil)
+	client, err := sdk.NewClient(nil)
+	if err != nil {
+		panic(err)
+	}
 
-	err := client.Open()
+	err = client.Open()
 	if err != nil {
 		panic(err)
 	}
@@ -155,7 +163,7 @@ func main() {
 	videoModule := client.VideoModule()
 
 	// Control gimbal/chassis independently.
-	err = robotModule.SetMotionMode(modules.RobotMotionModeFree)
+	err = robotModule.SetMotionMode(robot.MotionModeFree)
 	if err != nil {
 		panic(err)
 	}

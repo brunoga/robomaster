@@ -1,28 +1,30 @@
-package modules
+package robot
 
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/brunoga/robomaster/sdk/modules"
 )
 
 // RobotMotionMode represents the motion mode for a robot.
-type RobotMotionMode int
+type MotionMode int
 
 // Available robot motion modes.
 const (
-	RobotMotionModeChassisLead RobotMotionMode = iota // gimbal follows chassis
-	RobotMotionModeGimbalLead                         // chassis follow gimbal
-	RobotMotionModeFree                               // chassis and gimbal move independently
-	RobotMotionModeInvalid                            // invalid mode
+	MotionModeChassisLead MotionMode = iota // gimbal follows chassis
+	MotionModeGimbalLead                    // chassis follow gimbal
+	MotionModeFree                          // chassis and gimbal move independently
+	MotionModeInvalid                       // invalid mode
 )
 
 // Robot handles getting/setting robot specific attributes.
 type Robot struct {
-	control *Control
+	control *modules.Control
 }
 
-// NewRobot returns a new Robot instance associated with the given control.
-func NewRobot(control *Control) *Robot {
+// New returns a new Robot instance associated with the given control.
+func New(control *modules.Control) *Robot {
 	return &Robot{
 		control,
 	}
@@ -30,35 +32,35 @@ func NewRobot(control *Control) *Robot {
 
 // GetMotionMode returns the robot's current motion mode and a nil error on
 // success and a non-nil error on failure.
-func (r *Robot) GetMotionMode() (RobotMotionMode, error) {
+func (r *Robot) GetMotionMode() (MotionMode, error) {
 	data, err := r.control.SendAndReceiveData("robot mode ?;")
 	if err != nil {
-		return RobotMotionModeInvalid, fmt.Errorf(
+		return MotionModeInvalid, fmt.Errorf(
 			"error sending and receiving data: %w", err)
 	}
 
 	switch data {
 	case "chassis_lead":
-		return RobotMotionModeChassisLead, nil
+		return MotionModeChassisLead, nil
 	case "gimbal_lead":
-		return RobotMotionModeGimbalLead, nil
+		return MotionModeGimbalLead, nil
 	case "free":
-		return RobotMotionModeFree, nil
+		return MotionModeFree, nil
 	default:
-		return RobotMotionModeInvalid, fmt.Errorf("unknown robot mode")
+		return MotionModeInvalid, fmt.Errorf("unknown robot mode")
 	}
 }
 
 // SetMotionMode sets the robot's current motion mode. Returns a nil error
 // on success and a non-nil error on failure.
-func (r *Robot) SetMotionMode(motionMode RobotMotionMode) error {
+func (r *Robot) SetMotionMode(motionMode MotionMode) error {
 	setMotionMode := "robot mode "
 	switch motionMode {
-	case RobotMotionModeChassisLead:
+	case MotionModeChassisLead:
 		setMotionMode += "chassis_lead;"
-	case RobotMotionModeGimbalLead:
+	case MotionModeGimbalLead:
 		setMotionMode += "gimbal_lead;"
-	case RobotMotionModeFree:
+	case MotionModeFree:
 		setMotionMode += "free;"
 	default:
 		return fmt.Errorf("unknown robot mode: %d", motionMode)

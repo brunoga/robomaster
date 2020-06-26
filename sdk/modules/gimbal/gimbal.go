@@ -3,13 +3,14 @@ package gimbal
 import (
 	"fmt"
 	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
 type PushAttribute int
 
 // Supported gimbal push attributes.
 const (
-	// Enables gimbal attitude push notifications. The events will be in the
+	// Enables gimbal attitude push notification. The events will be in the
 	// format "attitude [pitch] [yaw]" where [pitch] and [yaw] are float64s.
 	PushAttributeAttitude PushAttribute = iota
 )
@@ -17,11 +18,11 @@ const (
 // Gimbal allows sending commands to control the robot's gimbal.
 type Gimbal struct {
 	control *modules.Control
-	push    *modules.Push
+	push    *notification.Push
 }
 
 // New returns a new Gimbal instance associated with the given control.
-func New(control *modules.Control, push *modules.Push) *Gimbal {
+func New(control *modules.Control, push *notification.Push) *Gimbal {
 	return &Gimbal{
 		control,
 		push,
@@ -99,7 +100,7 @@ func (g *Gimbal) GetAttitude() (*Attitude, error) {
 // TODO(bga): Add parsing of data and use a specific handler that takes parsed
 //  attributes instead of the generic EventHandler.
 func (g *Gimbal) StartPush(attr PushAttribute,
-	pushHandler modules.PushHandler) (int, error) {
+	pushHandler notification.Handler) (int, error) {
 	var token int
 
 	var pushAttributeStr string

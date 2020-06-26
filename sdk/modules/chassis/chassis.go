@@ -3,10 +3,11 @@ package chassis
 import (
 	"fmt"
 	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
 // PushAttribute represents chassis attributes that can be monitored through
-// push notifications.
+// push notification.
 type PushAttribute uint8
 
 // Supported chassis push attributes.
@@ -19,11 +20,11 @@ const (
 // Chassis allows sending commands to control the robot's chassis.
 type Chassis struct {
 	control *modules.Control
-	push    *modules.Push
+	push    *notification.Push
 }
 
 // New returns a new Chassis instance associated with the given control.
-func New(control *modules.Control, push *modules.Push) *Chassis {
+func New(control *modules.Control, push *notification.Push) *Chassis {
 	return &Chassis{
 		control,
 		push,
@@ -132,7 +133,7 @@ func (c *Chassis) GetStatus() (*Status, error) {
 // Returns a token (used to stop pushes for the given eventHandler) and a nil
 // error on success and a non-nil error on failure.
 func (c *Chassis) StartPush(pushAttribute PushAttribute,
-	pushHandler modules.PushHandler, frequency int) (int, error) {
+	pushHandler notification.Handler, frequency int) (int, error) {
 	var pushAttributeStr string
 	switch pushAttribute {
 	case PushAttributePosition:

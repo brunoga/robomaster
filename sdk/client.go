@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/modules/gimbal"
+	"github.com/brunoga/robomaster/sdk/modules/notification"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
+	"github.com/brunoga/robomaster/sdk/modules/video"
 	"net"
 
 	"github.com/brunoga/robomaster/sdk/modules"
@@ -14,29 +17,36 @@ import (
 type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
-	pushModule    *modules.Push
+	pushModule    *notification.Push
 
-	robotModule   *modules.Robot
+	robotModule   *robot.Robot
 	gimbalModule  *gimbal.Gimbal
 	chassisModule *chassis.Chassis
-	videoModule   *modules.Video
+	videoModule   *video.Video
 }
 
 // NewClient returns a new client instance associated with the given ip. If ip
 // is nil, the Client will try to detect a robot broadcasting its ip in the
 // network.
-func NewClient(ip net.IP) *Client {
+func NewClient(ip net.IP) (*Client, error) {
 	finderModule := modules.NewFinder()
 	if ip != nil {
 		finderModule.SetIP(ip)
 	}
 
 	controlModule := modules.NewControl(finderModule, false)
-	pushModule := modules.NewPush(controlModule)
-	robotModule := modules.NewRobot(controlModule)
+	pushModule, err := notification.NewPush(controlModule)
+	if err != nil {
+		return nil, fmt.Errorf("error creating push module: %w", err)
+	}
+	robotModule := robot.New(controlModule)
 	gimbalModule := gimbal.New(controlModule, pushModule)
 	chassisModule := chassis.New(controlModule, pushModule)
-	videoModule := modules.NewVideo(controlModule)
+
+	videoModule, err := video.New(controlModule)
+	if err != nil {
+		panic(err)
+	}
 
 	return &Client{
 		finderModule,
@@ -46,18 +56,18 @@ func NewClient(ip net.IP) *Client {
 		gimbalModule,
 		chassisModule,
 		videoModule,
-	}
+	}, nil
 }
 
 // NewClientUSB creates a Client that tries to connect to the default USB
 // connection ip.
-func NewClientUSB() *Client {
+func NewClientUSB() (*Client, error) {
 	return NewClient(net.ParseIP("192.168.42.2"))
 }
 
 // NewClientWifiDirect creates a Client that tries to connect to the default
 // WiFi Direct connection ip.
-func NewClientWifiDirect() *Client {
+func NewClientWifiDirect() (*Client, error) {
 	return NewClient(net.ParseIP("192.168.2.1"))
 }
 
@@ -97,7 +107,7 @@ func (c *Client) Close() error {
 
 // RobotModule returns a pointer to the associated Robot module. Used for
 // doing generic robot-related operations.
-func (c *Client) RobotModule() *modules.Robot {
+func (c *Client) RobotModule() *robot.Robot {
 	return c.robotModule
 }
 
@@ -115,6 +125,6 @@ func (c *Client) ChassisModule() *chassis.Chassis {
 
 // VideoModule returns a pointer to the associated Video module. Used for
 // doing video-related operations.
-func (c *Client) VideoModule() *modules.Video {
+func (c *Client) VideoModule() *video.Video {
 	return c.videoModule
 }
