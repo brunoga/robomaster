@@ -7,6 +7,15 @@ import (
 	"strconv"
 )
 
+// EventAttribute represents armor attributes that can be monitored through
+// event notifications.
+type EventAttribute uint8
+
+// Supported armor event attributes.
+const (
+	EventAttributeHit EventAttribute = iota
+)
+
 type Armor struct {
 	control *modules.Control
 	event   *notification.Event
@@ -36,4 +45,49 @@ func (a *Armor) GetSensitivity() (int, error) {
 	}
 
 	return sensitivity, nil
+}
+
+// StartEvent starts the event notification for the given eventType and
+// eventAttribute. Updates will be sent to the given handler. Returns a token
+// (used to stop notifications for the given handler) and a nil  error on
+// success and a non-nil error on failure.
+func (a *Armor) StartEvent(eventAttribute EventAttribute,
+	handler notification.Handler) (int, error) {
+	var eventAttributeStr string
+	switch eventAttribute {
+	case EventAttributeHit:
+		eventAttributeStr = "hit"
+	default:
+		return -1, fmt.Errorf("invalid armor event attribute")
+	}
+
+	token, err := a.event.StartListening("armor event",
+		eventAttributeStr, "", handler)
+	if err != nil {
+		return -1, fmt.Errorf(
+			"error starting to listen to armor event: %w", err)
+	}
+
+	return token, nil
+}
+
+// StopEvent stops event notifications to the handler represented by the given
+// eventAttribute and token pair. Returns a nil error on success and a non-nil
+// error on failure.
+func (a *Armor) StopPush(eventAttribute EventAttribute, token int) error {
+	var eventAttributeStr string
+	switch eventAttribute {
+	case EventAttributeHit:
+		eventAttributeStr = "hit"
+	default:
+		return fmt.Errorf("invalid armor event attribute")
+	}
+
+	err := a.event.StopListening("armor event", eventAttributeStr, token)
+	if err != nil {
+		return fmt.Errorf(
+			"error starting to listen to armor event: %w", err)
+	}
+
+	return nil
 }
