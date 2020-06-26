@@ -149,20 +149,20 @@ func (c *Client) VideoModule() *video.Video {
 	return c.videoModule
 }
 
-// VideoModule returns a pointer to the associated Video module. Used for
-// doing video-related operations.
+// ArmorModule returns a pointer to the associated Armor module. Used for
+// setting/getting hit sensitivity and detecting hits.
 func (c *Client) ArmorModule() *armor.Armor {
 	return c.armorModule
 }
 
-// VideoModule returns a pointer to the associated Video module. Used for
-// doing video-related operations.
+// BlasterModule returns a pointer to the associated Video module. Used for
+// firing beads.
 func (c *Client) BlasterModule() *blaster.Blaster {
 	return c.blasterModule
 }
 
-// VideoModule returns a pointer to the associated Video module. Used for
-// doing video-related operations.
+// SoundModule returns a pointer to the associated Video module. Used for
+// detecting applause (clapping) sounds.
 func (c *Client) SoundModule() *sound.Sound {
 	return c.soundModule
 }
