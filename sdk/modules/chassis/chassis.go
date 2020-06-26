@@ -152,7 +152,7 @@ func (c *Chassis) StartPush(pushAttribute PushAttribute,
 		pushAttributeStr, pushParameters, pushHandler)
 	if err != nil {
 		return -1, fmt.Errorf(
-			"error starting to listen to gimbal push event: %w", err)
+			"error starting to listen to chassis push event: %w", err)
 	}
 
 	return token, nil
@@ -177,7 +177,7 @@ func (c *Chassis) StopPush(pushAttribute PushAttribute, token int) error {
 	err := c.push.StopListening("chassis push", pushAttributeStr, token)
 	if err != nil {
 		return fmt.Errorf(
-			"error starting to listen to gimbal push event: %w", err)
+			"error starting to listen to chassis push event: %w", err)
 	}
 
 	return nil
