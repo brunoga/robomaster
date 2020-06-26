@@ -2,12 +2,16 @@ package sdk
 
 import (
 	"fmt"
+	"net"
+
+	"github.com/brunoga/robomaster/sdk/modules/armor"
+	"github.com/brunoga/robomaster/sdk/modules/blaster"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
+	"github.com/brunoga/robomaster/sdk/modules/sound"
 	"github.com/brunoga/robomaster/sdk/modules/video"
-	"net"
 
 	"github.com/brunoga/robomaster/sdk/modules"
 )
@@ -17,12 +21,17 @@ import (
 type Client struct {
 	finderModule  *modules.Finder
 	controlModule *modules.Control
-	pushModule    *notification.Push
+
+	pushModule  *notification.Push
+	eventModule *notification.Event
 
 	robotModule   *robot.Robot
 	gimbalModule  *gimbal.Gimbal
 	chassisModule *chassis.Chassis
 	videoModule   *video.Video
+	armorModule   *armor.Armor
+	blasterModule *blaster.Blaster
+	soundModule   *sound.Sound
 }
 
 // NewClient returns a new client instance associated with the given ip. If ip
@@ -39,9 +48,16 @@ func NewClient(ip net.IP) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating push module: %w", err)
 	}
+	eventModule, err := notification.NewEvent(controlModule)
+	if err != nil {
+		return nil, fmt.Errorf("error creating event module: %w", err)
+	}
 	robotModule := robot.New(controlModule)
 	gimbalModule := gimbal.New(controlModule, pushModule)
 	chassisModule := chassis.New(controlModule, pushModule)
+	armorModule := armor.New(controlModule, eventModule)
+	blasterModule := blaster.New(controlModule)
+	soundModule := sound.New(eventModule)
 
 	videoModule, err := video.New(controlModule)
 	if err != nil {
@@ -52,10 +68,14 @@ func NewClient(ip net.IP) (*Client, error) {
 		finderModule,
 		controlModule,
 		pushModule,
+		eventModule,
 		robotModule,
 		gimbalModule,
 		chassisModule,
 		videoModule,
+		armorModule,
+		blasterModule,
+		soundModule,
 	}, nil
 }
 
@@ -127,4 +147,22 @@ func (c *Client) ChassisModule() *chassis.Chassis {
 // doing video-related operations.
 func (c *Client) VideoModule() *video.Video {
 	return c.videoModule
+}
+
+// VideoModule returns a pointer to the associated Video module. Used for
+// doing video-related operations.
+func (c *Client) ArmorModule() *armor.Armor {
+	return c.armorModule
+}
+
+// VideoModule returns a pointer to the associated Video module. Used for
+// doing video-related operations.
+func (c *Client) BlasterModule() *blaster.Blaster {
+	return c.blasterModule
+}
+
+// VideoModule returns a pointer to the associated Video module. Used for
+// doing video-related operations.
+func (c *Client) SoundModule() *sound.Sound {
+	return c.soundModule
 }
