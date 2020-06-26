@@ -1,9 +1,8 @@
-package armor
+package sound
 
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
@@ -17,13 +16,11 @@ const (
 )
 
 type Sound struct {
-	control *modules.Control
-	event   *notification.Event
+	event *notification.Event
 }
 
-func New(control *modules.Control, event *notification.Event) *Sound {
+func New(event *notification.Event) *Sound {
 	return &Sound{
-		control,
 		event,
 	}
 }
