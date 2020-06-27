@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"image"
 	"image/color"
 	"math"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
@@ -81,8 +82,8 @@ func newExampleVideoHandler(
 		window,
 		support.NewColorObjectTracker(hl, sl, vl, hu, su, vu, 10),
 		gimbalModule,
-		pid.NewPIDController(100, 100, 1, -400, 400),
-		pid.NewPIDController(150, 300, 1, -400, 400),
+		pid.NewPIDController(400, 0, 0, -400, 400),
+		pid.NewPIDController(800, 0, 20, -400, 400),
 		gimbal.NewSpeed(0.0, 0.0),
 		make(chan struct{}),
 	}, nil
@@ -124,7 +125,7 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 			// Move the gimbal with a speed determined by the pitch and yaw PID
 			// controllers.
 			e.gimbalSpeed.Update(e.pidPitch.Output(errY), e.pidYaw.Output(errX))
-			err = e.gimbalModule.SetSpeed(e.gimbalSpeed)
+			err = e.gimbalModule.SetSpeed(e.gimbalSpeed, true)
 			if err != nil {
 				// TODO(bga): Log this.
 			}
