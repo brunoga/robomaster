@@ -2,8 +2,9 @@ package blaster
 
 import (
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
 	"strconv"
+
+	"github.com/brunoga/robomaster/sdk/modules"
 )
 
 type Blaster struct {
@@ -35,6 +36,10 @@ func (b *Blaster) GetNumBeads() (int, error) {
 	return numBeads, nil
 }
 
-func (b *Blaster) Fire() error {
+func (b *Blaster) Fire(async bool) error {
+	if async {
+		return b.control.SendDataExpectOkAsync("blaster fire;")
+	}
+
 	return b.control.SendDataExpectOk("blaster fire;")
 }
