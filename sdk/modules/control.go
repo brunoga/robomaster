@@ -152,27 +152,6 @@ func (c *Control) SendAndReceiveData(data string) (string, error) {
 	return rcvData, nil
 }
 
-// SendAndReceiveDataAsync is a convenience method to send data and get the
-// response data at once. The response is received asynchronously and discarded.
-// Any errors when sending the data are logged. This should be used whenever tbe
-// latency of receiving a reply would interfere with the program. Returns a nil
-// error on sending success and a non-nil error on failure.
-func (c *Control) SendAndReceiveDataAsync(data string) error {
-	err := c.SendData(data)
-	if err != nil {
-		return fmt.Errorf("error sending data: %w", err)
-	}
-
-	go func() {
-		_, err := c.ReceiveData()
-		if err != nil {
-			log.Printf("error sending data: %s", err)
-		}
-	}()
-
-	return nil
-}
-
 // SendDataExpectOk is a convenience method to send data and make sure we
 // got an ok response back. Returns a nil error on success and a non-nil
 // error on failure.
