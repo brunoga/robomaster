@@ -2,6 +2,7 @@ package chassis
 
 import (
 	"fmt"
+
 	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
@@ -33,7 +34,12 @@ func New(control *modules.Control, push *notification.Push) *Chassis {
 
 // SetSpeed sets the chassis speed to the given speed. Returns a nil error on
 // success and a non-nil error on failure.
-func (c *Chassis) SetSpeed(speed *Speed) error {
+func (c *Chassis) SetSpeed(speed *Speed, async bool) error {
+	if async {
+		return c.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"chassis speed x %f y %f z %f;", speed.X(), speed.Y(), speed.Z()))
+	}
+
 	return c.control.SendDataExpectOk(fmt.Sprintf(
 		"chassis speed x %f y %f z %f;", speed.X(), speed.Y(), speed.Z()))
 }
@@ -41,7 +47,13 @@ func (c *Chassis) SetSpeed(speed *Speed) error {
 // SetWheelSpeed sets the chassis individual wheels speed to the given
 // wheelSpeed. Returns a nil error on success and a non-nil error on
 // failure.
-func (c *Chassis) SetWheelSpeed(wheelSpeed *WheelSpeed) error {
+func (c *Chassis) SetWheelSpeed(wheelSpeed *WheelSpeed, async bool) error {
+	if async {
+		return c.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"chassis wheel w1 %f w2 %f w3 %f w4 %f;", wheelSpeed.W1(),
+			wheelSpeed.W2(), wheelSpeed.W3(), wheelSpeed.W4()))
+	}
+
 	return c.control.SendDataExpectOk(fmt.Sprintf(
 		"chassis wheel w1 %f w2 %f w3 %f w4 %f;", wheelSpeed.W1(),
 		wheelSpeed.W2(), wheelSpeed.W3(), wheelSpeed.W4()))
@@ -50,7 +62,14 @@ func (c *Chassis) SetWheelSpeed(wheelSpeed *WheelSpeed) error {
 // MoveRelative moves the Chassis tro the given position relative to the current
 // one at the given speed. Returns a nil error on success and a non-nil error on
 // failure.
-func (c *Chassis) MoveRelative(position *Position, speed *Speed) error {
+func (c *Chassis) MoveRelative(position *Position, speed *Speed,
+	async bool) error {
+	if async {
+		return c.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"chassis move x %f y %f z %f vxy %f vz %f;", position.X(),
+			position.Y(), position.Z(), speed.X(), speed.Z()))
+	}
+
 	return c.control.SendDataExpectOk(fmt.Sprintf(
 		"chassis move x %f y %f z %f vxy %f vz %f;", position.X(),
 		position.Y(), position.Z(), speed.X(), speed.Z()))
