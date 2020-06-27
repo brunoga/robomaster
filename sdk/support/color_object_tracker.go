@@ -2,14 +2,15 @@ package support
 
 import (
 	"fmt"
-	"gocv.io/x/gocv"
 	"image"
+
+	"gocv.io/x/gocv"
 )
 
 // ColorObjectTracker locates objects in a frame based on their color.
 type ColorObjectTracker struct {
-	hsvLower gocv.Scalar
-	hsvUpper gocv.Scalar
+	hsvLower  gocv.Scalar
+	hsvUpper  gocv.Scalar
 	minRadius float32
 }
 

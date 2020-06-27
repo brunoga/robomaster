@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/color"
 	"math"
 	"strconv"
 	"strings"
@@ -103,13 +104,13 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 	// Clone frame as we are going to modify it. We could potentially call
 	// wg.Done() right after this but without implementing a queue, this is not
 	// a good idea (frames will be racing against each other).
-	//outputFrame := inFrame.Clone()
+	outputFrame := inFrame.Clone()
 
-	x, y, _, err := e.tracker.FindLargestObject(&inFrame)
+	x, y, radius, err := e.tracker.FindLargestObject(&inFrame)
 	if err == nil {
 		// Found something. Draw a circle around it into our modified frame.
-		//gocv.Circle(&outputFrame, image.Point{X: int(x), Y: int(y)},
-		//	int(radius), color.RGBA{R: 0, G: 255, B: 255, A: 255}, 2)
+		gocv.Circle(&outputFrame, image.Point{X: int(x), Y: int(y)},
+			int(radius), color.RGBA{R: 0, G: 255, B: 255, A: 255}, 2)
 
 		// Get errors in the x and y axis normalized to [-0.5, 0.5]
 		errX := float64(x-(sdk.CameraHorizontalResolutionPoints/2)) /
@@ -132,7 +133,7 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 
 	// Show output frame and wait for an event.
 	//e.window.IMShow(outputFrame)
-	e.window.IMShow(inFrame)
+	e.window.IMShow(outputFrame)
 	e.window.WaitKey(1)
 
 	// Hack to detect that the window was closed.
@@ -163,7 +164,7 @@ func main() {
 	videoModule := client.VideoModule()
 
 	// Control gimbal/chassis independently.
-	err = robotModule.SetMotionMode(robot.MotionModeFree)
+	err = robotModule.SetMotionMode(robot.MotionModeGimbalLead)
 	if err != nil {
 		panic(err)
 	}
