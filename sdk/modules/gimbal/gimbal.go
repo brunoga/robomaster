@@ -2,6 +2,7 @@ package gimbal
 
 import (
 	"fmt"
+
 	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
@@ -32,7 +33,13 @@ func New(control *modules.Control, push *notification.Push) *Gimbal {
 // SetSpeed sets the gimbal pitch and yaw rotation speeds in degrees/second. It
 // will continue moving until it is stopped or it hits a physical limit. Returns
 // a nil error on success and a non-nil error on failure.
-func (g *Gimbal) SetSpeed(speed *Speed) error {
+func (g *Gimbal) SetSpeed(speed *Speed, async bool) error {
+	if async {
+		return g.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"gimbal speed p %f y %f;", speed.Pitch(),
+			speed.Yaw()))
+	}
+
 	return g.control.SendDataExpectOk(fmt.Sprintf(
 		"gimbal speed p %f y %f;", speed.Pitch(),
 		speed.Yaw()))
@@ -41,7 +48,14 @@ func (g *Gimbal) SetSpeed(speed *Speed) error {
 // MoveRelative moves the gimbal pitch and yaw position by the given degrees
 // relative to its current position and with the given speeds. Returns a nil
 // error on success and a non-nil error on failure.
-func (g *Gimbal) MoveRelative(position *Position, speed *Speed) error {
+func (g *Gimbal) MoveRelative(position *Position, speed *Speed,
+	async bool) error {
+	if async {
+		return g.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"gimbal move p %f y %f vp %f vy %f;", position.Pitch(),
+			position.Yaw(), speed.Pitch(), speed.Yaw()))
+	}
+
 	return g.control.SendDataExpectOk(fmt.Sprintf(
 		"gimbal move p %f y %f vp %f vy %f;", position.Pitch(),
 		position.Yaw(), speed.Pitch(), speed.Yaw()))
@@ -51,7 +65,14 @@ func (g *Gimbal) MoveRelative(position *Position, speed *Speed) error {
 // degrees (i.e. from its origin position, not the current position) and with
 // the given speeds. Returns a nil error on success and a non-nil error on
 // failure.
-func (g *Gimbal) MoveAbsolute(position *Position, speed *Speed) error {
+func (g *Gimbal) MoveAbsolute(position *Position, speed *Speed,
+	async bool) error {
+	if async {
+		return g.control.SendDataExpectOkAsync(fmt.Sprintf(
+			"gimbal moveto p %f y %f vp %f vy %f;", position.Pitch(),
+			position.Yaw(), speed.Pitch(), speed.Yaw()))
+	}
+
 	return g.control.SendDataExpectOk(fmt.Sprintf(
 		"gimbal moveto p %f y %f vp %f vy %f;", position.Pitch(),
 		position.Yaw(), speed.Pitch(), speed.Yaw()))
