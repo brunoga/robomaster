@@ -3,6 +3,7 @@ package modules
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -19,8 +20,9 @@ type Control struct {
 
 	debug bool
 
-	m    sync.Mutex
-	conn net.Conn
+	m             sync.Mutex
+	conn          net.Conn
+	receiveBuffer []byte
 }
 
 // NewControl returns a new Control instance with no associated ip. The given
@@ -32,6 +34,7 @@ func NewControl(robotFinder *Finder, debug bool) *Control {
 		debug,
 		sync.Mutex{},
 		nil,
+		make([]byte, 512),
 	}
 }
 
@@ -119,19 +122,17 @@ func (c *Control) ReceiveData() (string, error) {
 		return "", fmt.Errorf("connection not open")
 	}
 
-	buf := make([]byte, 512)
-
-	n, err := c.conn.Read(buf)
+	n, err := c.conn.Read(c.receiveBuffer)
 	if err != nil {
 		return "", fmt.Errorf("error reading data from control connection: %w",
 			err)
 	}
 
 	if c.debug {
-		fmt.Println("Control: <<< ", string(buf[:n]))
+		fmt.Println("Control: <<< ", string(c.receiveBuffer[:n]))
 	}
 
-	return string(bytes.TrimSpace(buf[:n])), nil
+	return string(bytes.TrimSpace(c.receiveBuffer[:n])), nil
 }
 
 // SendAndReceiveData is a convenience method to send data and get the
@@ -151,6 +152,27 @@ func (c *Control) SendAndReceiveData(data string) (string, error) {
 	return rcvData, nil
 }
 
+// SendAndReceiveDataAsync is a convenience method to send data and get the
+// response data at once. The response is received asynchronously and discarded.
+// Any errors when sending the data are logged. This should be used whenever tbe
+// latency of receiving a reply would interfere with the program. Returns a nil
+// error on sending success and a non-nil error on failure.
+func (c *Control) SendAndReceiveDataAsync(data string) error {
+	err := c.SendData(data)
+	if err != nil {
+		return fmt.Errorf("error sending data: %w", err)
+	}
+
+	go func() {
+		_, err := c.ReceiveData()
+		if err != nil {
+			log.Printf("error sending data: %s", err)
+		}
+	}()
+
+	return nil
+}
+
 // SendDataExpectOk is a convenience method to send data and make sure we
 // got an ok response back. Returns a nil error on success and a non-nil
 // error on failure.
@@ -163,6 +185,32 @@ func (c *Control) SendDataExpectOk(data string) error {
 	if rcvData != "ok" {
 		fmt.Errorf("error checking response: not ok")
 	}
+
+	return nil
+}
+
+// SendDataExpectOkAsync is a convenience method to send data and check we
+// got an ok response back. The response is received asynchronously and
+// checked if it is ok. If it is not ok, the information is logged. Any errors
+// when receiving the response are also logged. This should be used whenever tbe
+// latency of receiving a reply would interfere with the program. Returns a nil
+// error on sending success and a non-nil error on failure.
+func (c *Control) SendDataExpectOkAsync(data string) error {
+	err := c.SendData(data)
+	if err != nil {
+		return fmt.Errorf("error sending data: %w", err)
+	}
+
+	go func() {
+		rcvData, err := c.ReceiveData()
+		if err != nil {
+			log.Printf("error sending data: %s", err)
+		} else {
+			if rcvData != "ok" {
+				log.Printf("%q -> %q\n", data, rcvData)
+			}
+		}
+	}()
 
 	return nil
 }
