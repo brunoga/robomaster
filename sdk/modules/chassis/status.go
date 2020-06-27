@@ -153,7 +153,21 @@ func (s *Status) IsStaticOnHill() bool {
 	return s.hillStatic
 }
 
+func (s *Status) IsUnknown() bool {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
+	return !s.static && !s.upHill && !s.downHill && !s.onSlope && !s.pickUp &&
+		!s.slip && !s.impactX && !s.impactY && !s.impactZ && !s.rollOver &&
+		!s.hillStatic
+}
+
 func (s *Status) Equals(s2 *Status) bool {
+	s.m.RLock()
+	s2.m.RLock()
+	defer s.m.RUnlock()
+	defer s2.m.RUnlock()
+
 	return s.static == s2.static && s.upHill == s2.upHill &&
 		s.downHill == s2.downHill && s.onSlope == s2.onSlope &&
 		s.pickUp == s2.pickUp && s.slip == s2.slip &&
@@ -163,50 +177,53 @@ func (s *Status) Equals(s2 *Status) bool {
 }
 
 func (s *Status) String() string {
+	s.m.RLock()
+	defer s.m.RUnlock()
+
 	str := "Robot status: "
 
 	unknown := true
-	if s.IsStatic() {
+	if s.static {
 		unknown = false
 		str += "[static]"
 	}
-	if s.IsUphill() {
+	if s.upHill {
 		unknown = false
 		str += "[uphill]"
 	}
-	if s.IsDownhill() {
+	if s.downHill {
 		unknown = false
 		str += "[downhill]"
 	}
-	if s.IsOnSlope() {
+	if s.onSlope {
 		unknown = false
 		str += "[on slope]"
 	}
-	if s.IsPickedUp() {
+	if s.pickUp {
 		unknown = false
 		str += "[picked up]"
 	}
-	if s.IsSlipping() {
+	if s.slip {
 		unknown = false
 		str += "[slipping]"
 	}
-	if s.XImpactDetected() {
+	if s.impactX {
 		unknown = false
 		str += "[x axis impact detected]"
 	}
-	if s.YImpactDetected() {
+	if s.impactY {
 		unknown = false
 		str += "[y axis impact detected]"
 	}
-	if s.ZImpactDetected() {
+	if s.impactZ {
 		unknown = false
 		str += "[z axis impact detected]"
 	}
-	if s.IsRolledOver() {
+	if s.rollOver {
 		unknown = false
 		str += "[rolled over]"
 	}
-	if s.IsStaticOnHill() {
+	if s.hillStatic {
 		unknown = false
 		str += "[static on hill]"
 	}
