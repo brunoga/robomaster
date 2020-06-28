@@ -2,7 +2,11 @@ package sdk
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
+	"os"
+
+	"github.com/brunoga/robomaster/sdk/support/logger"
 
 	"github.com/brunoga/robomaster/sdk/modules/armor"
 	"github.com/brunoga/robomaster/sdk/modules/blaster"
@@ -19,6 +23,8 @@ import (
 // Client enables controlling a RoboMaster robot through the plain-text SDK
 // API (https://robomaster-dev.readthedocs.io/en/latest/).
 type Client struct {
+	logger *logger.Logger
+
 	finderModule  *modules.Finder
 	controlModule *modules.Control
 
@@ -43,7 +49,14 @@ func NewClient(ip net.IP) (*Client, error) {
 		finderModule.SetIP(ip)
 	}
 
-	controlModule := modules.NewControl(finderModule, false)
+	// Setup logging.
+	l := logger.New(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
+
+	// Initialize all modules.
+	controlModule, err := modules.NewControl(finderModule, l)
+	if err != nil {
+		return nil, fmt.Errorf("error creating control module: %w", err)
+	}
 	pushModule, err := notification.NewPush(controlModule)
 	if err != nil {
 		return nil, fmt.Errorf("error creating push module: %w", err)
@@ -58,13 +71,13 @@ func NewClient(ip net.IP) (*Client, error) {
 	armorModule := armor.New(controlModule, eventModule)
 	blasterModule := blaster.New(controlModule)
 	soundModule := sound.New(eventModule)
-
 	videoModule, err := video.New(controlModule)
 	if err != nil {
 		panic(err)
 	}
 
 	return &Client{
+		l,
 		finderModule,
 		controlModule,
 		pushModule,

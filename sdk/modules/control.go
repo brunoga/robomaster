@@ -3,10 +3,13 @@ package modules
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
 const (
@@ -16,9 +19,9 @@ const (
 // Control handles sending commands to and receiving responses from a robot
 // control connection.
 type Control struct {
-	robotFinder *Finder
+	logger *logger.Logger
 
-	debug bool
+	robotFinder *Finder
 
 	m             sync.Mutex
 	conn          net.Conn
@@ -28,14 +31,23 @@ type Control struct {
 // NewControl returns a new Control instance with no associated ip. The given
 // robotFinder will be used to detect a robot broadcasting its ip in the
 // network.
-func NewControl(robotFinder *Finder, debug bool) *Control {
+func NewControl(robotFinder *Finder, l *logger.Logger) (*Control, error) {
+	if robotFinder == nil {
+		return nil, fmt.Errorf("robot finder must not be nil")
+	}
+
+	if l == nil {
+		l = logger.New(ioutil.Discard, ioutil.Discard, ioutil.Discard,
+			ioutil.Discard)
+	}
+
 	return &Control{
+		l,
 		robotFinder,
-		debug,
 		sync.Mutex{},
 		nil,
 		make([]byte, 512),
-	}
+	}, nil
 }
 
 // Open tries to open the connection to the robot control port. Returns a nil
@@ -97,9 +109,7 @@ func (c *Control) SendData(data string) error {
 		return fmt.Errorf("connection not open")
 	}
 
-	if c.debug {
-		fmt.Println("Control: >>> ", data)
-	}
+	c.logger.TRACE("Control: >>> ", data)
 
 	_, err := c.conn.Write([]byte(data))
 	if err != nil {
@@ -128,9 +138,7 @@ func (c *Control) ReceiveData() (string, error) {
 			err)
 	}
 
-	if c.debug {
-		fmt.Println("Control: <<< ", string(c.receiveBuffer[:n]))
-	}
+	c.logger.TRACE("Control: <<< ", string(c.receiveBuffer[:n]))
 
 	return string(bytes.TrimSpace(c.receiveBuffer[:n])), nil
 }
