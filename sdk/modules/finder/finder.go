@@ -1,4 +1,4 @@
-package modules
+package finder
 
 import (
 	"bytes"
@@ -19,8 +19,8 @@ type Finder struct {
 	ip net.IP
 }
 
-// NewRobotFinder returns a Finder instance with no associated ip.
-func NewFinder() *Finder {
+// New returns a Finder instance with no associated ip.
+func New() *Finder {
 	return &Finder{
 		sync.Mutex{},
 		nil,

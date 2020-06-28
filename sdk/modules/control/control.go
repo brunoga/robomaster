@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
 	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
@@ -21,18 +21,18 @@ const (
 type Control struct {
 	logger *logger.Logger
 
-	robotFinder *modules.Finder
+	finder *finder.Finder
 
 	m             sync.Mutex
 	conn          net.Conn
 	receiveBuffer []byte
 }
 
-// NewControl returns a new Control instance with no associated ip. The given
-// robotFinder will be used to detect a robot broadcasting its ip in the
+// New returns a new Control instance with no associated ip. The given
+// finder will be used to detect a robot broadcasting its ip in the
 // network.
-func NewControl(robotFinder *modules.Finder, l *logger.Logger) (*Control, error) {
-	if robotFinder == nil {
+func New(f *finder.Finder, l *logger.Logger) (*Control, error) {
+	if f == nil {
 		return nil, fmt.Errorf("robot finder must not be nil")
 	}
 
@@ -43,7 +43,7 @@ func NewControl(robotFinder *modules.Finder, l *logger.Logger) (*Control, error)
 
 	return &Control{
 		l,
-		robotFinder,
+		f,
 		sync.Mutex{},
 		nil,
 		make([]byte, 512),
@@ -60,7 +60,7 @@ func (c *Control) Open() error {
 		return fmt.Errorf("connection already open")
 	}
 
-	ip, err := c.robotFinder.GetOrFindIP(5 * time.Second)
+	ip, err := c.finder.GetOrFindIP(5 * time.Second)
 	if err != nil {
 		return fmt.Errorf("error obtaining ip: %w", err)
 	}
@@ -206,5 +206,5 @@ func (c *Control) SendDataExpectOkAsync(data string) error {
 // associated with this control instance and a nil error on success and a
 // non-nil error on failure.
 func (c *Control) IP() (net.IP, error) {
-	return c.robotFinder.GetOrFindIP(5 * time.Second)
+	return c.finder.GetOrFindIP(5 * time.Second)
 }

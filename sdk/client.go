@@ -6,20 +6,17 @@ import (
 	"net"
 	"os"
 
-	"github.com/brunoga/robomaster/sdk/modules/control"
-
-	"github.com/brunoga/robomaster/sdk/support/logger"
-
 	"github.com/brunoga/robomaster/sdk/modules/armor"
 	"github.com/brunoga/robomaster/sdk/modules/blaster"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/modules/control"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
 	"github.com/brunoga/robomaster/sdk/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"github.com/brunoga/robomaster/sdk/modules/sound"
 	"github.com/brunoga/robomaster/sdk/modules/video"
-
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
 // Client enables controlling a RoboMaster robot through the plain-text SDK
@@ -27,7 +24,7 @@ import (
 type Client struct {
 	logger *logger.Logger
 
-	finderModule  *modules.Finder
+	finderModule  *finder.Finder
 	controlModule *control.Control
 
 	pushModule  *notification.Push
@@ -46,7 +43,7 @@ type Client struct {
 // is nil, the Client will try to detect a robot broadcasting its ip in the
 // network.
 func NewClient(ip net.IP) (*Client, error) {
-	finderModule := modules.NewFinder()
+	finderModule := finder.New()
 	if ip != nil {
 		finderModule.SetIP(ip)
 	}
@@ -55,7 +52,7 @@ func NewClient(ip net.IP) (*Client, error) {
 	l := logger.New(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
 
 	// Initialize all modules.
-	controlModule, err := control.NewControl(finderModule, l)
+	controlModule, err := control.New(finderModule, l)
 	if err != nil {
 		return nil, fmt.Errorf("error creating control module: %w", err)
 	}
