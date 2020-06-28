@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 // RobotMotionMode represents the motion mode for a robot.
@@ -20,11 +20,11 @@ const (
 
 // Robot handles getting/setting robot specific attributes.
 type Robot struct {
-	control *modules.Control
+	control *control.Control
 }
 
 // New returns a new Robot instance associated with the given control.
-func New(control *modules.Control) *Robot {
+func New(control *control.Control) *Robot {
 	return &Robot{
 		control,
 	}

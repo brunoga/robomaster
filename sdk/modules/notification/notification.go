@@ -3,15 +3,16 @@ package notification
 import (
 	"bytes"
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
 	"strings"
 	"sync"
+
+	control2 "github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 type Handler func(string)
 
 type notification struct {
-	control    *modules.Control
+	control    *control2.Control
 	connection connection
 
 	m        sync.RWMutex
@@ -19,7 +20,7 @@ type notification struct {
 	handlers map[string]map[string]map[int]Handler
 }
 
-func newNotification(control *modules.Control, connection connection) (*notification, error) {
+func newNotification(control *control2.Control, connection connection) (*notification, error) {
 	if control == nil {
 		return nil, fmt.Errorf("control must not be nil")
 	}

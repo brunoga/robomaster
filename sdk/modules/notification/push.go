@@ -2,7 +2,8 @@ package notification
 
 import (
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
+
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 // Push handles robot's push notification, starting/stopping monitoring individual
@@ -13,7 +14,7 @@ type Push struct {
 
 // NewPush returns a new Push instance. The control parameter is used to start
 // stop the specific notification pushes.
-func NewPush(control *modules.Control) (*Push, error) {
+func NewPush(control *control.Control) (*Push, error) {
 	pushConnection, err := newPushConnection(control)
 	if err != nil {
 		return nil, fmt.Errorf("error creating push connection: %w", err)

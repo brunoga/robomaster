@@ -2,9 +2,10 @@ package armor
 
 import (
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
-	"github.com/brunoga/robomaster/sdk/modules/notification"
 	"strconv"
+
+	"github.com/brunoga/robomaster/sdk/modules/control"
+	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
 // EventAttribute represents armor attributes that can be monitored through
@@ -17,11 +18,11 @@ const (
 )
 
 type Armor struct {
-	control *modules.Control
+	control *control.Control
 	event   *notification.Event
 }
 
-func New(control *modules.Control, event *notification.Event) *Armor {
+func New(control *control.Control, event *notification.Event) *Armor {
 	return &Armor{
 		control,
 		event,

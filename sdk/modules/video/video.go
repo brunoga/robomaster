@@ -6,7 +6,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 	"github.com/brunoga/robomaster/sdk/modules/video/internal/h264"
 )
 
@@ -31,7 +31,7 @@ type Handler func(frame *image.RGBA, wg *sync.WaitGroup)
 // data from it and sending to all registered VideoHandlers and stopping the
 // video stream. The decoding relies on GoCV (https://gocv.io).
 type Video struct {
-	control *modules.Control
+	control *control.Control
 	decoder *h264.Decoder
 
 	m             sync.Mutex
@@ -41,7 +41,7 @@ type Video struct {
 
 // New creates a new Video instance. The control parameter is used to start
 // stop the video stream and setup the video connection address.
-func New(control *modules.Control) (*Video, error) {
+func New(control *control.Control) (*Video, error) {
 	v := &Video{
 		control,
 		nil,

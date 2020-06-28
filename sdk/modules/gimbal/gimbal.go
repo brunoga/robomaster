@@ -3,7 +3,7 @@ package gimbal
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
@@ -18,12 +18,12 @@ const (
 
 // Gimbal allows sending commands to control the robot's gimbal.
 type Gimbal struct {
-	control *modules.Control
+	control *control.Control
 	push    *notification.Push
 }
 
 // New returns a new Gimbal instance associated with the given control.
-func New(control *modules.Control, push *notification.Push) *Gimbal {
+func New(control *control.Control, push *notification.Push) *Gimbal {
 	return &Gimbal{
 		control,
 		push,
@@ -152,7 +152,7 @@ func (g *Gimbal) StopPush(attr PushAttribute,
 	case PushAttributeAttitude:
 		pushAttributeStr = "attitude"
 	default:
-		fmt.Errorf("invalid gimbal event push attribute")
+		return fmt.Errorf("invalid gimbal event push attribute")
 	}
 
 	err := g.push.StopListening("gimbal push", pushAttributeStr, token)

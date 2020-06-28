@@ -3,7 +3,7 @@ package chassis
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
@@ -20,12 +20,12 @@ const (
 
 // Chassis allows sending commands to control the robot's chassis.
 type Chassis struct {
-	control *modules.Control
+	control *control.Control
 	push    *notification.Push
 }
 
 // New returns a new Chassis instance associated with the given control.
-func New(control *modules.Control, push *notification.Push) *Chassis {
+func New(control *control.Control, push *notification.Push) *Chassis {
 	return &Chassis{
 		control,
 		push,

@@ -2,9 +2,10 @@ package notification
 
 import (
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
 	"net"
 	"sync"
+
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 const (
@@ -12,13 +13,13 @@ const (
 )
 
 type pushConnection struct {
-	control *modules.Control
+	control *control.Control
 
 	m    sync.Mutex
 	conn net.PacketConn
 }
 
-func newPushConnection(control *modules.Control) (connection, error) {
+func newPushConnection(control *control.Control) (connection, error) {
 	if control == nil {
 		return nil, fmt.Errorf("control must not be nil")
 	}

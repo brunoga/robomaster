@@ -1,4 +1,4 @@
-package modules
+package control
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
@@ -20,7 +21,7 @@ const (
 type Control struct {
 	logger *logger.Logger
 
-	robotFinder *Finder
+	robotFinder *modules.Finder
 
 	m             sync.Mutex
 	conn          net.Conn
@@ -30,7 +31,7 @@ type Control struct {
 // NewControl returns a new Control instance with no associated ip. The given
 // robotFinder will be used to detect a robot broadcasting its ip in the
 // network.
-func NewControl(robotFinder *Finder, l *logger.Logger) (*Control, error) {
+func NewControl(robotFinder *modules.Finder, l *logger.Logger) (*Control, error) {
 	if robotFinder == nil {
 		return nil, fmt.Errorf("robot finder must not be nil")
 	}

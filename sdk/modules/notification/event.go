@@ -2,7 +2,8 @@ package notification
 
 import (
 	"fmt"
-	"github.com/brunoga/robomaster/sdk/modules"
+
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 // Event handles the robot event notification, starting/stopping monitoring
@@ -13,7 +14,7 @@ type Event struct {
 
 // NewEvent returns a new Event instance. The control parameter is used to start
 // stop the specific notification events.
-func NewEvent(control *modules.Control) (*Event, error) {
+func NewEvent(control *control.Control) (*Event, error) {
 	eventConnection, err := newEventConnection(control)
 	if err != nil {
 		return nil, fmt.Errorf("error creating event connection: %w", err)

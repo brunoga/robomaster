@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 type Blaster struct {
-	control *modules.Control
+	control *control.Control
 }
 
-func New(control *modules.Control) *Blaster {
+func New(control *control.Control) *Blaster {
 	return &Blaster{
 		control,
 	}

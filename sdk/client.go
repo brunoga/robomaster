@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/brunoga/robomaster/sdk/modules/control"
+
 	"github.com/brunoga/robomaster/sdk/support/logger"
 
 	"github.com/brunoga/robomaster/sdk/modules/armor"
@@ -26,7 +28,7 @@ type Client struct {
 	logger *logger.Logger
 
 	finderModule  *modules.Finder
-	controlModule *modules.Control
+	controlModule *control.Control
 
 	pushModule  *notification.Push
 	eventModule *notification.Event
@@ -53,7 +55,7 @@ func NewClient(ip net.IP) (*Client, error) {
 	l := logger.New(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
 
 	// Initialize all modules.
-	controlModule, err := modules.NewControl(finderModule, l)
+	controlModule, err := control.NewControl(finderModule, l)
 	if err != nil {
 		return nil, fmt.Errorf("error creating control module: %w", err)
 	}
