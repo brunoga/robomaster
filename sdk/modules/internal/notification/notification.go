@@ -6,30 +6,30 @@ import (
 	"strings"
 	"sync"
 
-	control2 "github.com/brunoga/robomaster/sdk/modules/control"
+	"github.com/brunoga/robomaster/sdk/modules/control"
 )
 
 type Handler func(string)
 
-type notification struct {
-	control    *control2.Control
-	connection connection
+type Notification struct {
+	control    *control.Control
+	connection Connection
 
 	m        sync.RWMutex
 	quitChan chan struct{}
 	handlers map[string]map[string]map[int]Handler
 }
 
-func newNotification(control *control2.Control, connection connection) (*notification, error) {
+func New(control *control.Control, connection Connection) (*Notification, error) {
 	if control == nil {
 		return nil, fmt.Errorf("control must not be nil")
 	}
 
 	if connection == nil {
-		return nil, fmt.Errorf("connection must not be nil")
+		return nil, fmt.Errorf("Connection must not be nil")
 	}
 
-	return &notification{
+	return &Notification{
 		control,
 		connection,
 		sync.RWMutex{},
@@ -38,7 +38,7 @@ func newNotification(control *control2.Control, connection connection) (*notific
 	}, nil
 }
 
-func (n *notification) StartListening(notificationType, notificationAttribute,
+func (n *Notification) StartListening(notificationType, notificationAttribute,
 	notificationParameters string, handler Handler) (int, error) {
 	n.m.Lock()
 	defer n.m.Unlock()
@@ -70,7 +70,7 @@ func (n *notification) StartListening(notificationType, notificationAttribute,
 
 	if token == -1 {
 		// Should never happen unless there is a bug.
-		return -1, fmt.Errorf("error obtaining notification handler token")
+		return -1, fmt.Errorf("error obtaining Notification handler token")
 	}
 
 	if startTracking {
@@ -87,7 +87,7 @@ func (n *notification) StartListening(notificationType, notificationAttribute,
 
 		err := n.control.SendDataExpectOk(command)
 		if err != nil {
-			return -1, fmt.Errorf("error listening for notification: %w",
+			return -1, fmt.Errorf("error listening for Notification: %w",
 				err)
 		}
 	}
@@ -103,24 +103,24 @@ func (n *notification) StartListening(notificationType, notificationAttribute,
 	return token, nil
 }
 
-func (n *notification) StopListening(notificationType,
+func (n *Notification) StopListening(notificationType,
 	notificationAttribute string, token int) error {
 	n.m.Lock()
 	defer n.m.Unlock()
 
 	attributeTokenMap, ok := n.handlers[notificationType]
 	if !ok {
-		return fmt.Errorf("no handlers for notification type")
+		return fmt.Errorf("no handlers for Notification type")
 	}
 
 	tokenHandlerMap, ok := attributeTokenMap[notificationAttribute]
 	if !ok {
-		return fmt.Errorf("no handlers for notification attribute")
+		return fmt.Errorf("no handlers for Notification attribute")
 	}
 
 	_, ok = tokenHandlerMap[token]
 	if !ok {
-		return fmt.Errorf("token does not match notification type")
+		return fmt.Errorf("token does not match Notification type")
 	}
 
 	delete(tokenHandlerMap, token)
@@ -131,7 +131,7 @@ func (n *notification) StopListening(notificationType,
 		err := n.control.SendDataExpectOk(fmt.Sprintf(
 			"%s %s off;", notificationType, notificationAttribute))
 		if err != nil {
-			return fmt.Errorf("error stopping notification: %w",
+			return fmt.Errorf("error stopping Notification: %w",
 				err)
 		}
 
@@ -149,7 +149,7 @@ func (n *notification) StopListening(notificationType,
 	return nil
 }
 
-func (n *notification) loop() {
+func (n *Notification) loop() {
 	n.quitChan = make(chan struct{})
 
 	err := n.connection.Open()

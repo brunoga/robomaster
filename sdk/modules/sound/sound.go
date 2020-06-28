@@ -3,7 +3,8 @@ package sound
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/modules/notification"
+	event2 "github.com/brunoga/robomaster/sdk/modules/event"
+	notification2 "github.com/brunoga/robomaster/sdk/modules/internal/notification"
 )
 
 // EventAttribute represents sound attributes that can be monitored through
@@ -16,10 +17,10 @@ const (
 )
 
 type Sound struct {
-	event *notification.Event
+	event *event2.Event
 }
 
-func New(event *notification.Event) *Sound {
+func New(event *event2.Event) *Sound {
 	return &Sound{
 		event,
 	}
@@ -30,7 +31,7 @@ func New(event *notification.Event) *Sound {
 // (used to stop notifications for the given handler) and a nil  error on
 // success and a non-nil error on failure.
 func (s *Sound) StartEvent(eventAttribute EventAttribute,
-	handler notification.Handler) (int, error) {
+	handler notification2.Handler) (int, error) {
 	var eventAttributeStr string
 	switch eventAttribute {
 	case EventAttributeApplause:

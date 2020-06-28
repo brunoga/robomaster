@@ -6,13 +6,15 @@ import (
 	"net"
 	"os"
 
+	"github.com/brunoga/robomaster/sdk/modules/event"
+	"github.com/brunoga/robomaster/sdk/modules/push"
+
 	"github.com/brunoga/robomaster/sdk/modules/armor"
 	"github.com/brunoga/robomaster/sdk/modules/blaster"
 	"github.com/brunoga/robomaster/sdk/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/modules/control"
 	"github.com/brunoga/robomaster/sdk/modules/finder"
 	"github.com/brunoga/robomaster/sdk/modules/gimbal"
-	"github.com/brunoga/robomaster/sdk/modules/notification"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"github.com/brunoga/robomaster/sdk/modules/sound"
 	"github.com/brunoga/robomaster/sdk/modules/video"
@@ -27,8 +29,8 @@ type Client struct {
 	finderModule  *finder.Finder
 	controlModule *control.Control
 
-	pushModule  *notification.Push
-	eventModule *notification.Event
+	pushModule  *push.Push
+	eventModule *event.Event
 
 	robotModule   *robot.Robot
 	gimbalModule  *gimbal.Gimbal
@@ -56,11 +58,11 @@ func NewClient(ip net.IP) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating control module: %w", err)
 	}
-	pushModule, err := notification.NewPush(controlModule)
+	pushModule, err := push.NewPush(controlModule)
 	if err != nil {
 		return nil, fmt.Errorf("error creating push module: %w", err)
 	}
-	eventModule, err := notification.NewEvent(controlModule)
+	eventModule, err := event.NewEvent(controlModule)
 	if err != nil {
 		return nil, fmt.Errorf("error creating event module: %w", err)
 	}

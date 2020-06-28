@@ -1,6 +1,6 @@
 package notification
 
-type connection interface {
+type Connection interface {
 	Open() error
 	Read([]byte) (int, error)
 	Close() error

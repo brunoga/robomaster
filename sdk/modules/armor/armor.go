@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
+	event2 "github.com/brunoga/robomaster/sdk/modules/event"
+	notification2 "github.com/brunoga/robomaster/sdk/modules/internal/notification"
+
 	"github.com/brunoga/robomaster/sdk/modules/control"
-	"github.com/brunoga/robomaster/sdk/modules/notification"
 )
 
 // EventAttribute represents armor attributes that can be monitored through
@@ -19,10 +21,10 @@ const (
 
 type Armor struct {
 	control *control.Control
-	event   *notification.Event
+	event   *event2.Event
 }
 
-func New(control *control.Control, event *notification.Event) *Armor {
+func New(control *control.Control, event *event2.Event) *Armor {
 	return &Armor{
 		control,
 		event,
@@ -53,7 +55,7 @@ func (a *Armor) GetSensitivity() (int, error) {
 // (used to stop notifications for the given handler) and a nil  error on
 // success and a non-nil error on failure.
 func (a *Armor) StartEvent(eventAttribute EventAttribute,
-	handler notification.Handler) (int, error) {
+	handler notification2.Handler) (int, error) {
 	var eventAttributeStr string
 	switch eventAttribute {
 	case EventAttributeHit:
