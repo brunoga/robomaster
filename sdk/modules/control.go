@@ -158,11 +158,11 @@ func (c *Control) SendAndReceiveData(data string) (string, error) {
 func (c *Control) SendDataExpectOk(data string) error {
 	rcvData, err := c.SendAndReceiveData(data)
 	if err != nil {
-		fmt.Errorf("error sending and receiving data: %w", err)
+		return fmt.Errorf("error sending and receiving data: %w", err)
 	}
 
 	if rcvData != "ok" {
-		fmt.Errorf("error checking response: not ok")
+		return fmt.Errorf("error checking response: not ok")
 	}
 
 	return nil
