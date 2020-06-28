@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -191,10 +190,10 @@ func (c *Control) SendDataExpectOkAsync(data string) error {
 	go func() {
 		rcvData, err := c.ReceiveData()
 		if err != nil {
-			log.Printf("error sending data: %s", err)
+			c.logger.ERROR("error sending data: %s", err)
 		} else {
 			if rcvData != "ok" {
-				log.Printf("%q -> %q\n", data, rcvData)
+				c.logger.ERROR("%q -> %q\n", data, rcvData)
 			}
 		}
 	}()
