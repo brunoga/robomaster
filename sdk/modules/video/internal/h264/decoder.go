@@ -1,7 +1,7 @@
 package h264
 
 /*
-#cgo LDFLAGS: -lavcodec -lavutil -lswscale
+#cgo LDFLAGS: -lavcodec -lavutil -lswscale -lz
 #cgo CFLAGS: -O3
 
 #include "decoder.h"
