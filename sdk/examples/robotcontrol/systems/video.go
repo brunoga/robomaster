@@ -4,6 +4,8 @@ import (
 	"image"
 	"sync"
 
+	"golang.org/x/image/colornames"
+
 	"github.com/brunoga/robomaster/sdk"
 
 	"github.com/EngoEngine/ecs"
@@ -92,8 +94,28 @@ func (v *Video) Priority() int {
 	return -10
 }
 
+func horizontalLine(img *image.NRGBA, y, x1, x2 int) {
+	for ; x1 <= x2; x1++ {
+		img.Set(x1, y, colornames.Greenyellow)
+	}
+}
+
+func verticalLine(img *image.NRGBA, x, y1, y2 int) {
+	for ; y1 <= y2; y1++ {
+		img.Set(x, y1, colornames.Greenyellow)
+	}
+}
+
 func (v *Video) videoHandler(frame *image.RGBA, wg *sync.WaitGroup) {
 	frameCopy := *(*image.NRGBA)(frame)
+
+	// Draw a simple crosshair.
+	horizontalLine(&frameCopy, sdk.CameraVerticalResolutionPoints/2,
+		(sdk.CameraHorizontalResolutionPoints/2)-50,
+		(sdk.CameraHorizontalResolutionPoints/2)+50)
+	verticalLine(&frameCopy, sdk.CameraHorizontalResolutionPoints/2,
+		(sdk.CameraVerticalResolutionPoints/2)-50,
+		(sdk.CameraVerticalResolutionPoints/2)+50)
 
 	v.frameCh <- &frameCopy
 
