@@ -45,15 +45,14 @@ type Client struct {
 // is nil, the Client will try to detect a robot broadcasting its ip in the
 // network.
 func NewClient(ip net.IP) (*Client, error) {
-	finderModule := finder.New()
-	if ip != nil {
-		finderModule.SetIP(ip)
-	}
-
 	// Setup logging.
 	l := logger.New(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
 
 	// Initialize all modules.
+	finderModule := finder.New(l)
+	if ip != nil {
+		finderModule.SetIP(ip)
+	}
 	controlModule, err := control.New(finderModule, l)
 	if err != nil {
 		return nil, fmt.Errorf("error creating control module: %w", err)

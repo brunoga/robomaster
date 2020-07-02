@@ -6,6 +6,8 @@ import (
 	"net"
 	"sync"
 	"time"
+
+	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
 const (
@@ -15,13 +17,15 @@ const (
 // Finder provides an interface for finding a robot broadcasting its ip in
 // the network.
 type Finder struct {
+	l  *logger.Logger
 	m  sync.Mutex
 	ip net.IP
 }
 
 // New returns a Finder instance with no associated ip.
-func New() *Finder {
+func New(l *logger.Logger) *Finder {
 	return &Finder{
+		l,
 		sync.Mutex{},
 		nil,
 	}
@@ -40,6 +44,8 @@ func (f *Finder) GetOrFindIP(timeout time.Duration) (net.IP, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error finding robot ip: %w", err)
 		}
+
+		f.l.INFO("Detected robot with ip %s", ip.String())
 
 		f.ip = ip
 	}
