@@ -58,7 +58,7 @@ func (r RobotControl) Setup(updater engo.Updater) {
 
 	var mirrorClients []*sdk.Client = nil
 	if *mirrors > 0 {
-		for i := 0; i < len(mirrorClients); i++ {
+		for i := 0; i < int(*mirrors); i++ {
 			mirrorClient, err := sdk.NewClient(nil)
 			if err != nil {
 				// Just ignore. We do not care that much about the
