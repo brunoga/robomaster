@@ -7,23 +7,31 @@ import (
 )
 
 type Blaster struct {
-	client *sdk.Client
+	client        *sdk.Client
+	mirrorClients []*sdk.Client
 }
 
-func NewBlaster(client *sdk.Client) *Blaster {
+func NewBlaster(client *sdk.Client, mirrorClients []*sdk.Client) *Blaster {
 	return &Blaster{
 		client,
+		mirrorClients,
 	}
 }
 
 func (b *Blaster) New(world *ecs.World) {
 	b.client.BlasterModule().SetNumBeads(1)
+	for _, mirrorClient := range b.mirrorClients {
+		mirrorClient.BlasterModule().SetNumBeads(1)
+	}
 }
 
 func (b *Blaster) Update(dt float32) {
 	if engo.Input.Mouse.Action == engo.Press &&
 		engo.Input.Mouse.Button == engo.MouseButtonLeft {
 		b.client.BlasterModule().Fire(true)
+		for _, mirrorClient := range b.mirrorClients {
+			mirrorClient.BlasterModule().Fire(true)
+		}
 	}
 }
 

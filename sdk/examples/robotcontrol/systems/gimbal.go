@@ -14,22 +14,28 @@ type systemGimbalEntity struct {
 }
 
 type Gimbal struct {
-	entity *systemGimbalEntity
-	client *sdk.Client
+	entity        *systemGimbalEntity
+	client        *sdk.Client
+	mirrorClients []*sdk.Client
 }
 
-func NewGimbal(client *sdk.Client) *Gimbal {
+func NewGimbal(client *sdk.Client,
+	mirrorClients []*sdk.Client) *Gimbal {
 	return &Gimbal{
 		&systemGimbalEntity{
 			ecs.NewBasic(),
 			&components.Position{},
 		},
 		client,
+		mirrorClients,
 	}
 }
 
 func (g *Gimbal) New(world *ecs.World) {
 	g.client.GimbalModule().Recenter()
+	for _, mirrorClient := range g.mirrorClients {
+		mirrorClient.GimbalModule().Recenter()
+	}
 }
 
 func pixelsToDegrees(pixels float32, resolutionPixels, fovDegrees int) float64 {
@@ -55,11 +61,13 @@ func (g *Gimbal) Update(dt float32) {
 
 	if g.entity.PositionX > mouseYawAngle ||
 		g.entity.PositionY != mousePitchAngle {
-		//g.client.GimbalModule().MoveRelative(
-		//	gimbal.NewPosition(-mousePitchAngle, mouseYawAngle),
-		//	gimbal.NewSpeed(mousePitchAngle*30, mouseYawAngle*30),
-		//	true)
-		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(-mousePitchAngle*30, mouseYawAngle*30), true)
+		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(-mousePitchAngle*30,
+			mouseYawAngle*30), true)
+		for _, mirrorClient := range g.mirrorClients {
+			mirrorClient.GimbalModule().SetSpeed(gimbal.NewSpeed(
+				-mousePitchAngle*30, mouseYawAngle*30), true)
+		}
+
 		g.entity.PositionX = mouseYawAngle
 		g.entity.PositionY = mousePitchAngle
 	}
