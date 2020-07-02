@@ -133,7 +133,7 @@ void decoder_send_data(decoder* d, char* data, int size) {
 
             d->sws_context = sws_getCachedContext(d->sws_context,
                 frame->width, frame->height, frame->format, frame->width,
-                frame->height, AV_PIX_FMT_RGB32, SWS_BILINEAR, NULL,
+                frame->height, AV_PIX_FMT_BGR32, SWS_BILINEAR, NULL,
                 NULL, NULL);
             if (!d->sws_context) continue;
 
