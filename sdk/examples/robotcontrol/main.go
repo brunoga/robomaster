@@ -9,7 +9,10 @@ import (
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
-var mirrors = flag.Uint("mirrors", 0, "number of mirror robots")
+// Flags
+var (
+	mirrors = flag.Uint("mirrors", 0, "number of mirror robots")
+)
 
 func main() {
 	flag.Parse()
