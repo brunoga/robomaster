@@ -109,7 +109,7 @@ func (c *Control) SendData(data string) error {
 		return fmt.Errorf("connection not open")
 	}
 
-	c.logger.TRACE("Control: >>> ", data)
+	c.logger.TRACE("Control: >>> %s", data)
 
 	_, err := c.conn.Write([]byte(data))
 	if err != nil {
@@ -138,7 +138,7 @@ func (c *Control) ReceiveData() (string, error) {
 			err)
 	}
 
-	c.logger.TRACE("Control: <<< ", string(c.receiveBuffer[:n]))
+	c.logger.TRACE("Control: <<< %s", string(c.receiveBuffer[:n]))
 
 	return string(bytes.TrimSpace(c.receiveBuffer[:n])), nil
 }
