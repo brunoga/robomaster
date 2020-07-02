@@ -56,21 +56,25 @@ func (r RobotControl) Setup(updater engo.Updater) {
 
 	client.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
 
-	var mirrorClients []*sdk.Client
+	var mirrorClients []*sdk.Client = nil
 	if *mirrors > 0 {
-		mirrorClients = make([]*sdk.Client, *mirrors)
 		for i := 0; i < len(mirrorClients); i++ {
-			mirrorClients[i], err = sdk.NewClient(nil)
+			mirrorClient, err := sdk.NewClient(nil)
 			if err != nil {
-				panic(err)
+				// Just ignore. We do not care that much about the
+				// mirror robots.
+				continue
 			}
 
-			err = mirrorClients[i].Open()
+			err = mirrorClient.Open()
 			if err != nil {
-				panic(err)
+				// Ditto.
+				continue
 			}
 
-			mirrorClients[i].RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+			mirrorClient.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+
+			mirrorClients = append(mirrorClients, mirrorClient)
 		}
 	}
 
