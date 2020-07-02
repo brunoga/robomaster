@@ -12,7 +12,7 @@ func main() {
 		Height:        720,
 		VSync:         true,
 		ScaleOnResize: true,
-		FPSLimit:      30,
+		FPSLimit:      60,
 		NotResizable:  true,
 	}
 
