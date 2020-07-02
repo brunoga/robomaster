@@ -1,10 +1,6 @@
 package scenes
 
 import (
-	"flag"
-
-	"github.com/brunoga/robomaster/sdk/modules/robot"
-
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
@@ -13,15 +9,12 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-var mirrors = flag.Uint("mirrors", 0, "number of mirror robots")
-
-type RobotControl struct{}
-
-func (r RobotControl) Preload() {
-	if !flag.Parsed() {
-		flag.Parse()
-	}
+type RobotControl struct {
+	Client        *sdk.Client
+	MirrorClients []*sdk.Client
 }
+
+func (r RobotControl) Preload() {}
 
 func (r RobotControl) Setup(updater engo.Updater) {
 	if engo.CurrentBackEnd == engo.BackEndGLFW {
@@ -44,46 +37,12 @@ func (r RobotControl) Setup(updater engo.Updater) {
 	engo.Input.RegisterAxis("MouseYAxis",
 		engo.NewAxisMouse(engo.AxisMouseVert))
 
-	client, err := sdk.NewClient(nil)
-	if err != nil {
-		panic(err)
-	}
-
-	err = client.Open()
-	if err != nil {
-		panic(err)
-	}
-
-	client.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
-
-	var mirrorClients []*sdk.Client = nil
-	if *mirrors > 0 {
-		for i := 0; i < int(*mirrors); i++ {
-			mirrorClient, err := sdk.NewClient(nil)
-			if err != nil {
-				// Just ignore. We do not care that much about the
-				// mirror robots.
-				continue
-			}
-
-			err = mirrorClient.Open()
-			if err != nil {
-				// Ditto.
-				continue
-			}
-
-			mirrorClient.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
-
-			mirrorClients = append(mirrorClients, mirrorClient)
-		}
-	}
-
 	w, _ := updater.(*ecs.World)
 	w.AddSystem(&common.RenderSystem{})
-	w.AddSystem(systems.NewVideo(client))
-	w.AddSystem(systems.NewGimbal(client, mirrorClients))
-	w.AddSystem(systems.NewChassis(client, mirrorClients))
-	w.AddSystem(systems.NewBlaster(client, mirrorClients))
+	w.AddSystem(systems.NewVideo(r.Client))
+	w.AddSystem(systems.NewGimbal(r.Client, r.MirrorClients))
+	w.AddSystem(systems.NewChassis(r.Client, r.MirrorClients))
+	w.AddSystem(systems.NewBlaster(r.Client, r.MirrorClients))
 	w.AddSystem(&common.FPSSystem{
 		Display: true,
 	})
