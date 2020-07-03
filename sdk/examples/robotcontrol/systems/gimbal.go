@@ -10,7 +10,7 @@ import (
 
 type systemGimbalEntity struct {
 	ecs.BasicEntity
-	*components.Position
+	*components.Speed
 }
 
 type Gimbal struct {
@@ -24,7 +24,7 @@ func NewGimbal(client *sdk.Client,
 	return &Gimbal{
 		&systemGimbalEntity{
 			ecs.NewBasic(),
-			&components.Position{},
+			&components.Speed{},
 		},
 		client,
 		mirrorClients,
@@ -59,8 +59,8 @@ func (g *Gimbal) Update(dt float32) {
 	mouseYDelta := engo.Input.Axis("MouseYAxis").Value()
 	mousePitchAngle := pixelsToPitchDegrees(mouseYDelta)
 
-	if g.entity.PositionX != mouseYawAngle ||
-		g.entity.PositionY != mousePitchAngle {
+	if g.entity.SpeedX != mouseYawAngle ||
+		g.entity.SpeedY != mousePitchAngle {
 		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(-mousePitchAngle*30,
 			mouseYawAngle*30), true)
 		for _, mirrorClient := range g.mirrorClients {
@@ -68,8 +68,8 @@ func (g *Gimbal) Update(dt float32) {
 				-mousePitchAngle*30, mouseYawAngle*30), true)
 		}
 
-		g.entity.PositionX = mouseYawAngle
-		g.entity.PositionY = mousePitchAngle
+		g.entity.SpeedX = mouseYawAngle
+		g.entity.SpeedY = mousePitchAngle
 	}
 }
 

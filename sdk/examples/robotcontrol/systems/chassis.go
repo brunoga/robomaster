@@ -41,12 +41,12 @@ func (c *Chassis) Update(dt float32) {
 	if c.entity.SpeedX != float64(currentForwardBackward) ||
 		c.entity.SpeedY != float64(currentLeftRight) {
 		c.client.ChassisModule().SetSpeed(chassis.NewSpeed(
-			float64(currentForwardBackward), float64(currentLeftRight), 0.0),
-			true)
+			float64(currentForwardBackward)/2.0, float64(currentLeftRight)/2.0,
+			0.0), true)
 		for _, mirrorClient := range c.mirrorClients {
 			mirrorClient.ChassisModule().SetSpeed(chassis.NewSpeed(
-				float64(currentForwardBackward), float64(currentLeftRight), 0.0),
-				true)
+				float64(currentForwardBackward)/2.0,
+				float64(currentLeftRight)/2.0, 0.0), true)
 		}
 
 		c.entity.SpeedX = float64(currentForwardBackward)
