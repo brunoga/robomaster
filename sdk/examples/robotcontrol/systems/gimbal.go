@@ -54,22 +54,22 @@ func pixelsToPitchDegrees(pixels float32) float64 {
 
 func (g *Gimbal) Update(dt float32) {
 	mouseXDelta := engo.Input.Axis("MouseXAxis").Value()
-	mouseYawAngle := pixelsToYawDegrees(mouseXDelta)
+	mouseXSpeed := pixelsToYawDegrees(mouseXDelta) * 30
 
 	mouseYDelta := engo.Input.Axis("MouseYAxis").Value()
-	mousePitchAngle := pixelsToPitchDegrees(mouseYDelta)
+	mouseYSpeed := -pixelsToPitchDegrees(mouseYDelta) * 30
 
-	if g.entity.SpeedX != mouseYawAngle ||
-		g.entity.SpeedY != mousePitchAngle {
-		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(-mousePitchAngle*30,
-			mouseYawAngle*30), true)
+	if g.entity.SpeedX != mouseXSpeed ||
+		g.entity.SpeedY != mouseYSpeed {
+		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(mouseYSpeed,
+			mouseXSpeed), true)
 		for _, mirrorClient := range g.mirrorClients {
 			mirrorClient.GimbalModule().SetSpeed(gimbal.NewSpeed(
-				-mousePitchAngle*30, mouseYawAngle*30), true)
+				mouseYSpeed, mouseXSpeed), true)
 		}
 
-		g.entity.SpeedX = mouseYawAngle
-		g.entity.SpeedY = mousePitchAngle
+		g.entity.SpeedX = mouseXSpeed
+		g.entity.SpeedY = mouseYSpeed
 	}
 }
 
