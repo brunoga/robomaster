@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 
@@ -45,7 +46,7 @@ type Client struct {
 // network.
 func NewClient(ip net.IP) (*Client, error) {
 	// Setup logging.
-	l := logger.New(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
+	l := logger.New(ioutil.Discard, os.Stdout, os.Stdout, os.Stderr)
 
 	// Initialize all modules.
 	finderModule := finder.New(l)

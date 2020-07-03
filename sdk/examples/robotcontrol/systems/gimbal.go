@@ -59,7 +59,7 @@ func (g *Gimbal) Update(dt float32) {
 	mouseYDelta := engo.Input.Axis("MouseYAxis").Value()
 	mousePitchAngle := pixelsToPitchDegrees(mouseYDelta)
 
-	if g.entity.PositionX > mouseYawAngle ||
+	if g.entity.PositionX != mouseYawAngle ||
 		g.entity.PositionY != mousePitchAngle {
 		g.client.GimbalModule().SetSpeed(gimbal.NewSpeed(-mousePitchAngle*30,
 			mouseYawAngle*30), true)
