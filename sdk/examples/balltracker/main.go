@@ -96,15 +96,24 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 	// Automatically notify we processed the frame on return.
 	defer wg.Done()
 
-	inFrame, err := gocv.NewMatFromBytes(720, 1280, gocv.MatTypeCV8UC4, frame.Pix)
+	// Do not explicitly close inFrameRGBA as the underlying pixel data is
+	// managed by Go itself.
+	inFrameRGBA, err := gocv.NewMatFromBytes(720, 1280, gocv.MatTypeCV8UC4,
+		frame.Pix)
 	if err != nil {
 		return
 	}
+
+	// A Mat underlying pixel format is BRG, so we convert to it.
+	inFrame := gocv.NewMatWithSize(720, 1280, gocv.MatTypeCV8SC3)
+	gocv.CvtColor(inFrameRGBA, &inFrame, gocv.ColorRGBAToBGR)
+	defer inFrame.Close()
 
 	// Clone frame as we are going to modify it. We could potentially call
 	// wg.Done() right after this but without implementing a queue, this is not
 	// a good idea (frames will be racing against each other).
 	outputFrame := inFrame.Clone()
+	defer outputFrame.Close()
 
 	x, y, radius, err := e.tracker.FindLargestObject(&inFrame)
 	if err == nil {
