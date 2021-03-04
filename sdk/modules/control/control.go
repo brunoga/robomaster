@@ -169,7 +169,7 @@ func (c *Control) SendDataExpectOk(data string) error {
 		return fmt.Errorf("error sending and receiving data: %w", err)
 	}
 
-	if rcvData != "ok" {
+	if rcvData != "ok;" {
 		return fmt.Errorf("error checking response: not ok")
 	}
 
@@ -193,7 +193,7 @@ func (c *Control) SendDataExpectOkAsync(data string) error {
 		if err != nil {
 			c.logger.ERROR("error sending data: %s", err)
 		} else {
-			if rcvData != "ok" {
+			if rcvData != "ok;" {
 				c.logger.ERROR("%q -> %q\n", data, rcvData)
 			}
 		}
