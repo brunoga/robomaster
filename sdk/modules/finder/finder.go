@@ -3,7 +3,7 @@ package finder
 import (
 	"time"
 
-	"github.com/brunoga/robomaster/sdk/robot"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
 // Filter is a map used to pass filtering information to a Finder

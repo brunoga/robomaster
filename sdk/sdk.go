@@ -3,9 +3,9 @@ package sdk
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/finder"
 	"github.com/brunoga/robomaster/sdk/internal/binary"
 	"github.com/brunoga/robomaster/sdk/internal/text"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
 )
 
 // Mode represents an SDK mode. Currently text and binary protocols are

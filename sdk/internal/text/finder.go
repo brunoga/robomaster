@@ -3,8 +3,8 @@ package text
 import (
 	"time"
 
-	"github.com/brunoga/robomaster/sdk/finder"
-	"github.com/brunoga/robomaster/sdk/robot"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
 // Finder is the binary mode implementation of the SDK Finder interface. It
