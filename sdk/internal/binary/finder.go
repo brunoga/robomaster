@@ -23,12 +23,12 @@ func (f *Finder) Find(filter finder.Filter, timeout time.Duration) {
 	// TODO(bga): Implement me.
 }
 
-func (f *Finder) NumRobots(filter finder.Filter) int {
+func (f *Finder) NumRobots() int {
 	// TODO(bga): Implement me.
 	return 0
 }
 
-func (f *Finder) Robots(filter finder.Filter) []robot.Robot {
+func (f *Finder) Robot(n int) robot.Robot {
 	// TODO(bga): Implement me.
 	return nil
 }
