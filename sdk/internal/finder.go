@@ -76,10 +76,37 @@ func (f *Finder) findLoop(filter finder.Filter) {
 	}
 }
 
-func (f *Finder) matchIP(addr net.Addr) bool {
-	return false
+// GetFilterParameter returns the value (as an interface{}) in the given filter
+// associated with the given key. If key is not found, returns nil.
+func GetFilterParameter(key string, filter finder.Filter) interface{} {
+	v, ok := filter[key]
+	if !ok {
+		return nil
+	}
+
+	return v
 }
 
-func (f *Finder) matchSerial(data []byte) bool {
+func MatchIP(ipToMatch net.IP, filter finder.Filter) bool {
+	if filter == nil {
+		return true
+	}
+
+	maybeIPs := GetFilterParameter("ips", filter)
+	if maybeIPs == nil {
+		return true
+	}
+
+	ips, ok := maybeIPs.([]net.IP)
+	if !ok {
+		return true
+	}
+
+	for _, ip := range ips {
+		if ipToMatch.Equal(ip) {
+			return true
+		}
+	}
+
 	return false
 }

@@ -26,24 +26,8 @@ func NewFinder() finder.Finder {
 }
 
 func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
-	if filter == nil {
+	if internal.MatchIP(data.Addr.(*net.IPAddr).IP, filter) {
 		return true
-	}
-
-	maybeIPs := internal.GetFilterParameter("ips", filter)
-	if maybeIPs == nil {
-		return true
-	}
-
-	ips, ok := maybeIPs.([]net.IP)
-	if !ok {
-		return true
-	}
-
-	for _, ip := range ips {
-		if data.Addr.(*net.IPAddr).IP.Equal(ip) {
-			return true
-		}
 	}
 
 	maybeSNs := internal.GetFilterParameter("sns", filter)
@@ -51,7 +35,7 @@ func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filt
 		return true
 	}
 
-	sns, ok := maybeSNs.([]net.IP)
+	sns, ok := maybeSNs.([]string)
 	if !ok {
 		return true
 	}

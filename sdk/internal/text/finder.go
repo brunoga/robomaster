@@ -26,25 +26,5 @@ func NewFinder() finder.Finder {
 
 func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
 	// TODO(bga): Maybe validate that the IP matches the one in data.Data?
-	if filter == nil {
-		return true
-	}
-
-	maybeIPs := internal.GetFilterParameter("ips", filter)
-	if maybeIPs == nil {
-		return true
-	}
-
-	ips, ok := maybeIPs.([]net.IP)
-	if !ok {
-		return true
-	}
-
-	for _, ip := range ips {
-		if data.Addr.(*net.IPAddr).IP.Equal(ip) {
-			return true
-		}
-	}
-
-	return false
+	return internal.MatchIP(data.Addr.(*net.IPAddr).IP, filter)
 }
