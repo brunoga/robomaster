@@ -19,6 +19,8 @@ type FinderData struct {
 	Data []byte
 }
 
+type FilterFunc func(net.Addr, []byte, finder.Filter) robot.Robot
+
 // Finder is the generic implementation of the SDK Finder interface. It is used
 // by both the binary and text protocols.
 type Finder struct {
@@ -27,15 +29,14 @@ type Finder struct {
 
 	packetConn net.PacketConn
 
-	filterFunc func(net.Addr, []byte, finder.Filter) bool
+	filterFunc FilterFunc
 
 	m       sync.Mutex
 	finding bool
 	robots  []robot.Robot
 }
 
-func NewFinder(udpAddrPort string,
-	filterFunc func(net.Addr, []byte, finder.Filter) bool) finder.Finder {
+func NewFinder(udpAddrPort string, filterFunc FilterFunc) finder.Finder {
 	return &Finder{
 		udpAddrPort,
 		0,
@@ -116,11 +117,7 @@ L:
 				break L
 			}
 
-			if f.filterFunc(addr, buf[:n], filter) {
-				var r robot.Robot
-
-				// TODO(bga): Setup up Robot here.
-
+			if r := f.filterFunc(addr, buf[:n], filter); r != nil {
 				f.m.Lock()
 				f.robots = append(f.robots, r)
 				f.m.Unlock()

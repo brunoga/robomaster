@@ -5,6 +5,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk/internal"
 	"github.com/brunoga/robomaster/sdk/modules/finder"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
 const (
@@ -24,7 +25,12 @@ func NewFinder() finder.Finder {
 	return f
 }
 
-func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) bool {
+func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) robot.Robot {
 	// TODO(bga): Maybe validate that the IP matches the one in data.Data?
-	return internal.MatchIP(addr.(*net.IPAddr).IP, filter)
+	ip := addr.(*net.UDPAddr).IP
+	if internal.MatchIP(ip, filter) {
+		return internal.NewRobot(ip, "")
+	}
+
+	return nil
 }

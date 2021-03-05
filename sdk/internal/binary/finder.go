@@ -1,11 +1,12 @@
 package binary
 
 import (
-	"bytes"
 	"net"
+	"strings"
 
 	"github.com/brunoga/robomaster/sdk/internal"
 	"github.com/brunoga/robomaster/sdk/modules/finder"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
 const (
@@ -25,8 +26,8 @@ func NewFinder() finder.Finder {
 	return f
 }
 
-func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) bool {
-	if internal.MatchIP(addr.(*net.IPAddr).IP, filter) {
+func matchSN(snToMatch string, filter finder.Filter) bool {
+	if filter == nil {
 		return true
 	}
 
@@ -41,10 +42,20 @@ func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) bo
 	}
 
 	for _, sn := range sns {
-		if bytes.Equal(data, []byte(sn)) {
+		if strings.Compare(snToMatch, sn) == 0 {
 			return true
 		}
 	}
 
 	return false
+}
+
+func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) robot.Robot {
+	ip := addr.(*net.UDPAddr).IP
+	sn := string(data)
+	if internal.MatchIP(ip, filter) || matchSN(sn, filter) {
+		return internal.NewRobot(ip, sn)
+	}
+
+	return nil
 }
