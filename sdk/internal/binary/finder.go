@@ -1,34 +1,66 @@
 package binary
 
 import (
-	"time"
+	"bytes"
+	"net"
 
+	"github.com/brunoga/robomaster/sdk/internal"
 	"github.com/brunoga/robomaster/sdk/modules/finder"
-	"github.com/brunoga/robomaster/sdk/modules/robot"
+)
+
+const (
+	udpAddrPort = ":40927"
 )
 
 // Finder is the binary mode implementation of the SDK Finder interface. It
-// currently supports filtering by ip (key:ip, value:net.IP) and by serial
-// number (key:sn, value:string).
+// currently only supports filtering by ip (key:ips, value:[]net.IP).
 type Finder struct {
+	finder.Finder
 }
 
-// NewFinder returns a new binary mode Finder instance.
 func NewFinder() finder.Finder {
-	// TODO(bga): Implement me.
-	return &Finder{}
+	f := &Finder{}
+	f.Finder = internal.NewFinder(udpAddrPort, f.filterFunc)
+
+	return f
 }
 
-func (f *Finder) Find(filter finder.Filter, timeout time.Duration) {
-	// TODO(bga): Implement me.
-}
+func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
+	if filter == nil {
+		return true
+	}
 
-func (f *Finder) NumRobots() int {
-	// TODO(bga): Implement me.
-	return 0
-}
+	maybeIPs := internal.GetFilterParameter("ips", filter)
+	if maybeIPs == nil {
+		return true
+	}
 
-func (f *Finder) Robot(n int) robot.Robot {
-	// TODO(bga): Implement me.
-	return nil
+	ips, ok := maybeIPs.([]net.IP)
+	if !ok {
+		return true
+	}
+
+	for _, ip := range ips {
+		if data.Addr.(*net.IPAddr).IP.Equal(ip) {
+			return true
+		}
+	}
+
+	maybeSNs := internal.GetFilterParameter("sns", filter)
+	if maybeSNs == nil {
+		return true
+	}
+
+	sns, ok := maybeSNs.([]net.IP)
+	if !ok {
+		return true
+	}
+
+	for _, sn := range sns {
+		if bytes.Equal(data.Data, []byte(sn)) {
+			return true
+		}
+	}
+
+	return false
 }

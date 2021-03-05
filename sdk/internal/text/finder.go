@@ -1,32 +1,50 @@
 package text
 
 import (
-	"time"
+	"net"
 
+	"github.com/brunoga/robomaster/sdk/internal"
 	"github.com/brunoga/robomaster/sdk/modules/finder"
-	"github.com/brunoga/robomaster/sdk/modules/robot"
+)
+
+const (
+	udpAddrPort = ":40926"
 )
 
 // Finder is the binary mode implementation of the SDK Finder interface. It
 // currently only supports filtering by ip (key:ips, value:[]net.IP).
 type Finder struct {
+	finder.Finder
 }
 
 func NewFinder() finder.Finder {
-	// TODO(bga): Implement me.
-	return &Finder{}
+	f := &Finder{}
+	f.Finder = internal.NewFinder(udpAddrPort, f.filterFunc)
+
+	return f
 }
 
-func (f *Finder) Find(filter finder.Filter, timeout time.Duration) {
-	// TODO(bga): Implement me.
-}
+func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
+	// TODO(bga): Maybe validate that the IP matches the one in data.Data?
+	if filter == nil {
+		return true
+	}
 
-func (f *Finder) NumRobots() int {
-	// TODO(bga): Implement me.
-	return 0
-}
+	maybeIPs := internal.GetFilterParameter("ips", filter)
+	if maybeIPs == nil {
+		return true
+	}
 
-func (f *Finder) Robot(n int) robot.Robot {
-	// TODO(bga): Implement me.
-	return nil
+	ips, ok := maybeIPs.([]net.IP)
+	if !ok {
+		return true
+	}
+
+	for _, ip := range ips {
+		if data.Addr.(*net.IPAddr).IP.Equal(ip) {
+			return true
+		}
+	}
+
+	return false
 }
