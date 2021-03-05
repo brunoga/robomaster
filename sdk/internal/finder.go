@@ -10,31 +10,66 @@ import (
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
+const (
+	readDeadline time.Duration = 500 * time.Millisecond
+)
+
+type FinderData struct {
+	Addr net.Addr
+	Data []byte
+}
+
 // Finder is the generic implementation of the SDK Finder interface. It is used
 // by both the binary and text protocols.
 type Finder struct {
-	listener   *FinderListener
-	filterFunc func(FinderListenerData, finder.Filter) bool
+	udpAddrPort string
+	timeout     time.Duration
 
-	m      sync.Mutex
-	robots []robot.Robot
+	packetConn net.PacketConn
+
+	filterFunc func(net.Addr, []byte, finder.Filter) bool
+
+	m       sync.Mutex
+	finding bool
+	robots  []robot.Robot
 }
 
 func NewFinder(udpAddrPort string,
-	filterFunc func(FinderListenerData, finder.Filter) bool) finder.Finder {
+	filterFunc func(net.Addr, []byte, finder.Filter) bool) finder.Finder {
 	return &Finder{
-		NewFinderListener(udpAddrPort),
+		udpAddrPort,
+		0,
+		nil,
 		filterFunc,
 		sync.Mutex{},
+		false,
 		nil,
 	}
 }
 
 func (f *Finder) Find(filter finder.Filter, timeout time.Duration) error {
-	err := f.listener.Start(timeout)
-	if err != nil {
-		return fmt.Errorf("error starting to listen for robots: %w", err)
+	f.m.Lock()
+	defer f.m.Unlock()
+
+	if f.finding {
+		return fmt.Errorf("already looking for robots")
 	}
+
+	var err error
+	f.packetConn, err = net.ListenPacket("udp4", f.udpAddrPort)
+	if err != nil {
+		return fmt.Errorf("error listening for packets: %w", err)
+	}
+
+	err = f.packetConn.SetReadDeadline(time.Now().Add(readDeadline))
+	if err != nil {
+		f.packetConn.Close()
+
+		return fmt.Errorf("error setting read deadline: %w", err)
+	}
+
+	f.timeout = timeout
+	f.finding = true
 
 	go f.findLoop(filter)
 
@@ -60,20 +95,42 @@ func (f *Finder) Robot(n int) robot.Robot {
 }
 
 func (f *Finder) findLoop(filter finder.Filter) {
-	readChannel, err := f.listener.ReadChannel()
-	if err != nil {
-		// This should never happen.
-		panic(err)
+	var timerChan <-chan time.Time
+
+	if f.timeout > 0 {
+		ticker := time.NewTicker(f.timeout)
+		defer ticker.Stop()
+
+		timerChan = ticker.C
 	}
 
-	for listenerData := range readChannel {
-		if f.filterFunc(listenerData, filter) {
-			var r robot.Robot
-			f.m.Lock()
-			f.robots = append(f.robots, r)
-			f.m.Unlock()
+L:
+	for {
+		select {
+		case <-timerChan:
+			break L
+		default:
+			buf := make([]byte, 1024)
+			n, addr, err := f.packetConn.ReadFrom(buf)
+			if err != nil {
+				break L
+			}
+
+			if f.filterFunc(addr, buf[:n], filter) {
+				var r robot.Robot
+
+				// TODO(bga): Setup up Robot here.
+
+				f.m.Lock()
+				f.robots = append(f.robots, r)
+				f.m.Unlock()
+			}
 		}
 	}
+
+	f.m.Lock()
+	f.finding = false
+	f.m.Unlock()
 }
 
 // GetFilterParameter returns the value (as an interface{}) in the given filter

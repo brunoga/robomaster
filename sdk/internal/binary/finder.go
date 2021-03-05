@@ -25,8 +25,8 @@ func NewFinder() finder.Finder {
 	return f
 }
 
-func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
-	if internal.MatchIP(data.Addr.(*net.IPAddr).IP, filter) {
+func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) bool {
+	if internal.MatchIP(addr.(*net.IPAddr).IP, filter) {
 		return true
 	}
 
@@ -41,7 +41,7 @@ func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filt
 	}
 
 	for _, sn := range sns {
-		if bytes.Equal(data.Data, []byte(sn)) {
+		if bytes.Equal(data, []byte(sn)) {
 			return true
 		}
 	}

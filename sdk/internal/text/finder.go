@@ -24,7 +24,7 @@ func NewFinder() finder.Finder {
 	return f
 }
 
-func (f *Finder) filterFunc(data internal.FinderListenerData, filter finder.Filter) bool {
+func (f *Finder) filterFunc(addr net.Addr, data []byte, filter finder.Filter) bool {
 	// TODO(bga): Maybe validate that the IP matches the one in data.Data?
-	return internal.MatchIP(data.Addr.(*net.IPAddr).IP, filter)
+	return internal.MatchIP(addr.(*net.IPAddr).IP, filter)
 }
