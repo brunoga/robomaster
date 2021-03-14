@@ -33,6 +33,7 @@ type Finder struct {
 
 	m       sync.Mutex
 	finding bool
+	ips     map[string]struct{}
 	robots  []robot.Robot
 }
 
@@ -44,6 +45,7 @@ func NewFinder(udpAddrPort string, filterFunc FilterFunc) finder.Finder {
 		filterFunc,
 		sync.Mutex{},
 		false,
+		make(map[string]struct{}),
 		nil,
 	}
 }
@@ -57,16 +59,9 @@ func (f *Finder) Find(filter finder.Filter, timeout time.Duration) error {
 	}
 
 	var err error
-	f.packetConn, err = net.ListenPacket("udp4", f.udpAddrPort)
+	f.packetConn, err = net.ListenPacket("udp", f.udpAddrPort)
 	if err != nil {
 		return fmt.Errorf("error listening for packets: %w", err)
-	}
-
-	err = f.packetConn.SetReadDeadline(time.Now().Add(readDeadline))
-	if err != nil {
-		f.packetConn.Close()
-
-		return fmt.Errorf("error setting read deadline: %w", err)
 	}
 
 	f.timeout = timeout
@@ -112,16 +107,34 @@ L:
 			break L
 		default:
 			buf := make([]byte, 1024)
-			n, addr, err := f.packetConn.ReadFrom(buf)
+
+			err := f.packetConn.SetReadDeadline(time.Now().Add(readDeadline))
 			if err != nil {
+				// Error setting deadline.
 				break L
 			}
 
-			if r := f.filterFunc(addr, buf[:n], filter); r != nil {
-				f.m.Lock()
-				f.robots = append(f.robots, r)
-				f.m.Unlock()
+			n, addr, err := f.packetConn.ReadFrom(buf)
+			if err != nil {
+				if err.(*net.OpError).Timeout() {
+					continue
+				}
+
+				break L
 			}
+
+			f.m.Lock()
+
+			_, ok := f.ips[string(addr.(*net.UDPAddr).IP.String())]
+			if !ok {
+				if r := f.filterFunc(addr, buf[:n], filter); r != nil {
+					f.robots = append(f.robots, r)
+				}
+
+				f.ips[string(addr.(*net.UDPAddr).IP.String())] = struct{}{}
+			}
+
+			f.m.Unlock()
 		}
 	}
 
