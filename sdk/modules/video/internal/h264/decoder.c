@@ -117,14 +117,22 @@ void decoder_send_data(decoder* d, char* data, int size) {
         size -= len;
 
         if (parsed_data_size > 0) {
-            AVPacket packet;
-            av_init_packet(&packet);
+            AVPacket* packet = av_packet_alloc();
+	    if (packet == NULL) {
+		    // TOOD(bga): Figure out what should really be done here.
+		    continue;
+	    }
 
-            packet.data = parsed_data;
-            packet.size = parsed_data_size;
+            packet->data = parsed_data;
+            packet->size = parsed_data_size;
 
-            if (avcodec_send_packet(d->codec_context, &packet) != 0)
+            if (avcodec_send_packet(d->codec_context, packet) != 0) {
+		av_packet_free(&packet);
                 continue;
+	    }
+
+	    // We do not need the packet anymore.
+	    av_packet_free(&packet);
 
             if (avcodec_receive_frame(d->codec_context, d->frame) != 0)
                 continue;
@@ -135,7 +143,8 @@ void decoder_send_data(decoder* d, char* data, int size) {
                 frame->width, frame->height, frame->format, frame->width,
                 frame->height, AV_PIX_FMT_RGBA, SWS_BILINEAR, NULL,
                 NULL, NULL);
-            if (!d->sws_context) continue;
+            if (!d->sws_context)
+		    continue;
 
             if (!d->output_buffer) {
                 d->output_buffer_size = av_image_get_buffer_size(
