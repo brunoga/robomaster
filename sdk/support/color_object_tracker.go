@@ -49,14 +49,14 @@ func (c *ColorObjectTracker) FindLargestObject(
 
 	// Erode then dilate the image to better approximate our ball shape.
 	gocv.ErodeWithParams(scratch, &scratch, gocv.NewMat(),
-		image.Point{X: -1, Y: -1}, 2, gocv.BorderDefault)
+		image.Point{X: -1, Y: -1}, 2, int(gocv.BorderDefault))
 	gocv.Dilate(scratch, &scratch, gocv.NewMat())
 
 	// Find the contours of anything that is left in the scratch image.
 	contours := gocv.FindContours(scratch, gocv.RetrievalExternal,
 		gocv.ChainApproxSimple)
 
-	if len(contours) > 0 {
+	if contours.Size() > 0 {
 		// We found at least one object. Find the biggest one.
 		biggestContour := findBiggestAreaContour(contours)
 
@@ -73,20 +73,16 @@ func (c *ColorObjectTracker) FindLargestObject(
 	return -1, -1, -1, fmt.Errorf("no suitable object found")
 }
 
-func findBiggestAreaContour(contours [][]image.Point) []image.Point {
-	if len(contours) == 0 {
-		return nil
-	}
-
+func findBiggestAreaContour(contours gocv.PointsVector) gocv.PointVector {
 	maxArea := 0.0
 	maxIdx := -1
-	for i, cnt := range contours {
-		area := gocv.ContourArea(cnt)
+	for i := 0; i < contours.Size(); i++ {
+		area := gocv.ContourArea(contours.At(i))
 		if area > maxArea {
 			maxArea = area
 			maxIdx = i
 		}
 	}
 
-	return contours[maxIdx]
+	return contours.At(maxIdx)
 }
