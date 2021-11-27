@@ -1,6 +1,8 @@
 package support
 
 import (
+	"image/color"
+
 	"gocv.io/x/gocv"
 )
 
@@ -18,5 +20,12 @@ func NewPersonTracker() *PersonTracker {
 }
 
 func (p *PersonTracker) FindPeople(frame *gocv.Mat) {
-	//p.hogDescriptor.DetectMultiScaleWithParams(frame)
+	// TODO(bga): Use DetectMultiScaleWithParams to tweak things.
+	rects := p.hogDescriptor.DetectMultiScale(*frame)
+
+	// TODO(bga): We need to coalesce overlapping rects to get a single one
+	// that will cover a person.
+	for _, r := range rects {
+		gocv.Rectangle(frame, r, color.RGBA{0, 255, 0, 255}, 3)
+	}
 }
