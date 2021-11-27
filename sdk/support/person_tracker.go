@@ -18,6 +18,5 @@ func NewPersonTracker() *PersonTracker {
 }
 
 func (p *PersonTracker) FindPeople(frame *gocv.Mat) {
-	p.hogDescriptor.DetectMultiScaleWithParams(frame)
-
+	//p.hogDescriptor.DetectMultiScaleWithParams(frame)
 }
