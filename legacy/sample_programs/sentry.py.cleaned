@@ -1,0 +1,163 @@
+TARGET_SEARCHING  = True
+TARGET_SEARCHING_ANGLE = 90
+TARGET_TYPE = 0
+TARGET_TRACKING_MODE = 0
+AUTO_FIRE_ON_LOCK = False
+AUTO_FIRE_MAX_DISTANCE = 2.0
+PID_ENABLED = True
+PID_PITCH_PARAMETERS = [90,  0, 3]
+PID_YAW_PARAMETERS   = [120, 0, 5]
+CONTROLLER_OVERRIDE = False
+ROBOT_KNOWN_HEIGHT_MM         = 270.0
+VISION_MARKER_KNOWN_HEIGHT_MM = 170.00
+ROBOT_CAMERA_FOCAL_LENGTH     = 1.0
+ROBOT_CAMERA_HORIZONTAL_FOV   = 96
+ROBOT_CAMERA_VERTICAL_FOV     = 54
+AIM_ERROR                     = 0
+AIM_IN_PROGRESS               = 1
+AIM_DONE                      = 2
+def start():
+    robot.set_mode(rm_define.robot_mode_chassis_follow)
+    if CONTROLLER_OVERRIDE:
+        chassis_ctrl.enable_stick_overlay()
+        gimbal_ctrl.enable_stick_overlay()
+    if TARGET_TYPE == 0:
+        vision_ctrl.enable_detection(rm_define.vision_detection_car)
+    else:
+        vision_ctrl.enable_detection(rm_define.vision_detection_marker)
+    gimbal_ctrl.set_rotate_speed(60)
+    led_ctrl.set_top_led(rm_define.armor_top_all, 255, 255, 255,
+            rm_define.effect_marquee)
+    if TARGET_SEARCHING:
+        half_arc = TARGET_SEARCHING_ANGLE // 2
+        while True:
+            media_ctrl.play_sound(rm_define.media_sound_gimbal_rotate)
+            gimbal_ctrl.yaw_ctrl(-half_arc)
+            media_ctrl.play_sound(rm_define.media_sound_gimbal_rotate)
+            gimbal_ctrl.yaw_ctrl(half_arc)
+    else:
+        while True:
+            time.sleep(60)
+def FindClosestTarget(detection_info, num_entries_per_target):
+    num_entries = len(detection_info) - 1  # Ignore size entry.
+    num_targets = num_entries / num_entries_per_target
+    if num_targets != detection_info[0]:
+        return None
+    closest_height = 0.0  # Impossible height.
+    closest_index = 1 # Defaults to first Robot detected.
+    for i in range(1, len(detection_info) - 1, num_entries_per_target):
+        object_height = detection_info[i + num_entries_per_target - 1]
+        if object_height > closest_height:
+            closest_height = object_height
+            closest_index = i
+    return detection_info[closest_index:closest_index + num_entries_per_target]
+def DistanceToTarget(height, known_height):
+    return known_height / height
+def Aim(dst_x, dst_y, target_tracking_mode, pid_yaw = None, pid_pitch = None):
+    if dst_x < 0.0 or dst_x > 1.0 or dst_y < 0.0 or dst_y > 1.0:
+        return AIM_ERROR
+    if ((pid_yaw is not None and pid_pitch is None) or
+            (pid_pitch is not None and pid_yaw is None)):
+        return AIM_ERROR
+    sight_info = media_ctrl.get_sight_bead_position()
+    src_x = sight_info[0]
+    src_y = sight_info[1]
+    delta_x = dst_x - src_x
+    delta_y = src_y - dst_y
+    if abs(delta_x) <= 0.1 and abs(delta_y) <= 0.1:
+        if target_tracking_mode == 0:
+            gimbal_ctrl.rotate_with_speed(0, 0)
+            
+        return AIM_DONE
+    if target_tracking_mode != 0:
+        gimbal_yaw_angle = gimbal_ctrl.get_axis_angle(rm_define.gimbal_axis_yaw)
+        gimbal_pitch_angle = gimbal_ctrl.get_axis_angle(
+                rm_define.gimbal_axis_pitch)
+        delta_x = ROBOT_CAMERA_HORIZONTAL_FOV * (delta_x)
+        delta_y = ROBOT_CAMERA_VERTICAL_FOV * (delta_y)        
+    if pid_yaw is not None:
+        pid_yaw.set_error(delta_x)
+        pid_pitch.set_error(delta_y)
+        if target_tracking_mode == 0:
+            gimbal_ctrl.rotate_with_speed(pid_yaw.get_output(),
+                    pid_pitch.get_output())
+        else:
+            gimbal_ctrl.angle_ctrl(gimbal_yaw_angle + pid_yaw.get_output(),
+                gimbal_pitch_angle + pid_pitch.get_output())
+    else:
+        if target_tracking_mode == 0:
+            gimbal_ctrl.rotate_with_speed(delta_x, delta_y)
+        else:
+            gimbal_ctrl.angle_ctrl(gimbal_yaw_angle + delta_x,
+                    gimbal_pitch_angle + delta_y)
+    return AIM_IN_PROGRESS
+def vision_recognized_marker_trans_all(msg):
+    target_recognized(msg, vision_ctrl.get_marker_detection_info, 5)
+def vision_recognized_marker_number_all(msg):
+    target_recognized(msg, vision_ctrl.get_marker_detection_info, 5)
+def vision_recognized_marker_letter_all(msg):
+    target_recognized(msg, vision_ctrl.get_marker_detection_info, 5)
+def vision_recognized_car(msg):
+    target_recognized(msg, vision_ctrl.get_car_detection_info, 4)
+def target_recognized(msg, get_detection_info, num_entries_per_target):
+    pid_pitch = None
+    pid_yaw = None
+    if PID_ENABLED == 0:
+        pid_pitch = rm_ctrl.PIDCtrl()
+        pid_yaw = rm_ctrl.PIDCtrl()
+        pid_pitch.set_ctrl_params(PID_PITCH_PARAMETERS[0],
+                PID_PITCH_PARAMETERS[1], PID_PITCH_PARAMETERS[2])
+        pid_yaw.set_ctrl_params(PID_YAW_PARAMETERS[0], PID_YAW_PARAMETERS[1],
+                PID_YAW_PARAMETERS[2])
+    
+    previous_aim_status = AIM_ERROR
+    while True:
+        target_detection_info = get_detection_info()
+        if target_detection_info[0] == 0:
+            break
+        print(f'Seeing {target_detection_info[0]} targets.')
+        closest_target_info = FindClosestTarget(target_detection_info,
+                num_entries_per_target)
+        if closest_target_info is None:
+            print(f'Unexpected target data. Abort tracking.')
+            break
+        distance = 0.0
+        if TARGET_TYPE == 0:
+            distance = DistanceToTarget(closest_target_info[3],
+                    ROBOT_KNOWN_HEIGHT_MM)
+        else:
+            distance = DistanceToTarget(closest_target_info[4],
+                    VISION_MARKER_KNOWN_HEIGHT_MM)
+        if distance is None:
+            print(f'Can\'t get distance. Abort tracking.')
+            break
+        distance_in_meters = distance / 1000
+        print(f'Closest target is {distance_in_meters:.2f} meters away.')
+        offset = 0
+        if num_entries_per_target > 4:
+            offset = num_entries_per_target - 4
+        aim_status = Aim(closest_target_info[offset], closest_target_info[offset + 1],
+                         TARGET_TRACKING_MODE, pid_yaw, pid_pitch)
+        if aim_status == AIM_DONE:
+            print('Target locked.')
+            if previous_aim_status != aim_status:
+                led_ctrl.set_top_led(rm_define.armor_top_all, 255, 0, 0,
+                    rm_define.effect_marquee)
+            if distance_in_meters <= AUTO_FIRE_MAX_DISTANCE:
+                if AUTO_FIRE_ON_LOCK:
+                    print(f'Fire!')
+                    gun_ctrl.fire_once()
+            else:
+                print(f'Too far. Not firing.')
+        else:
+            if aim_status == AIM_IN_PROGRESS:
+                print(f'Aiming...')
+                if previous_aim_status != aim_status:
+                    led_ctrl.set_top_led(rm_define.armor_top_all, 255, 255, 0,
+                        rm_define.effect_marquee)
+                time.sleep(0.1)
+        previous_aim_status = aim_status
+    
+    gimbal_ctrl.recenter() 
+    led_ctrl.set_top_led(rm_define.armor_top_all, 255, 255, 255,
+            rm_define.effect_marquee)
