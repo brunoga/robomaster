@@ -1,7 +1,7 @@
 package components
 
 import (
-	"git.bug-br.org.br/bga/robomasters1/app/controller"
+	"github.com/brunoga/robomaster/legacy/app/controller"
 )
 
 type Controller struct {

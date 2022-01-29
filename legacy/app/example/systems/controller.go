@@ -1,10 +1,10 @@
 package systems
 
 import (
-	"git.bug-br.org.br/bga/robomasters1/app/example/components"
-	"git.bug-br.org.br/bga/robomasters1/app/example/entities"
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
+	"github.com/brunoga/robomaster/legacy/app/example/components"
+	"github.com/brunoga/robomaster/legacy/app/example/entities"
 )
 
 type Controller struct {

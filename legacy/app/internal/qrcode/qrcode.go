@@ -8,7 +8,7 @@ import (
 	"net"
 	"strings"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/support"
+	"github.com/brunoga/robomaster/legacy/app/internal/support"
 )
 
 type QRCode struct {

@@ -1,8 +1,8 @@
 package entities
 
 import (
-	"git.bug-br.org.br/bga/robomasters1/app/example/components"
 	"github.com/EngoEngine/ecs"
+	"github.com/brunoga/robomaster/legacy/app/example/components"
 )
 
 type Controller struct {

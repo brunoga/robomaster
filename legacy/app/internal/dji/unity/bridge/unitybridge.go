@@ -5,9 +5,9 @@ import (
 	"log"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge/wrapper"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/support/callbacks"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge/wrapper"
+	"github.com/brunoga/robomaster/legacy/app/internal/support/callbacks"
 )
 
 // EventHandler is the required prototype for functiomns that want to process

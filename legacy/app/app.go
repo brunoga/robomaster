@@ -8,16 +8,16 @@ import (
 	"net"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/pairing"
+	"github.com/brunoga/robomaster/legacy/app/internal"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge"
+	"github.com/brunoga/robomaster/legacy/app/internal/pairing"
 	"github.com/google/uuid"
 	"github.com/skip2/go-qrcode"
 	"github.com/skratchdot/open-golang/open"
 
-	internalqrcode "git.bug-br.org.br/bga/robomasters1/app/internal/qrcode"
+	internalqrcode "github.com/brunoga/robomaster/legacy/app/internal/qrcode"
 )
 
 type App struct {

@@ -7,8 +7,8 @@ import (
 	"os"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge/wrapper/winebridge"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge/wrapper/winebridge"
 )
 
 type Linux struct {
@@ -168,7 +168,7 @@ func (l *Linux) UnitySetEventCallback(eventCode uint64,
 	event := unity.NewEventFromCode(eventCode)
 	if event == nil {
 		log.Printf("Unknown event with code %d (Type:%d, SubType:%d).\n",
-			eventCode, eventCode << 32, eventCode & 0xffffffff)
+			eventCode, eventCode<<32, eventCode&0xffffffff)
 		return
 	}
 
@@ -244,7 +244,7 @@ func (l *Linux) maybeRunCallback(eventCode uint64, data []byte, tag uint64) {
 	event := unity.NewEventFromCode(eventCode)
 	if event == nil {
 		log.Printf("Unknown event with code %d (Type:%d, SubType:%d).\n",
-			eventCode, eventCode << 32, eventCode & 0xffffffff)
+			eventCode, eventCode<<32, eventCode&0xffffffff)
 		return
 	}
 

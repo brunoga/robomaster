@@ -5,11 +5,11 @@ import (
 	"sync"
 	"unsafe"
 
-	"git.bug-br.org.br/bga/robomasters1/app/example/entities"
-	"git.bug-br.org.br/bga/robomasters1/app/video"
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
+	"github.com/brunoga/robomaster/legacy/app/example/entities"
+	"github.com/brunoga/robomaster/legacy/app/video"
 )
 
 type Video struct {

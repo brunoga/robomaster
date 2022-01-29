@@ -7,10 +7,10 @@ import (
 	"log"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/support/callbacks"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge"
+	"github.com/brunoga/robomaster/legacy/app/internal/support/callbacks"
 )
 
 type ResultHandler func(result *dji.Result, wg *sync.WaitGroup)

@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"git.bug-br.org.br/bga/robomasters1/app/example/scenes"
 	"github.com/EngoEngine/engo"
+	"github.com/brunoga/robomaster/legacy/app/example/scenes"
 )
 
 var (

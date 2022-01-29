@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"git.bug-br.org.br/bga/robomasters1/app/internal"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji"
+	"github.com/brunoga/robomaster/legacy/app/internal"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji"
 )
 
 const (

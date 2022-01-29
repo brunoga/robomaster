@@ -1,7 +1,7 @@
 package components
 
 import (
-	"git.bug-br.org.br/bga/robomasters1/app"
+	"github.com/brunoga/robomaster/legacy/app"
 )
 
 type Robomaster struct {

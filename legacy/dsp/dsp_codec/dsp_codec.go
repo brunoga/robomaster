@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.bug-br.org.br/bga/robomasters1/dsp"
+	"github.com/brunoga/robomaster/legacy/dsp"
 )
 
 var (

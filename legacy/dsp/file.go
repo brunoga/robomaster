@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"git.bug-br.org.br/bga/robomasters1/dsp/internal"
+	"github.com/brunoga/robomaster/legacy/dsp/internal"
 	"github.com/google/uuid"
 )
 

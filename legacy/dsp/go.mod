@@ -1,4 +1,4 @@
-module git.bug-br.org.br/bga/robomasters1/dsp
+module github.com/brunoga/robomaster/legacy/dsp
 
 go 1.13
 

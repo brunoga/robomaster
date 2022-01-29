@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge/wrapper"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge/wrapper"
 )
 
 func main() {

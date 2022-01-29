@@ -24,7 +24,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
 	"github.com/mattn/go-pointer"
 )
 

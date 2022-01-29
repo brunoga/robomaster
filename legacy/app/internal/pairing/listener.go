@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/udp"
+	"github.com/brunoga/robomaster/legacy/app/internal/udp"
 )
 
 const (

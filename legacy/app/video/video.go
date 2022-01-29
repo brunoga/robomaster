@@ -2,11 +2,12 @@ package video
 
 import (
 	"fmt"
-	"git.bug-br.org.br/bga/robomasters1/app/internal"
 	"sync"
 
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity"
-	"git.bug-br.org.br/bga/robomasters1/app/internal/dji/unity/bridge"
+	"github.com/brunoga/robomaster/legacy/app/internal"
+
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity"
+	"github.com/brunoga/robomaster/legacy/app/internal/dji/unity/bridge"
 )
 
 type DataHandlerFunc func([]byte, *sync.WaitGroup)
