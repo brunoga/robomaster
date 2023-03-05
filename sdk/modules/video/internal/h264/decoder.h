@@ -8,7 +8,7 @@ typedef void(*frame_callback)(char* frame_data, int frame_data_size,
     void* user_data);
 
 typedef struct decoder {
-    AVCodec* codec;
+    const AVCodec* codec;
     AVCodecContext* codec_context;
     AVCodecParserContext* codec_parser_context;
 
