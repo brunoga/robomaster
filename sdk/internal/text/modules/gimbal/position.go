@@ -47,10 +47,10 @@ func (p *Position) UpdateFromData(data string) error {
 	var pitch, yaw float64
 	n, err := fmt.Sscanf(data, "%f %f", &pitch, &yaw)
 	if err != nil {
-		fmt.Errorf("error parsing data: %w", err)
+		return fmt.Errorf("error parsing data: %w", err)
 	}
 	if n != 2 {
-		fmt.Errorf(
+		return fmt.Errorf(
 			"unexpected number of entries in data: %w", err)
 	}
 

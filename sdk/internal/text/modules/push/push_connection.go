@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/notification"
 )
 
 const (

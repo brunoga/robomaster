@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/notification"
 )
 
 // Event handles the robot event notification, starting/stopping monitoring

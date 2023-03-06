@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	event2 "github.com/brunoga/robomaster/sdk/internal/text/modules/event"
-	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
+	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/notification"
 )
 
 // EventAttribute represents sound attributes that can be monitored through

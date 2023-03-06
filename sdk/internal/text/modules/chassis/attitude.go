@@ -62,10 +62,10 @@ func (a *Attitude) UpdateFromData(data string) error {
 	var pitch, roll, yaw float64
 	n, err := fmt.Sscanf(data, "%f %f %f", &pitch, &roll, &yaw)
 	if err != nil {
-		fmt.Errorf("error parsing data: %w", err)
+		return fmt.Errorf("error parsing data: %w", err)
 	}
 	if n != 3 {
-		fmt.Errorf(
+		return fmt.Errorf(
 			"unexpected number of entries in data: %w", err)
 	}
 

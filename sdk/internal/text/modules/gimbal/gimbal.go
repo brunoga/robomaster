@@ -3,7 +3,7 @@ package gimbal
 import (
 	"fmt"
 
-	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
+	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/notification"
 	push2 "github.com/brunoga/robomaster/sdk/internal/text/modules/push"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"

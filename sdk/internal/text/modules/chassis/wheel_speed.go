@@ -56,10 +56,10 @@ func (w *WheelSpeed) UpdateFromData(data string) error {
 
 	n, err := fmt.Sscanf(data, "%f %f %f %f", &w1, &w2, &w3, &w4)
 	if err != nil {
-		fmt.Errorf("error parsing data: %w", err)
+		return fmt.Errorf("error parsing data: %w", err)
 	}
 	if n != 7 {
-		fmt.Errorf(
+		return fmt.Errorf(
 			"unexpected number of entries in data: %w", err)
 	}
 
