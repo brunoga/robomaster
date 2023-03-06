@@ -5,7 +5,7 @@ import (
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
 	"github.com/brunoga/robomaster/sdk"
-	"github.com/brunoga/robomaster/sdk/text/examples/robotcontrol/systems"
+	"github.com/brunoga/robomaster/sdk/examples/text/robotcontrol/systems"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
