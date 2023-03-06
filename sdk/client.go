@@ -6,19 +6,19 @@ import (
 	"net"
 	"os"
 
-	"github.com/brunoga/robomaster/sdk/modules/event"
-	"github.com/brunoga/robomaster/sdk/modules/push"
+	"github.com/brunoga/robomaster/sdk/text/modules/event"
+	"github.com/brunoga/robomaster/sdk/text/modules/push"
 
-	"github.com/brunoga/robomaster/sdk/modules/armor"
-	"github.com/brunoga/robomaster/sdk/modules/blaster"
-	"github.com/brunoga/robomaster/sdk/modules/chassis"
-	"github.com/brunoga/robomaster/sdk/modules/control"
-	"github.com/brunoga/robomaster/sdk/modules/finder"
-	"github.com/brunoga/robomaster/sdk/modules/gimbal"
-	"github.com/brunoga/robomaster/sdk/modules/robot"
-	"github.com/brunoga/robomaster/sdk/modules/sound"
-	"github.com/brunoga/robomaster/sdk/modules/video"
 	"github.com/brunoga/robomaster/sdk/support/logger"
+	"github.com/brunoga/robomaster/sdk/text/modules/armor"
+	"github.com/brunoga/robomaster/sdk/text/modules/blaster"
+	"github.com/brunoga/robomaster/sdk/text/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/text/modules/finder"
+	"github.com/brunoga/robomaster/sdk/text/modules/gimbal"
+	"github.com/brunoga/robomaster/sdk/text/modules/robot"
+	"github.com/brunoga/robomaster/sdk/text/modules/sound"
+	"github.com/brunoga/robomaster/sdk/text/modules/video"
 )
 
 // Client enables controlling a RoboMaster robot through the plain-text SDK

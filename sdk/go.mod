@@ -1,6 +1,6 @@
 module github.com/brunoga/robomaster/sdk
 
-go 1.17
+go 1.20
 
 require (
 	github.com/EngoEngine/ecs v1.0.5
