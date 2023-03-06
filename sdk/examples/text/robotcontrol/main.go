@@ -6,7 +6,7 @@ import (
 	"github.com/EngoEngine/engo"
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/examples/text/robotcontrol/scenes"
-	"github.com/brunoga/robomaster/sdk/text/modules/robot"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
 )
 
 // Flags

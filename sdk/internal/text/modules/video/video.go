@@ -6,8 +6,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/text/modules/video/internal/h264"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/video/internal/h264"
 )
 
 const (

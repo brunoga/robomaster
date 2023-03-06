@@ -5,7 +5,7 @@ import (
 	"github.com/EngoEngine/engo"
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/examples/text/robotcontrol/components"
-	"github.com/brunoga/robomaster/sdk/text/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/chassis"
 )
 
 type systemChassisEntity struct {

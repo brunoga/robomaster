@@ -3,8 +3,8 @@ package push
 import (
 	"fmt"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/text/modules/internal/notification"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
 )
 
 // Push handles robot's push notification, starting/stopping monitoring individual

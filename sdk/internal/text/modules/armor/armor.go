@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
-	event2 "github.com/brunoga/robomaster/sdk/text/modules/event"
-	notification2 "github.com/brunoga/robomaster/sdk/text/modules/internal/notification"
+	event2 "github.com/brunoga/robomaster/sdk/internal/text/modules/event"
+	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
 )
 
 // EventAttribute represents armor attributes that can be monitored through

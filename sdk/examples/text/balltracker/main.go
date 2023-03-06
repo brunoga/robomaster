@@ -11,11 +11,11 @@ import (
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/chassis"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/gimbal"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
-	"github.com/brunoga/robomaster/sdk/text/modules/chassis"
-	"github.com/brunoga/robomaster/sdk/text/modules/gimbal"
-	"github.com/brunoga/robomaster/sdk/text/modules/robot"
 	"gocv.io/x/gocv"
 )
 

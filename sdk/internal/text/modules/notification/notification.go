@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
 )
 
 type Handler func(string)

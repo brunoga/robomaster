@@ -3,10 +3,10 @@ package chassis
 import (
 	"fmt"
 
-	notification2 "github.com/brunoga/robomaster/sdk/text/modules/internal/notification"
-	push2 "github.com/brunoga/robomaster/sdk/text/modules/push"
+	notification2 "github.com/brunoga/robomaster/sdk/internal/text/modules/internal/notification"
+	push2 "github.com/brunoga/robomaster/sdk/internal/text/modules/push"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
 )
 
 // PushAttribute represents chassis attributes that can be monitored through

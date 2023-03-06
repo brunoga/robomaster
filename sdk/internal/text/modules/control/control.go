@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/finder"
 	"github.com/brunoga/robomaster/sdk/support/logger"
-	"github.com/brunoga/robomaster/sdk/text/modules/finder"
 )
 
 const (

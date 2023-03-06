@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/brunoga/robomaster/sdk/text/modules/control"
+	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
 )
 
 // RobotMotionMode represents the motion mode for a robot.
