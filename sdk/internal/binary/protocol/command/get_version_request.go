@@ -29,6 +29,9 @@ func NewGetVersionRequest() *GetVersionRequest {
 }
 
 // New implements the Command interface.
-func (g *GetVersionRequest) New() Command {
-	return NewGetVersionRequest()
+func (g *GetVersionRequest) New(data []byte) Command {
+	r := NewGetVersionRequest()
+	r.data = data
+
+	return r
 }

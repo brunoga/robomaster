@@ -66,7 +66,7 @@ func get(cmdSet, cmdID byte, data []byte, isRequest bool) Command {
 	key := Key(cmdSet, cmdID)
 
 	if cmd, ok := keyToCommandMap[key]; ok {
-		return cmd.New()
+		return cmd.New(data)
 	}
 
 	panic(fmt.Sprintf("command %s not registered: cmdSet=%x, cmdID=%x",

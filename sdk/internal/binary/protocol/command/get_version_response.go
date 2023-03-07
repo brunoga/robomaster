@@ -32,8 +32,11 @@ func NewGetVersionResponse() *GetVersionResponse {
 }
 
 // New implements the Command interface.
-func (g *GetVersionResponse) New() Command {
-	return NewGetVersionResponse()
+func (g *GetVersionResponse) New(data []byte) Command {
+	r := NewGetVersionResponse()
+	r.data = data
+
+	return r
 }
 
 // Version returns the version of the SDK that exists in the robot as a string.

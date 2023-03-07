@@ -10,7 +10,7 @@ type Command interface {
 	// Type returns the command type.
 	Type() Type
 
-	// New returns a new instance of the command. Used mostly for creating
-	// commands based on a received response.
-	New() Command
+	// New returns a new instance of the command with the given raw data. This
+	// is used to create a new instance of the command received by the client.
+	New([]byte) Command
 }
