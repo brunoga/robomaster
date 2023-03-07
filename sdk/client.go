@@ -8,6 +8,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/event"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/push"
+	"github.com/brunoga/robomaster/sdk/modules"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/armor"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/blaster"
@@ -140,7 +141,7 @@ func (c *Client) Close() error {
 
 // RobotModule returns a pointer to the associated Robot module. Used for
 // doing generic robot-related operations.
-func (c *Client) RobotModule() *robot.Robot {
+func (c *Client) RobotModule() modules.Robot {
 	return c.robotModule
 }
 

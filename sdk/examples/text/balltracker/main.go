@@ -13,7 +13,7 @@ import (
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/gimbal"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
+	"github.com/brunoga/robomaster/sdk/modules"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
 	"gocv.io/x/gocv"
@@ -173,7 +173,7 @@ func main() {
 	videoModule := client.VideoModule()
 
 	// Control gimbal/chassis independently.
-	err = robotModule.SetMotionMode(robot.MotionModeGimbalLead)
+	err = robotModule.SetMotionMode(modules.MotionModeGimbalLead)
 	if err != nil {
 		panic(err)
 	}

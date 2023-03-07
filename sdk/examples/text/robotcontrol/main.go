@@ -6,7 +6,7 @@ import (
 	"github.com/EngoEngine/engo"
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/examples/text/robotcontrol/scenes"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
+	"github.com/brunoga/robomaster/sdk/modules"
 )
 
 // Flags
@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	client.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+	client.RobotModule().SetMotionMode(modules.MotionModeGimbalLead)
 
 	var mirrorClients []*sdk.Client = nil
 	if *mirrors > 0 {
@@ -45,7 +45,7 @@ func main() {
 				continue
 			}
 
-			mirrorClient.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+			mirrorClient.RobotModule().SetMotionMode(modules.MotionModeGimbalLead)
 
 			mirrorClients = append(mirrorClients, mirrorClient)
 		}
