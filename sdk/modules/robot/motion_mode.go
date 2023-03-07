@@ -1,4 +1,4 @@
-package modules
+package robot
 
 // RobotMotionMode represents the motion mode for a robot.
 type MotionMode int
@@ -10,8 +10,3 @@ const (
 	MotionModeFree                          // chassis and gimbal move independently
 	MotionModeInvalid                       // invalid mode
 )
-
-type Robot interface {
-	GetSDKVersion() (string, error)
-	SetMotionMode(motionMode MotionMode) error
-}

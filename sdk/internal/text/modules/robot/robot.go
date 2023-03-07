@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
 // Robot handles getting/setting robot specific attributes.
@@ -22,35 +22,35 @@ func New(control *control.Control) *Robot {
 
 // GetMotionMode returns the robot's current motion mode and a nil error on
 // success and a non-nil error on failure.
-func (r *Robot) GetMotionMode() (modules.MotionMode, error) {
+func (r *Robot) GetMotionMode() (robot.MotionMode, error) {
 	data, err := r.control.SendAndReceiveData("robot mode ?;")
 	if err != nil {
-		return modules.MotionModeInvalid, fmt.Errorf(
+		return robot.MotionModeInvalid, fmt.Errorf(
 			"error sending and receiving data: %w", err)
 	}
 
 	switch data {
 	case "chassis_lead":
-		return modules.MotionModeChassisLead, nil
+		return robot.MotionModeChassisLead, nil
 	case "gimbal_lead":
-		return modules.MotionModeGimbalLead, nil
+		return robot.MotionModeGimbalLead, nil
 	case "free":
-		return modules.MotionModeFree, nil
+		return robot.MotionModeFree, nil
 	default:
-		return modules.MotionModeInvalid, fmt.Errorf("unknown robot mode")
+		return robot.MotionModeInvalid, fmt.Errorf("unknown robot mode")
 	}
 }
 
 // SetMotionMode sets the robot's current motion mode. Returns a nil error
 // on success and a non-nil error on failure.
-func (r *Robot) SetMotionMode(motionMode modules.MotionMode) error {
+func (r *Robot) SetMotionMode(motionMode robot.MotionMode) error {
 	setMotionMode := "robot mode "
 	switch motionMode {
-	case modules.MotionModeChassisLead:
+	case robot.MotionModeChassisLead:
 		setMotionMode += "chassis_lead;"
-	case modules.MotionModeGimbalLead:
+	case robot.MotionModeGimbalLead:
 		setMotionMode += "gimbal_lead;"
-	case modules.MotionModeFree:
+	case robot.MotionModeFree:
 		setMotionMode += "free;"
 	default:
 		return fmt.Errorf("unknown robot mode: %d", motionMode)

@@ -8,7 +8,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/event"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/push"
-	"github.com/brunoga/robomaster/sdk/modules"
+	"github.com/brunoga/robomaster/sdk/modules/robot"
 
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/armor"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/blaster"
@@ -16,10 +16,11 @@ import (
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/finder"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/gimbal"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/sound"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/video"
 	"github.com/brunoga/robomaster/sdk/support/logger"
+
+	robotint "github.com/brunoga/robomaster/sdk/internal/text/modules/robot"
 )
 
 // Client enables controlling a RoboMaster robot through the plain-text SDK
@@ -33,7 +34,7 @@ type Client struct {
 	pushModule  *push.Push
 	eventModule *event.Event
 
-	robotModule   *robot.Robot
+	robotModule   *robotint.Robot
 	gimbalModule  *gimbal.Gimbal
 	chassisModule *chassis.Chassis
 	videoModule   *video.Video
@@ -66,7 +67,7 @@ func NewClient(ip net.IP) (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating event module: %w", err)
 	}
-	robotModule := robot.New(controlModule)
+	robotModule := robotint.New(controlModule)
 	gimbalModule := gimbal.New(controlModule, pushModule)
 	chassisModule := chassis.New(controlModule, pushModule)
 	armorModule := armor.New(controlModule, eventModule)
@@ -141,7 +142,7 @@ func (c *Client) Close() error {
 
 // RobotModule returns a pointer to the associated Robot module. Used for
 // doing generic robot-related operations.
-func (c *Client) RobotModule() modules.Robot {
+func (c *Client) RobotModule() robot.Robot {
 	return c.robotModule
 }
 
