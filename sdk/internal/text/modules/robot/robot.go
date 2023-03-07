@@ -13,6 +13,8 @@ type Robot struct {
 	control *control.Control
 }
 
+var _ robot.Robot = (*Robot)(nil)
+
 // New returns a new Robot instance associated with the given control.
 func New(control *control.Control) *Robot {
 	return &Robot{
