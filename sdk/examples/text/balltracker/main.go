@@ -16,6 +16,7 @@ import (
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
+	"github.com/brunoga/robomaster/sdk/types"
 	"gocv.io/x/gocv"
 )
 
@@ -155,7 +156,8 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 func main() {
 	flag.Parse()
 
-	client, err := sdk.NewClient(nil)
+	client, err := sdk.New(types.SDKProtocolText, types.ConnectionProtocolTCP,
+		nil, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -167,10 +169,10 @@ func main() {
 	defer client.Close()
 
 	// Obtain references to the modules we are interested in.
-	robotModule := client.RobotModule()
-	gimbalModule := client.GimbalModule()
-	chassisModule := client.ChassisModule()
-	videoModule := client.VideoModule()
+	robotModule := client.Robot()
+	gimbalModule := client.Gimbal()
+	chassisModule := client.Chassis()
+	videoModule := client.Video()
 
 	// Control gimbal/chassis independently.
 	err = robotModule.SetMotionMode(robot.MotionModeGimbalLead)
