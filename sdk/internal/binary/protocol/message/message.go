@@ -137,3 +137,9 @@ func (m *Message) Command() command.Command {
 
 	return cmd
 }
+
+// String returns a string representation of the message.
+func (m *Message) String() string {
+	return fmt.Sprintf("Message{cmdset:%02x, cmdid:%02x sender:%02x, receiver:%02x, seqID: %d, isResponse: %t}",
+		m.CmdSet(), m.CmdID(), m.Sender(), m.Receiver(), m.SequenceID(), m.IsResponse())
+}

@@ -19,7 +19,7 @@ func main() {
 	}
 	defer sdk.Close()
 
-	version, err := sdk.Robot().GetSDKVersion()
+	version, err := sdk.Robot().GetProductVersion()
 	if err != nil {
 		panic(err)
 	}

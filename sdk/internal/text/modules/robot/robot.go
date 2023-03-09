@@ -82,9 +82,9 @@ func (r *Robot) GetBatteryPercentage() (int, error) {
 	return percentage, nil
 }
 
-// GetSDKVersion returns the robot's current SDK version and a nil error on
+// GetproductVersion returns the robot's product version and a nil error on
 // success and a non-nil error on failure.
-func (r *Robot) GetSDKVersion() (string, error) {
+func (r *Robot) GetProductVersion() (string, error) {
 	data, err := r.control.SendAndReceiveData("version ?;")
 	if err != nil {
 		return "", err

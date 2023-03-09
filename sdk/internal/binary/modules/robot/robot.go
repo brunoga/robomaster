@@ -25,11 +25,11 @@ func New(control *control.Control, l *logger.Logger) *Robot {
 	}
 }
 
-func (r *Robot) GetSDKVersion() (string, error) {
+func (r *Robot) GetProductVersion() (string, error) {
 	m := message.New(
 		r.control.HostByte(),
 		protocol.HostToByte(8, 1),
-		command.NewGetVersionRequest(),
+		command.NewGetProductVersionRequest(),
 	)
 
 	resp, err := r.control.SendSync(m)
@@ -37,7 +37,7 @@ func (r *Robot) GetSDKVersion() (string, error) {
 		return "", err
 	}
 
-	return resp.Command().(*command.GetVersionResponse).Version(), nil
+	return resp.Command().(*command.GetProductVersionResponse).Version(), nil
 }
 
 func (r *Robot) SetMotionMode(motionMode robot.MotionMode) error {

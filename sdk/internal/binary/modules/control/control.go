@@ -3,7 +3,6 @@ package control
 import (
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 	"sync"
@@ -36,6 +35,8 @@ const (
 // the connection, sending and receiving commands and keeping the connection
 // alive.
 type Control struct {
+	l *logger.Logger
+
 	// Used to identify the sender of messages. Seems to be basically constant
 	// (9 and 6).
 	host  byte
@@ -56,6 +57,7 @@ func New(host, index byte, f *binaryfinder.Finder,
 	l *logger.Logger) (*Control, error) {
 
 	return &Control{
+		l:            l,
 		host:         host,
 		index:        index,
 		f:            f,
@@ -117,11 +119,11 @@ func (c *Control) Open(connMode types.ConnectionMode,
 	// socket.
 	d := &net.Dialer{
 		LocalAddr: localAddr,
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
+		Control: func(network, address string, rc syscall.RawConn) error {
+			return rc.Control(func(fd uintptr) {
 				err := syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
 				if err != nil {
-					log.Printf("client open: %v", err)
+					c.l.WARNING("client open: %v", err)
 				}
 			})
 		},
@@ -172,6 +174,8 @@ func (c *Control) Send(message *message.Message, callback event.Callback) error 
 
 	// Write is thread safe so we unlock earlier.
 	c.m.Unlock()
+
+	c.l.TRACE("SEND: %s", message)
 
 	_, err := c.conn.Write(message.Data())
 	if err != nil {
@@ -260,6 +264,8 @@ func (c *Control) setSDKConnection(connMode types.ConnectionMode,
 	}
 	defer conn.Close()
 
+	c.l.TRACE("SEND: %s", m)
+
 	_, err = conn.Write(m.Data())
 	if err != nil {
 		return nil, fmt.Errorf("client set SDK connection: %w", err)
@@ -275,6 +281,8 @@ func (c *Control) setSDKConnection(connMode types.ConnectionMode,
 	if err != nil {
 		return nil, fmt.Errorf("client set SDK connection: %w", err)
 	}
+
+	c.l.TRACE("RECV: %s", m)
 
 	if connProto == types.ConnectionProtocolUDP {
 		return &net.UDPAddr{
@@ -324,18 +332,28 @@ func (c *Control) receiveLoop() {
 			panic(err)
 		}
 
+		c.l.TRACE("RECV: %s", m)
+
 		if m == nil {
 			continue
 		}
 
-		c.eventManager.Trigger(messageEventId(m), m)
+		if err := c.eventManager.Trigger(messageEventId(m), m); err != nil {
+			c.l.INFO("client receive loop: %v", err)
+		}
 
 		c.pendingData = data
 	}
 }
 
 func (c *Control) heartBeatLoop() {
-	ticker := time.NewTicker(4 * time.Second)
+	err := c.Send(message.New(c.HostByte(), protocol.HostToByte(9, 0),
+		command.NewSDKHeartBeatRequest()), nil)
+	if err != nil {
+		c.l.WARNING("client heart beat: %v", err)
+	}
+
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -344,7 +362,7 @@ func (c *Control) heartBeatLoop() {
 			err := c.Send(message.New(c.HostByte(), protocol.HostToByte(9, 0),
 				command.NewSDKHeartBeatRequest()), nil)
 			if err != nil {
-				log.Printf("client heart beat: %v", err)
+				c.l.WARNING("client heart beat: %v", err)
 			}
 			// TODO(bga): Add a close channel to be able top exit from here
 			// cleanly.

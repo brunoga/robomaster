@@ -33,10 +33,10 @@ func New(traceDest, infoDest, warningDest, errorDest io.Writer) *Logger {
 	}
 
 	return &Logger{
-		log.New(traceDest, "TRACE: ", log.Ldate|log.Ltime|log.Lshortfile),
-		log.New(infoDest, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
+		log.New(traceDest, "TRACE:   ", log.Ldate|log.Ltime|log.Lshortfile),
+		log.New(infoDest, "INFO:    ", log.Ldate|log.Ltime|log.Lshortfile),
 		log.New(warningDest, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile),
-		log.New(errorDest, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),
+		log.New(errorDest, "ERROR:   ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }
 

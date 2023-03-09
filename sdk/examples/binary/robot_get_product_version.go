@@ -2,13 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/brunoga/robomaster/sdk"
+	"github.com/brunoga/robomaster/sdk/support/logger"
 	"github.com/brunoga/robomaster/sdk/types"
 )
 
 func main() {
-	sdk, err := sdk.New(types.SDKProtocolBinary, nil)
+	// Set a logger that we allow us seeing all debug messages.
+	l := logger.New(os.Stdout, os.Stdout, os.Stdout, os.Stderr)
+
+	sdk, err := sdk.New(types.SDKProtocolBinary, l)
 	if err != nil {
 		panic(err)
 	}
@@ -19,7 +24,7 @@ func main() {
 	}
 	defer sdk.Close()
 
-	version, err := sdk.Robot().GetSDKVersion()
+	version, err := sdk.Robot().GetProductVersion()
 	if err != nil {
 		panic(err)
 	}
