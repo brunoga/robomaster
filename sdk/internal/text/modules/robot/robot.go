@@ -22,37 +22,37 @@ func New(control *control.Control) *Robot {
 	}
 }
 
-// GetMotionMode returns the robot's current motion mode and a nil error on
+// GetMode returns the robot's current motion mode and a nil error on
 // success and a non-nil error on failure.
-func (r *Robot) GetMotionMode() (robot.MotionMode, error) {
+func (r *Robot) GetMode() (robot.Mode, error) {
 	data, err := r.control.SendAndReceiveData("robot mode ?;")
 	if err != nil {
-		return robot.MotionModeInvalid, fmt.Errorf(
+		return robot.ModeFree, fmt.Errorf(
 			"error sending and receiving data: %w", err)
 	}
 
 	switch data {
 	case "chassis_lead":
-		return robot.MotionModeChassisLead, nil
+		return robot.ModeChassisLead, nil
 	case "gimbal_lead":
-		return robot.MotionModeGimbalLead, nil
+		return robot.ModeGimbalLead, nil
 	case "free":
-		return robot.MotionModeFree, nil
+		return robot.ModeFree, nil
 	default:
-		return robot.MotionModeInvalid, fmt.Errorf("unknown robot mode")
+		return robot.ModeFree, fmt.Errorf("unknown robot mode")
 	}
 }
 
-// SetMotionMode sets the robot's current motion mode. Returns a nil error
+// SetMode sets the robot's current motion mode. Returns a nil error
 // on success and a non-nil error on failure.
-func (r *Robot) SetMotionMode(motionMode robot.MotionMode) error {
+func (r *Robot) SetMode(motionMode robot.Mode) error {
 	setMotionMode := "robot mode "
 	switch motionMode {
-	case robot.MotionModeChassisLead:
+	case robot.ModeChassisLead:
 		setMotionMode += "chassis_lead;"
-	case robot.MotionModeGimbalLead:
+	case robot.ModeGimbalLead:
 		setMotionMode += "gimbal_lead;"
-	case robot.MotionModeFree:
+	case robot.ModeFree:
 		setMotionMode += "free;"
 	default:
 		return fmt.Errorf("unknown robot mode: %d", motionMode)

@@ -157,26 +157,25 @@ func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup)
 func main() {
 	flag.Parse()
 
-	client, err := sdk.New(types.SDKProtocolText, types.ConnectionProtocolTCP,
-		nil, nil)
+	s, err := sdk.New(types.SDKProtocolText, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	err = client.Open()
+	err = s.Open(types.ConnectionModeInfrastructure, types.ConnectionProtocolUDP, nil)
 	if err != nil {
 		panic(err)
 	}
-	defer client.Close()
+	defer s.Close()
 
 	// Obtain references to the modules we are interested in.
-	robotModule := client.Robot()
-	gimbalModule := client.Gimbal()
-	chassisModule := client.Chassis()
-	videoModule := client.Video()
+	robotModule := s.Robot()
+	gimbalModule := s.Gimbal()
+	chassisModule := s.Chassis()
+	videoModule := s.Video()
 
 	// Control gimbal/chassis independently.
-	err = robotModule.SetMotionMode(robot.MotionModeGimbalLead)
+	err = robotModule.SetMode(robot.ModeGimbalLead)
 	if err != nil {
 		panic(err)
 	}

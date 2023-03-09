@@ -40,6 +40,24 @@ func (r *Robot) GetProductVersion() (string, error) {
 	return resp.Command().(*command.GetProductVersionResponse).Version(), nil
 }
 
-func (r *Robot) SetMotionMode(motionMode robot.MotionMode) error {
-	return fmt.Errorf("not implemented")
+func (r *Robot) SetMode(robotMode robot.Mode) error {
+	cmd := command.NewSetRobotModeRequest()
+	cmd.SetMode(robotMode)
+
+	m := message.New(
+		r.control.HostByte(),
+		protocol.HostToByte(9, 0),
+		cmd,
+	)
+
+	resp, err := r.control.SendSync(m)
+	if err != nil {
+		return err
+	}
+
+	if !resp.Command().(command.Response).Ok() {
+		return fmt.Errorf("client set robot mode: not ok")
+	}
+
+	return nil
 }
