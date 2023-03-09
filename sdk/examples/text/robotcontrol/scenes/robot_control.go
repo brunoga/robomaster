@@ -10,8 +10,8 @@ import (
 )
 
 type RobotControl struct {
-	Client        *sdk.Client
-	MirrorClients []*sdk.Client
+	Sdk           sdk.SDK
+	MirrorClients []sdk.SDK
 }
 
 func (r RobotControl) Preload() {}
@@ -39,10 +39,10 @@ func (r RobotControl) Setup(updater engo.Updater) {
 
 	w, _ := updater.(*ecs.World)
 	w.AddSystem(&common.RenderSystem{})
-	w.AddSystem(systems.NewVideo(r.Client))
-	w.AddSystem(systems.NewGimbal(r.Client, r.MirrorClients))
-	w.AddSystem(systems.NewChassis(r.Client, r.MirrorClients))
-	w.AddSystem(systems.NewBlaster(r.Client, r.MirrorClients))
+	w.AddSystem(systems.NewVideo(r.Sdk))
+	w.AddSystem(systems.NewGimbal(r.Sdk, r.MirrorClients))
+	w.AddSystem(systems.NewChassis(r.Sdk, r.MirrorClients))
+	w.AddSystem(systems.NewBlaster(r.Sdk, r.MirrorClients))
 	w.AddSystem(&common.FPSSystem{
 		Display: true,
 	})

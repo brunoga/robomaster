@@ -8,16 +8,19 @@ import (
 	"github.com/brunoga/robomaster/sdk/internal/binary/protocol/command"
 	"github.com/brunoga/robomaster/sdk/internal/binary/protocol/message"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
+	"github.com/brunoga/robomaster/sdk/support/logger"
 )
 
 type Robot struct {
+	l       *logger.Logger
 	control *control.Control
 }
 
 var _ robot.Robot = (*Robot)(nil)
 
-func New(control *control.Control) *Robot {
+func New(control *control.Control, l *logger.Logger) *Robot {
 	return &Robot{
+		l:       l,
 		control: control,
 	}
 }

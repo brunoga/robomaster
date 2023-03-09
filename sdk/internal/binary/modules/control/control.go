@@ -14,6 +14,11 @@ import (
 	"github.com/brunoga/robomaster/sdk/internal/binary/protocol"
 	"github.com/brunoga/robomaster/sdk/internal/binary/protocol/command"
 	"github.com/brunoga/robomaster/sdk/internal/binary/protocol/message"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
+	"github.com/brunoga/robomaster/sdk/support/logger"
+	"github.com/brunoga/robomaster/sdk/types"
+
+	binaryfinder "github.com/brunoga/robomaster/sdk/internal/binary/modules/finder"
 )
 
 const (
@@ -35,6 +40,7 @@ type Control struct {
 	// (9 and 6).
 	host  byte
 	index byte
+	f     *binaryfinder.Finder
 
 	eventManager *event.Manager
 
@@ -46,24 +52,28 @@ type Control struct {
 
 // New returns a new Control using the given host and index bytes as
 // identifiers.
-func New(host, index byte) *Control {
+func New(host, index byte, f *binaryfinder.Finder,
+	l *logger.Logger) (*Control, error) {
+
 	return &Control{
 		host:         host,
 		index:        index,
+		f:            f,
 		eventManager: event.NewManager(),
-	}
+	}, nil
 }
 
 // Open opens the control connection to the robot at the given IP address. To do
 // that it must do several things:
 //
-// 1 - Set the SDK connection to the robot using the SDk proxy port (UDP).
+// 1 - Set the SDK connection to the robot using the SDK proxy port (UDP).
 // 2 - Open the connection to the rrobot port using the requested network
 // protocol.
 // 3 - Enable SDK mode.
 // 4 - Start a receive loop to wait for incoming data.
 // 5 - Start a heart beat loop to keep the connection alive.
-func (c *Control) Open(network, ip string) error {
+func (c *Control) Open(connMode types.ConnectionMode,
+	connProto types.ConnectionProtocol, ip net.IP) error {
 	c.m.Lock()
 
 	if c.conn != nil {
@@ -71,8 +81,32 @@ func (c *Control) Open(network, ip string) error {
 		return fmt.Errorf("client open: already open")
 	}
 
+	var (
+		data []*finder.Data
+		err  error
+	)
+
+	if ip == nil {
+		data, err = c.f.Find(5*time.Second, func(_ net.IP, _ []byte) (bool, bool) {
+			return true, false
+		})
+		if err != nil {
+			return fmt.Errorf("error obtaining ip: %w", err)
+		}
+	} else {
+		data = []*finder.Data{
+			finder.NewData(ip, nil),
+		}
+	}
+
+	if len(data) == 0 {
+		return fmt.Errorf("no robot found")
+	}
+
+	ip = data[0].IP()
+
 	// Set SDK connection to be used.
-	localAddr, err := c.setSDKConnection(ip)
+	localAddr, err := c.setSDKConnection(connMode, connProto, ip)
 	if err != nil {
 		c.m.Unlock()
 		return fmt.Errorf("client open: %w", err)
@@ -91,6 +125,11 @@ func (c *Control) Open(network, ip string) error {
 				}
 			})
 		},
+	}
+
+	network := "udp4"
+	if connProto == types.ConnectionProtocolTCP {
+		network = "tcp4"
 	}
 
 	// Connect to the robot.
@@ -202,13 +241,14 @@ func messageEventId(message *message.Message) string {
 		message.CmdID(), message.SequenceID())
 }
 
-func (c *Control) setSDKConnection(ip string) (net.Addr, error) {
+func (c *Control) setSDKConnection(connMode types.ConnectionMode,
+	connProto types.ConnectionProtocol, ip net.IP) (net.Addr, error) {
 	localPort := uint16(rand.Intn(localSdkPortMax-localSdkPortMin+1) + localSdkPortMin)
 
 	cmd := command.NewSetSDKConnectionRequest()
-	cmd.SetConnection(1) // Infrastructure mode.
+	cmd.SetConnection(byte(connMode)) // Infrastructure mode.
 	cmd.SetHost(c.HostByte())
-	cmd.SetProtocol(1) // TCP connection.
+	cmd.SetProtocol(byte(connProto)) // TCP connection.
 	cmd.SetPort(localPort)
 	cmd.SetIP(net.IP{0, 0, 0, 0})
 
@@ -225,7 +265,7 @@ func (c *Control) setSDKConnection(ip string) (net.Addr, error) {
 		return nil, fmt.Errorf("client set SDK connection: %w", err)
 	}
 
-	b := make([]byte, 1024)
+	b := make([]byte, 128)
 	n, err := conn.Read(b)
 	if err != nil {
 		return nil, fmt.Errorf("client set SDK connection: %w", err)
@@ -234,6 +274,13 @@ func (c *Control) setSDKConnection(ip string) (net.Addr, error) {
 	m, _, err = message.NewFromData(b[:n])
 	if err != nil {
 		return nil, fmt.Errorf("client set SDK connection: %w", err)
+	}
+
+	if connProto == types.ConnectionProtocolUDP {
+		return &net.UDPAddr{
+			IP:   m.Command().(*command.SetSDKConnectionResponse).ConfigIP(),
+			Port: int(localPort),
+		}, nil
 	}
 
 	return &net.TCPAddr{
@@ -255,13 +302,11 @@ func (c *Control) setSDKMode() error {
 		return fmt.Errorf("client set SDK mode: not ok")
 	}
 
-	fmt.Println("SDK mode enabled")
-
 	return nil
 }
 
 func (c *Control) receiveLoop() {
-	b := make([]byte, 2048)
+	b := make([]byte, 256)
 	for {
 		n, err := c.conn.Read(b)
 		if err != nil {

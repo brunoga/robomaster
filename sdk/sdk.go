@@ -23,7 +23,7 @@ const (
 
 type SDK interface {
 	// Open opens the SDK connection to the robot.
-	Open() error
+	Open(types.ConnectionMode, types.ConnectionProtocol, net.IP) error
 
 	// Close closes the SDK connection to the robot.
 	Close() error
@@ -43,10 +43,8 @@ type SDK interface {
 	Video() video.Video
 }
 
-// New returns a new SDK instance that uses the given protocolMode and
-// connectionMode to connect to the given robot ip.
-func New(sdkProto types.SDKProtocol, connProto types.ConnectionProtocol,
-	ip net.IP, l *logger.Logger) (SDK, error) {
+// New creates a new SDK instance using the given SDK protocol and logger.
+func New(sdkProto types.SDKProtocol, l *logger.Logger) (SDK, error) {
 	if l == nil {
 		// If no logger is provided, use a logger that discards all output.
 		l = logger.New(io.Discard, io.Discard, io.Discard, io.Discard)
@@ -54,26 +52,10 @@ func New(sdkProto types.SDKProtocol, connProto types.ConnectionProtocol,
 
 	switch sdkProto {
 	case types.SDKProtocolBinary:
-		return binarysdk.New(connProto, ip, l)
+		return binarysdk.New(l)
 	case types.SDKProtocolText:
-		return textsdk.New(connProto, ip, l)
+		return textsdk.New(l)
 	}
 
 	return nil, fmt.Errorf("unexpected protocol mode: %v", sdkProto)
-}
-
-// NewUSB returns a new SDK instance that uses the given protocolMode and
-// connectionMode to connect to the default USB (RNDIS) robot ip.
-func NewUSB(sdkProto types.SDKProtocol, connProto types.ConnectionProtocol,
-	l *logger.Logger) (SDK, error) {
-	return New(sdkProto, connProto,
-		net.ParseIP(defaultUSBConnectionIP), l)
-}
-
-// NewAP returns a new SDK instance that uses the given protocolMode and
-// connectionMode to connect to the default AP robot ip.
-func NewAP(sdkProto types.SDKProtocol, connProto types.ConnectionProtocol,
-	l *logger.Logger) (SDK, error) {
-	return New(sdkProto, connProto,
-		net.ParseIP(defaultAPConnectionIP), l)
 }

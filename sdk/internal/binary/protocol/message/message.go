@@ -52,8 +52,6 @@ func New(sender, receiver byte, cmd command.Request) *Message {
 // enough to create a new Message, it returns io.EOF as the error and the
 // remaining data.
 func NewFromData(data []byte) (*Message, []byte, error) {
-	fmt.Println(len(data))
-
 	if len(data) < msgEnvelopeSize {
 		// Buffer is too small, try to get more data.
 		return nil, data, io.EOF

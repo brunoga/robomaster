@@ -1,7 +1,7 @@
 package types
 
 // SDKProtocol is the SDK protocol to use to control the robot.
-type SDKProtocol int
+type SDKProtocol byte
 
 const (
 	// SDKProtocolBinary uses binary as the SDK protocol.

@@ -47,18 +47,9 @@ type SDK struct {
 // New returns a new client instance associated with the given ip. If ip
 // is nil, the Client will try to detect a robot broadcasting its ip in the
 // network.
-func New(connProto types.ConnectionProtocol, ip net.IP,
-	l *logger.Logger) (*SDK, error) {
-
-	if connProto != types.ConnectionProtocolTCP {
-		return nil, fmt.Errorf("text protocol mode only supports TCP connections")
-	}
-
+func New(l *logger.Logger) (*SDK, error) {
 	// Initialize all modules.
 	finderModule := finder.New(l)
-	if ip != nil {
-		finderModule.SetIP(ip)
-	}
 	controlModule, err := control.New(finderModule, l)
 	if err != nil {
 		return nil, fmt.Errorf("error creating control module: %w", err)
@@ -100,8 +91,9 @@ func New(connProto types.ConnectionProtocol, ip net.IP,
 
 // Open opens the Client connection to the robot and enters SDK mode. Returns a
 // nil error on success and a non-nil error on failure.
-func (c *SDK) Open() error {
-	err := c.controlModule.Open()
+func (c *SDK) Open(connMode types.ConnectionMode,
+	connProto types.ConnectionProtocol, ip net.IP) error {
+	err := c.controlModule.Open(connMode, connProto, ip)
 	if err != nil {
 		return fmt.Errorf("error starting control module: %w", err)
 	}

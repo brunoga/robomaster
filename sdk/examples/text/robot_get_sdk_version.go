@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	sdk, err := sdk.New(types.SDKProtocolText, types.ConnectionProtocolTCP, nil, nil)
+	sdk, err := sdk.New(types.SDKProtocolText, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	err = sdk.Open()
+	err = sdk.Open(types.ConnectionModeInfrastructure, types.ConnectionProtocolTCP, nil)
 	if err != nil {
 		panic(err)
 	}

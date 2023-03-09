@@ -3,13 +3,15 @@ package control
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"sync"
 	"time"
 
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/finder"
+	"github.com/brunoga/robomaster/sdk/modules/finder"
 	"github.com/brunoga/robomaster/sdk/support/logger"
+	"github.com/brunoga/robomaster/sdk/types"
+
+	textfinder "github.com/brunoga/robomaster/sdk/internal/text/modules/finder"
 )
 
 const (
@@ -21,7 +23,7 @@ const (
 type Control struct {
 	logger *logger.Logger
 
-	finder *finder.Finder
+	finder *textfinder.Finder
 
 	m             sync.Mutex
 	conn          net.Conn
@@ -31,16 +33,7 @@ type Control struct {
 // New returns a new Control instance with no associated ip. The given
 // finder will be used to detect a robot broadcasting its ip in the
 // network.
-func New(f *finder.Finder, l *logger.Logger) (*Control, error) {
-	if f == nil {
-		return nil, fmt.Errorf("robot finder must not be nil")
-	}
-
-	if l == nil {
-		l = logger.New(ioutil.Discard, ioutil.Discard, ioutil.Discard,
-			ioutil.Discard)
-	}
-
+func New(f *textfinder.Finder, l *logger.Logger) (*Control, error) {
 	return &Control{
 		l,
 		f,
@@ -52,7 +45,8 @@ func New(f *finder.Finder, l *logger.Logger) (*Control, error) {
 
 // Open tries to open the connection to the robot control port. Returns a nil
 // error on success and a non-nil error on failure.
-func (c *Control) Open() error {
+func (c *Control) Open(connMode types.ConnectionMode,
+	connProto types.ConnectionProtocol, ip net.IP) error {
 	c.m.Lock()
 	defer c.m.Unlock()
 
@@ -60,12 +54,29 @@ func (c *Control) Open() error {
 		return fmt.Errorf("connection already open")
 	}
 
-	ip, err := c.finder.GetOrFindIP(5 * time.Second)
-	if err != nil {
-		return fmt.Errorf("error obtaining ip: %w", err)
+	var (
+		data []*finder.Data
+		err  error
+	)
+
+	if ip == nil {
+		data, err = c.finder.Find(5*time.Second, func(_ net.IP, _ []byte) (bool, bool) {
+			return true, false
+		})
+		if err != nil {
+			return fmt.Errorf("error obtaining ip: %w", err)
+		}
+	} else {
+		data = []*finder.Data{
+			finder.NewData(ip, nil),
+		}
 	}
 
-	addr := ip.String() + controlAddrPort
+	if len(data) == 0 {
+		return fmt.Errorf("no robot found")
+	}
+
+	addr := data[0].IP().String() + controlAddrPort
 
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -206,5 +217,12 @@ func (c *Control) SendDataExpectOkAsync(data string) error {
 // associated with this control instance and a nil error on success and a
 // non-nil error on failure.
 func (c *Control) IP() (net.IP, error) {
-	return c.finder.GetOrFindIP(5 * time.Second)
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.conn == nil {
+		return nil, fmt.Errorf("connection not open")
+	}
+
+	return c.conn.RemoteAddr().(*net.TCPAddr).IP, nil
 }
