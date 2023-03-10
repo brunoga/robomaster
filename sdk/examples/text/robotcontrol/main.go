@@ -7,6 +7,7 @@ import (
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/examples/text/robotcontrol/scenes"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
+	"github.com/brunoga/robomaster/sdk/types"
 )
 
 // Flags
@@ -17,35 +18,37 @@ var (
 func main() {
 	flag.Parse()
 
-	client, err := sdk.NewClient(nil)
+	s, err := sdk.New(types.SDKProtocolText, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	err = client.Open()
+	err = s.Open(types.ConnectionModeInfrastructure,
+		types.ConnectionProtocolTCP, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	client.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+	s.Robot().SetMode(robot.ModeGimbalLead)
 
-	var mirrorClients []*sdk.Client = nil
+	var mirrorClients []sdk.SDK = nil
 	if *mirrors > 0 {
 		for i := 0; i < int(*mirrors); i++ {
-			mirrorClient, err := sdk.NewClient(nil)
+			mirrorClient, err := sdk.New(types.SDKProtocolText, nil)
 			if err != nil {
 				// Just ignore. We do not care that much about the
 				// mirror robots.
 				continue
 			}
 
-			err = mirrorClient.Open()
+			err = mirrorClient.Open(types.ConnectionModeInfrastructure,
+				types.ConnectionProtocolTCP, nil)
 			if err != nil {
 				// Ditto.
 				continue
 			}
 
-			mirrorClient.RobotModule().SetMotionMode(robot.MotionModeGimbalLead)
+			mirrorClient.Robot().SetMode(robot.ModeGimbalLead)
 
 			mirrorClients = append(mirrorClients, mirrorClient)
 		}
@@ -62,7 +65,7 @@ func main() {
 	}
 
 	engo.Run(opts, &scenes.RobotControl{
-		Client:        client,
+		Sdk:           s,
 		MirrorClients: mirrorClients,
 	})
 }

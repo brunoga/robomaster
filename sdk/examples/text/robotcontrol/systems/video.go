@@ -2,11 +2,11 @@ package systems
 
 import (
 	"image"
-	"sync"
 
 	"golang.org/x/image/colornames"
 
 	"github.com/brunoga/robomaster/sdk"
+	"github.com/brunoga/robomaster/sdk/modules/video"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
@@ -21,14 +21,14 @@ type systemVideoEntity struct {
 
 type Video struct {
 	entity  *systemVideoEntity
-	client  *sdk.Client
+	sdk     sdk.SDK
 	frameCh chan *image.NRGBA
 }
 
-func NewVideo(client *sdk.Client) *Video {
+func NewVideo(sdk sdk.SDK) *Video {
 	return &Video{
 		nil,
-		client,
+		sdk,
 		make(chan *image.NRGBA, 1),
 	}
 }
@@ -67,8 +67,8 @@ func (v *Video) New(w *ecs.World) {
 		}
 	}
 
-	videoModule := v.client.VideoModule()
-	videoModule.StartStream(v.videoHandler)
+	videoModule := v.sdk.Video()
+	videoModule.Start(video.Resolution720p, v.videoHandler)
 }
 
 func (v *Video) Update(dt float32) {
@@ -106,7 +106,7 @@ func verticalLine(img *image.NRGBA, x, y1, y2 int) {
 	}
 }
 
-func (v *Video) videoHandler(frame *image.RGBA, wg *sync.WaitGroup) {
+func (v *Video) videoHandler(frame *image.RGBA) {
 	frameCopy := *(*image.NRGBA)(frame)
 
 	// Draw a simple crosshair.
@@ -118,6 +118,4 @@ func (v *Video) videoHandler(frame *image.RGBA, wg *sync.WaitGroup) {
 		(sdk.CameraVerticalResolutionPoints/2)+50)
 
 	v.frameCh <- &frameCopy
-
-	wg.Done()
 }

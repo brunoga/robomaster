@@ -1,6 +1,5 @@
 package main
 
-/*
 import (
 	"flag"
 	"fmt"
@@ -9,12 +8,12 @@ import (
 	"math"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/brunoga/robomaster/sdk"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
+	"github.com/brunoga/robomaster/sdk/modules/video"
 	"github.com/brunoga/robomaster/sdk/support"
 	"github.com/brunoga/robomaster/sdk/support/pid"
 	"github.com/brunoga/robomaster/sdk/types"
@@ -94,10 +93,7 @@ func (e *exampleVideoHandler) QuitChan() <-chan struct{} {
 	return e.quitChan
 }
 
-func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA, wg *sync.WaitGroup) {
-	// Automatically notify we processed the frame on return.
-	defer wg.Done()
-
+func (e *exampleVideoHandler) HandleFrame(frame *image.RGBA) {
 	// Do not explicitly close inFrameRGBA as the underlying pixel data is
 	// managed by Go itself.
 	inFrameRGBA, err := gocv.NewMatFromBytes(720, 1280, gocv.MatTypeCV8UC4,
@@ -216,12 +212,11 @@ func main() {
 		panic(err)
 	}
 
-	token, err = videoModule.StartStream(videoHandler.HandleFrame)
+	err = videoModule.Start(video.Resolution720p, videoHandler.HandleFrame)
 	if err != nil {
 		panic(err)
 	}
-	defer videoModule.StopStream(token)
+	defer videoModule.Stop()
 
 	<-videoHandler.QuitChan()
 }
-*/
