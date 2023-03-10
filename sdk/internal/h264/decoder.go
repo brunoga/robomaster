@@ -16,7 +16,7 @@ import (
 	"github.com/mattn/go-pointer"
 )
 
-type FrameCallback func(frameData []byte)
+type FrameCallback func(frameData []byte, frameWidth, frameHeight int)
 
 type Decoder struct {
 	m             sync.Mutex
@@ -83,7 +83,8 @@ func (d *Decoder) SendData(data []byte) {
 }
 
 //export goFrameCallback
-func goFrameCallback(frameData []byte, userData unsafe.Pointer) {
+func goFrameCallback(frameData []byte, width, height int,
+	userData unsafe.Pointer) {
 	decoder := pointer.Restore(userData).(*Decoder)
-	decoder.frameCallback(frameData)
+	decoder.frameCallback(frameData, width, height)
 }

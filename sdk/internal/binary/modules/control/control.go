@@ -43,6 +43,9 @@ type Control struct {
 	index byte
 	f     *binaryfinder.Finder
 
+	connMode  types.ConnectionMode
+	connProto types.ConnectionProtocol
+
 	eventManager *event.Manager
 
 	pendingData []byte
@@ -61,6 +64,8 @@ func New(host, index byte, f *binaryfinder.Finder,
 		host:         host,
 		index:        index,
 		f:            f,
+		connProto:    types.ConnectionProtocolInvalid,
+		connMode:     types.ConnectionModeInvalid,
 		eventManager: event.NewManager(),
 	}, nil
 }
@@ -143,6 +148,9 @@ func (c *Control) Open(connMode types.ConnectionMode,
 
 	c.conn = conn
 
+	c.connMode = connMode
+	c.connProto = connProto
+
 	// Start receive loop.
 	go c.receiveLoop()
 
@@ -217,6 +225,35 @@ func (c *Control) SendSync(m *message.Message) (*message.Message, error) {
 	return response, nil
 }
 
+func (c *Control) ConnectionMode() types.ConnectionMode {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	return c.connMode
+}
+
+func (c *Control) ConnectionProtocol() types.ConnectionProtocol {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	return c.connProto
+}
+
+func (c *Control) IP() net.IP {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.conn == nil {
+		return nil
+	}
+
+	if c.connProto == types.ConnectionProtocolTCP {
+		return c.conn.RemoteAddr().(*net.TCPAddr).IP
+	}
+
+	return c.conn.RemoteAddr().(*net.UDPAddr).IP
+}
+
 func (c *Control) Close() error {
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -231,6 +268,9 @@ func (c *Control) Close() error {
 	}
 
 	c.conn = nil
+
+	c.connMode = types.ConnectionModeInvalid
+	c.connProto = types.ConnectionProtocolInvalid
 
 	return nil
 }

@@ -8,4 +8,7 @@ const (
 	SDKProtocolBinary SDKProtocol = iota
 	// SDKProtocolText uses text as the SDK protocol.
 	SDKProtocolText
+	// SDKProtocolInvalid is the SDK protocol used when the SDK protocol is
+	// invalid.
+	SDKProtocolInvalid
 )

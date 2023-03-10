@@ -13,4 +13,7 @@ const (
 	// ConnectionModeUSB is the connection mode used when connecting to the
 	// robot through its USB port (RNDIS).
 	ConnectionModeUSB
+	// ConnectionModeInvalid is the connection mode used when the connection
+	// mode is invalid.
+	ConnectionModeInvalid
 )

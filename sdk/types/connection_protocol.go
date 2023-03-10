@@ -8,4 +8,7 @@ const (
 	ConnectionProtocolUDP ConnectionProtocol = iota
 	// ConnectionProtocolTCP uses TCP as the connection protocol.
 	ConnectionProtocolTCP
+	// ConnectionProtocolInvalid is the connection protocol used when the connection
+	// protocol is invalid.
+	ConnectionProtocolInvalid
 )

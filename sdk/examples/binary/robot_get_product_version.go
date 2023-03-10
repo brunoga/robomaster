@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	err = sdk.Open(types.ConnectionModeInfrastructure, types.ConnectionProtocolTCP, nil)
+	err = sdk.Open(types.ConnectionModeInfrastructure, types.ConnectionProtocolUDP, nil)
 	if err != nil {
 		panic(err)
 	}

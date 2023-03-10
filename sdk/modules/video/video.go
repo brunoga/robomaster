@@ -1,3 +1,6 @@
 package video
 
-type Video interface{}
+type Video interface {
+	Start(Resolution, Handler) error
+	Stop() error
+}

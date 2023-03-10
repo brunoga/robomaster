@@ -5,7 +5,7 @@
 #include "libswscale/swscale.h"
 
 typedef void(*frame_callback)(char* frame_data, int frame_data_size,
-    void* user_data);
+    int frame_width, int frame_height, void* user_data);
 
 typedef struct decoder {
     const AVCodec* codec;

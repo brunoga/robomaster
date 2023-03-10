@@ -6,26 +6,14 @@ import (
 	"net"
 	"sync"
 
+	"github.com/brunoga/robomaster/sdk/internal/h264"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/control"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/video/internal/h264"
+	"github.com/brunoga/robomaster/sdk/modules/video"
 )
 
 const (
 	videoAddrPort = ":40921"
 )
-
-// VideoHandler is a handler for video streams. A handler should do its work and
-// return as fast as possible. If a handler needs to modify the given frame in
-// any way, it should first make a copy of it as the given frame is shared by
-// all handlers (concurrently).
-//
-// Even if you are not modifying the given frame but you are doing some
-// expensive image processing, it might be better to copy it internally and
-// return ASAP, deferring the processing to a separate goroutine (you might need
-// to queue frames).
-//
-// After doing its work, a VideoHandler must call wg.Done() before returning.
-type Handler func(frame *image.RGBA, wg *sync.WaitGroup)
 
 // Video handles starting a robot's video stream, receiving and decoding the
 // data from it and sending to all registered VideoHandlers and stopping the
@@ -34,9 +22,10 @@ type Video struct {
 	control *control.Control
 	decoder *h264.Decoder
 
-	m             sync.Mutex
-	quitChan      chan struct{}
-	videoHandlers map[int]Handler
+	m            sync.Mutex
+	quitChan     chan struct{}
+	waitChan     chan struct{}
+	videoHandler video.Handler
 }
 
 // New creates a new Video instance. The control parameter is used to start
@@ -47,7 +36,8 @@ func New(control *control.Control) (*Video, error) {
 		nil,
 		sync.Mutex{},
 		nil,
-		make(map[int]Handler),
+		nil,
+		nil,
 	}
 
 	decoder, err := h264.NewDecoder(v.frameCallback)
@@ -60,56 +50,44 @@ func New(control *control.Control) (*Video, error) {
 	return v, nil
 }
 
-// StartStream starts the video stream (if it has not started yet) and starts
-// sending video frames to the given videoHandler. It returns a positive int
-// token (used to stop the stream when needed) and a nil error on success and
-// a non-nil error on failure.
-func (v *Video) StartStream(videoHandler Handler) (int, error) {
+func (v *Video) Start(resolution video.Resolution,
+	videoHandler video.Handler) error {
 	v.m.Lock()
 	defer v.m.Unlock()
 
-	if len(v.videoHandlers) == 0 {
-		go v.videoLoop()
+	if videoHandler == nil {
+		return fmt.Errorf("video handler must not be nil")
 	}
 
-	for i := 0; i < len(v.videoHandlers)+1; i++ {
-		_, ok := v.videoHandlers[i]
-		if ok {
-			continue
-		}
+	v.videoHandler = videoHandler
+	v.quitChan = make(chan struct{})
+	v.waitChan = make(chan struct{})
 
-		v.videoHandlers[i] = videoHandler
+	go v.videoLoop()
 
-		return i, nil
-	}
-
-	return -1, fmt.Errorf("video handler tokens exhausted")
+	return nil
 }
 
-// StopStream stops sending frames to the VideoHandler associated with the
-// given token and remove it from the list of VideoHandlers. If it is the last
-// VideoHandler in the list, the robot's video stream is stopped.
-func (v *Video) StopStream(token int) error {
+func (v *Video) Stop() error {
 	v.m.Lock()
 	defer v.m.Unlock()
 
-	_, ok := v.videoHandlers[token]
-	if !ok {
-		return fmt.Errorf("invalid stream handler token")
+	if v.videoHandler == nil {
+		return fmt.Errorf("already stopped")
 	}
 
-	delete(v.videoHandlers, token)
+	close(v.quitChan)
 
-	if len(v.videoHandlers) == 0 {
-		close(v.quitChan)
-	}
+	<-v.waitChan
+
+	v.videoHandler = nil
+	v.quitChan = nil
+	v.waitChan = nil
 
 	return nil
 }
 
 func (v *Video) videoLoop() {
-	v.quitChan = make(chan struct{})
-
 	err := v.control.SendDataExpectOk("stream on;")
 	if err != nil {
 		// TODO(bga): Log this.
@@ -160,28 +138,16 @@ L:
 
 	_ = v.decoder.Close()
 
-	v.quitChan = nil
+	close(v.waitChan)
 }
 
-func (v *Video) frameCallback(data []byte) {
+func (v *Video) frameCallback(data []byte, width, height int) {
 	frameRGBA := image.NewRGBA(image.Rectangle{
 		Min: image.Point{},
-		Max: image.Point{X: 1280, Y: 720},
+		Max: image.Point{X: width, Y: height},
 	})
 
 	copy(frameRGBA.Pix, data)
 
-	var wg sync.WaitGroup
-
-	// Send frame to all video handlers.
-	v.m.Lock()
-	for _, videoHandler := range v.videoHandlers {
-		wg.Add(1)
-		go videoHandler(frameRGBA, &wg)
-	}
-	v.m.Unlock()
-
-	// Wait for all video handlers to notify they finished processing
-	// the frame.
-	wg.Wait()
+	v.videoHandler(frameRGBA)
 }
