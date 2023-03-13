@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/brunoga/robomaster/sdk"
-	"github.com/brunoga/robomaster/sdk/internal/text/modules/chassis"
 	"github.com/brunoga/robomaster/sdk/internal/text/modules/gimbal"
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 	"github.com/brunoga/robomaster/sdk/modules/video"
@@ -167,7 +166,7 @@ func main() {
 	// Obtain references to the modules we are interested in.
 	robotModule := s.Robot()
 	gimbalModule := s.Gimbal()
-	chassisModule := s.Chassis()
+	//chassisModule := s.Chassis()
 	videoModule := s.Video()
 
 	// Control gimbal/chassis independently.
@@ -176,30 +175,32 @@ func main() {
 		panic(err)
 	}
 
-	// Enable chassis status push events.
-	previousStatus := &chassis.Status{}
-	currentStatus := &chassis.Status{}
-	token, err := chassisModule.StartPush(
-		chassis.PushAttributeStatus, func(data string) {
-			// Just print all events we get.
-			currentStatus.UpdateFromData(data)
-			if err != nil {
-				return
-			}
-
-			if !previousStatus.Equals(currentStatus) {
-				if !currentStatus.IsUnknown() {
-					fmt.Println(currentStatus)
+	/*
+		// Enable chassis status push events.
+		previousStatus := &chassis.Status{}
+		currentStatus := &chassis.Status{}
+		token, err := chassisModule.StartPush(
+			chassis.PushAttributeStatus, func(data string) {
+				// Just print all events we get.
+				currentStatus.UpdateFromData(data)
+				if err != nil {
+					return
 				}
 
-				*previousStatus = *currentStatus
-			}
-		}, 5)
-	if err != nil {
-		panic(err)
-	}
-	defer chassisModule.StopPush(
-		chassis.PushAttributeAttitude, token)
+				if !previousStatus.Equals(currentStatus) {
+					if !currentStatus.IsUnknown() {
+						fmt.Println(currentStatus)
+					}
+
+					*previousStatus = *currentStatus
+				}
+			}, 5)
+		if err != nil {
+			panic(err)
+		}
+		defer chassisModule.StopPush(
+			chassis.PushAttributeAttitude, token)
+	*/
 
 	// Reset gimbal.
 	err = gimbalModule.Recenter()
