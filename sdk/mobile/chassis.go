@@ -35,7 +35,7 @@ type ChassisAttitude struct {
 }
 
 type ChassisStatus struct {
-	Static     bool
+	IsStatic   bool
 	UpHill     bool
 	DownHill   bool
 	OnSlope    bool
@@ -124,7 +124,7 @@ func (c *Chassis) GetStatus() (*ChassisStatus, error) {
 	}
 
 	return &ChassisStatus{
-		Static:     status.IsStatic(),
+		IsStatic:   status.IsStatic(),
 		UpHill:     status.IsUphill(),
 		DownHill:   status.IsDownhill(),
 		OnSlope:    status.IsOnSlope(),
@@ -136,9 +136,4 @@ func (c *Chassis) GetStatus() (*ChassisStatus, error) {
 		RollOver:   status.IsRolledOver(),
 		HillStatic: status.IsStaticOnHill(),
 	}, nil
-}
-
-func (c *Chassis) StartPush(pushAttribute int, pushHandler func(string),
-	frequency int) (int, error) {
-	return c.c.StartPush(chassis.PushAttribute(pushAttribute), pushHandler, frequency)
 }
