@@ -4,29 +4,20 @@ import (
 	"github.com/brunoga/robomaster/sdk/modules/robot"
 )
 
-type MotionMode int
-
-const (
-	MotionModeChassisLead MotionMode = iota
-	MotionModeGimbalLead
-	MotionModeFree
-	MotionModeInvalid
-)
-
 type Robot struct {
 	r *robot.Robot
 }
 
-func (r *Robot) GetMotionMode() (MotionMode, error) {
+func (r *Robot) GetMotionMode() (int, error) {
 	mm, err := r.r.GetMotionMode()
 	if err != nil {
-		return MotionModeInvalid, err
+		return int(robot.MotionModeInvalid), err
 	}
 
-	return MotionMode(mm), nil
+	return int(mm), nil
 }
 
-func (r *Robot) SetMotionMode(motionMode MotionMode) error {
+func (r *Robot) SetMotionMode(motionMode int) error {
 	return r.r.SetMotionMode(robot.MotionMode(motionMode))
 }
 
