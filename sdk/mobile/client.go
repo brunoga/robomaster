@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/brunoga/robomaster/sdk"
-	"github.com/brunoga/robomaster/sdk/mobile/modules/robot"
 )
 
 type Client struct {
@@ -42,6 +41,6 @@ func (c *Client) Close() error {
 	return c.c.Close()
 }
 
-func (c *Client) RobotModule() *robot.Robot {
-	return robot.New(c.c.RobotModule())
+func (c *Client) RobotModule() *Robot {
+	return &Robot{r: c.c.RobotModule()}
 }
