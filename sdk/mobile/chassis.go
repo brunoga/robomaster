@@ -1,13 +1,23 @@
 package mobile
 
-import "github.com/brunoga/robomaster/sdk/modules/chassis"
+import (
+	"sync"
 
-type Speed = chassis.Speed
+	"github.com/brunoga/robomaster/sdk/modules/chassis"
+)
+
+type Speed struct {
+	m sync.RWMutex
+	x float64
+	y float64
+	z float64
+}
 
 type Chassis struct {
 	c *chassis.Chassis
 }
 
 func (c *Chassis) SetSpeed(speed *Speed, async bool) error {
-	return c.c.SetSpeed(speed, async)
+	convSpeed := chassis.NewSpeed(speed.x, speed.y, speed.z)
+	return c.c.SetSpeed(convSpeed, async)
 }
