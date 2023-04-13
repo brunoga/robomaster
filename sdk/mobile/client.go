@@ -44,3 +44,7 @@ func (c *Client) Close() error {
 func (c *Client) RobotModule() *Robot {
 	return &Robot{r: c.c.RobotModule()}
 }
+
+func (c *Client) ChassisModule() *Chassis {
+	return &Chassis{c: c.c.ChassisModule()}
+}
