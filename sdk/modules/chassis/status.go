@@ -51,10 +51,10 @@ func (s *Status) UpdateFromData(data string) error {
 		&upHill, &downHill, &onSlope, &pickUp, &slip, &impactX, &impactY, &impactZ,
 		&rollOver, &hillStatic)
 	if err != nil {
-		fmt.Errorf("error parsing data: %w", err)
+		return fmt.Errorf("error parsing data: %w", err)
 	}
 	if n != 11 {
-		fmt.Errorf("unexpected number of entries in data: %w", err)
+		return fmt.Errorf("unexpected number of entries in data: %w", err)
 	}
 
 	s.m.Lock()

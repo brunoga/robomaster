@@ -137,3 +137,8 @@ func (c *Chassis) GetStatus() (*ChassisStatus, error) {
 		HillStatic: status.IsStaticOnHill(),
 	}, nil
 }
+
+func (c *Chassis) StartPush(pushAttribute int,
+	pushHandler NotificationHandler, frequency int) (int, error) {
+	return c.c.StartPush(chassis.PushAttribute(pushAttribute), pushHandler.Handle, frequency)
+}
