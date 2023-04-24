@@ -48,3 +48,11 @@ func (c *Client) RobotModule() *Robot {
 func (c *Client) ChassisModule() *Chassis {
 	return &Chassis{c: c.c.ChassisModule()}
 }
+
+func (c *Client) GimbalModule() *Gimbal {
+	return &Gimbal{g: c.c.GimbalModule()}
+}
+
+func (c *Client) VideoModule() *Video {
+	return &Video{v: c.c.VideoModule()}
+}
