@@ -2,12 +2,10 @@ package video
 
 import (
 	"fmt"
-	"image"
 	"net"
 	"sync"
 
 	"github.com/brunoga/robomaster/sdk/modules/control"
-	"github.com/brunoga/robomaster/sdk/modules/video/internal/h264"
 )
 
 const (
@@ -15,24 +13,17 @@ const (
 )
 
 // VideoHandler is a handler for video streams. A handler should do its work and
-// return as fast as possible. If a handler needs to modify the given frame in
-// any way, it should first make a copy of it as the given frame is shared by
-// all handlers (concurrently).
-//
-// Even if you are not modifying the given frame but you are doing some
-// expensive image processing, it might be better to copy it internally and
-// return ASAP, deferring the processing to a separate goroutine (you might need
-// to queue frames).
+// return as fast as possible. The data passed in is the encoded h264 stream
+// directly from the robot and needs to be decoded before being used.
 //
 // After doing its work, a VideoHandler must call wg.Done() before returning.
-type Handler func(frame *image.RGBA, wg *sync.WaitGroup)
+type Handler func(data []byte, wg *sync.WaitGroup)
 
-// Video handles starting a robot's video stream, receiving and decoding the
+// Video handles starting a robot's video stream, receiving the encoded h264
 // data from it and sending to all registered VideoHandlers and stopping the
-// video stream. The decoding relies on GoCV (https://gocv.io).
+// video stream.
 type Video struct {
 	control *control.Control
-	decoder *h264.Decoder
 
 	m             sync.Mutex
 	quitChan      chan struct{}
@@ -42,22 +33,12 @@ type Video struct {
 // New creates a new Video instance. The control parameter is used to start
 // stop the video stream and setup the video connection address.
 func New(control *control.Control) (*Video, error) {
-	v := &Video{
+	return &Video{
 		control,
-		nil,
 		sync.Mutex{},
 		nil,
 		make(map[int]Handler),
-	}
-
-	decoder, err := h264.NewDecoder(v.frameCallback)
-	if err != nil {
-		return nil, fmt.Errorf("error creating h264 decoder: %w", err)
-	}
-
-	v.decoder = decoder
-
-	return v, nil
+	}, nil
 }
 
 // StartStream starts the video stream (if it has not started yet) and starts
@@ -130,11 +111,6 @@ func (v *Video) videoLoop() {
 	}
 	defer videoConn.Close()
 
-	err = v.decoder.Open()
-	if err != nil {
-		return
-	}
-
 	readBuffer := make([]byte, 16384)
 
 L:
@@ -147,8 +123,19 @@ L:
 			if err != nil {
 				break L
 			}
+			var wg sync.WaitGroup
 
-			v.decoder.SendData(readBuffer[:n])
+			// Send frame to all video handlers.
+			v.m.Lock()
+			for _, videoHandler := range v.videoHandlers {
+				wg.Add(1)
+				go videoHandler(readBuffer[:n], &wg)
+			}
+			v.m.Unlock()
+
+			// Wait for all video handlers to notify they finished processing
+			// the frame.
+			wg.Wait()
 		}
 	}
 
@@ -158,30 +145,5 @@ L:
 		return
 	}
 
-	_ = v.decoder.Close()
-
 	v.quitChan = nil
-}
-
-func (v *Video) frameCallback(data []byte) {
-	frameRGBA := image.NewRGBA(image.Rectangle{
-		Min: image.Point{},
-		Max: image.Point{X: 1280, Y: 720},
-	})
-
-	copy(frameRGBA.Pix, data)
-
-	var wg sync.WaitGroup
-
-	// Send frame to all video handlers.
-	v.m.Lock()
-	for _, videoHandler := range v.videoHandlers {
-		wg.Add(1)
-		go videoHandler(frameRGBA, &wg)
-	}
-	v.m.Unlock()
-
-	// Wait for all video handlers to notify they finished processing
-	// the frame.
-	wg.Wait()
 }
