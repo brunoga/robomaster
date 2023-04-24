@@ -1,12 +1,14 @@
 package systems
 
 import (
+	"fmt"
 	"image"
 	"sync"
 
 	"golang.org/x/image/colornames"
 
 	"github.com/brunoga/robomaster/sdk"
+	"github.com/brunoga/robomaster/sdk/support/h264"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
@@ -22,15 +24,26 @@ type systemVideoEntity struct {
 type Video struct {
 	entity  *systemVideoEntity
 	client  *sdk.Client
+	decoder *h264.Decoder
 	frameCh chan *image.NRGBA
 }
 
 func NewVideo(client *sdk.Client) *Video {
-	return &Video{
+	v := &Video{
 		nil,
 		client,
+		nil,
 		make(chan *image.NRGBA, 1),
 	}
+
+	decoder, err := h264.NewDecoder(v.frameCallback)
+	if err != nil {
+		panic(fmt.Sprintf("error creating h264 decoder: %w", err))
+	}
+
+	v.decoder = decoder
+
+	return v
 }
 
 func (v *Video) Add() {
@@ -106,8 +119,9 @@ func verticalLine(img *image.NRGBA, x, y1, y2 int) {
 	}
 }
 
-func (v *Video) videoHandler(frame *image.RGBA, wg *sync.WaitGroup) {
-	frameCopy := *(*image.NRGBA)(frame)
+func (v *Video) videoHandler(data []byte, wg *sync.WaitGroup) {
+	// Send data to decoder.
+	v.decoder.SendData(data)
 
 	// Draw a simple crosshair.
 	horizontalLine(&frameCopy, sdk.CameraVerticalResolutionPoints/2,
@@ -120,4 +134,27 @@ func (v *Video) videoHandler(frame *image.RGBA, wg *sync.WaitGroup) {
 	v.frameCh <- &frameCopy
 
 	wg.Done()
+}
+
+func (v *Video) frameCallback(data []byte) {
+	frameRGBA := image.NewRGBA(image.Rectangle{
+		Min: image.Point{},
+		Max: image.Point{X: 1280, Y: 720},
+	})
+
+	copy(frameRGBA.Pix, data)
+
+	var wg sync.WaitGroup
+
+	// Send frame to all video handlers.
+	v.m.Lock()
+	for _, videoHandler := range v.videoHandlers {
+		wg.Add(1)
+		go videoHandler(frameRGBA, &wg)
+	}
+	v.m.Unlock()
+
+	// Wait for all video handlers to notify they finished processing
+	// the frame.
+	wg.Wait()
 }
