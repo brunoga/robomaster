@@ -11,11 +11,14 @@ type Video struct {
 }
 
 type VideoHandler interface {
-	Handle([]byte, *sync.WaitGroup)
+	Handle([]byte, *WaitGroup)
 }
 
 func (v *Video) StartStream(videoHandler VideoHandler) (int, error) {
-	return v.v.StartStream(videoHandler.Handle)
+	h := func(data []byte, wg *sync.WaitGroup) {
+		videoHandler.Handle(data, &WaitGroup{wg: wg})
+	}
+	return v.v.StartStream(h)
 }
 
 func (v *Video) StopStream(token int) error {
