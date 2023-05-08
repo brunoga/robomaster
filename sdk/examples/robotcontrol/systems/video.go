@@ -38,7 +38,12 @@ func NewVideo(client *sdk.Client) *Video {
 
 	decoder, err := h264.NewDecoder(v.frameCallback)
 	if err != nil {
-		panic(fmt.Sprintf("error creating h264 decoder: %w", err))
+		panic(fmt.Sprintf("error creating h264 decoder: %s", err))
+	}
+
+	err = decoder.Open()
+	if err != nil {
+		panic(fmt.Sprintf("error opening h264 decoder: %s", err))
 	}
 
 	v.decoder = decoder
@@ -123,38 +128,24 @@ func (v *Video) videoHandler(data []byte, wg *sync.WaitGroup) {
 	// Send data to decoder.
 	v.decoder.SendData(data)
 
-	// Draw a simple crosshair.
-	horizontalLine(&frameCopy, sdk.CameraVerticalResolutionPoints/2,
-		(sdk.CameraHorizontalResolutionPoints/2)-50,
-		(sdk.CameraHorizontalResolutionPoints/2)+50)
-	verticalLine(&frameCopy, sdk.CameraHorizontalResolutionPoints/2,
-		(sdk.CameraVerticalResolutionPoints/2)-50,
-		(sdk.CameraVerticalResolutionPoints/2)+50)
-
-	v.frameCh <- &frameCopy
-
 	wg.Done()
 }
 
 func (v *Video) frameCallback(data []byte) {
-	frameRGBA := image.NewRGBA(image.Rectangle{
+	frameNRGBA := image.NewNRGBA(image.Rectangle{
 		Min: image.Point{},
 		Max: image.Point{X: 1280, Y: 720},
 	})
 
-	copy(frameRGBA.Pix, data)
+	copy(frameNRGBA.Pix, data)
 
-	var wg sync.WaitGroup
+	// Draw a simple crosshair.
+	horizontalLine(frameNRGBA, sdk.CameraVerticalResolutionPoints/2,
+		(sdk.CameraHorizontalResolutionPoints/2)-50,
+		(sdk.CameraHorizontalResolutionPoints/2)+50)
+	verticalLine(frameNRGBA, sdk.CameraHorizontalResolutionPoints/2,
+		(sdk.CameraVerticalResolutionPoints/2)-50,
+		(sdk.CameraVerticalResolutionPoints/2)+50)
 
-	// Send frame to all video handlers.
-	v.m.Lock()
-	for _, videoHandler := range v.videoHandlers {
-		wg.Add(1)
-		go videoHandler(frameRGBA, &wg)
-	}
-	v.m.Unlock()
-
-	// Wait for all video handlers to notify they finished processing
-	// the frame.
-	wg.Wait()
+	v.frameCh <- frameNRGBA
 }
