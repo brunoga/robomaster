@@ -4,24 +4,24 @@
 #include "libavcodec/avcodec.h"
 #include "libswscale/swscale.h"
 
-typedef void(*frame_callback)(char* frame_data, int frame_data_size,
-    void* user_data);
+typedef void (*frame_callback)(char* frame_data, int frame_data_size,
+                               void* user_data);
 
 typedef struct decoder {
-    AVCodec* codec;
-    AVCodecContext* codec_context;
-    AVCodecParserContext* codec_parser_context;
+  const AVCodec* codec;
+  AVCodecContext* codec_context;
+  AVCodecParserContext* codec_parser_context;
 
-    AVFrame* frame;
-    AVFrame* frame_rgb;
+  AVFrame* frame;
+  AVFrame* frame_rgb;
 
-    struct SwsContext* sws_context;
+  struct SwsContext* sws_context;
 
-    frame_callback frame_callback;
-    void* user_data;
+  frame_callback frame_callback;
+  void* user_data;
 
-    char* output_buffer;
-    int output_buffer_size;
+  char* output_buffer;
+  int output_buffer_size;
 } decoder;
 
 decoder* decoder_new(frame_callback frame_callback, void* user_data);
