@@ -82,7 +82,9 @@ func (r *Robot) GetBatteryPercentage() (int, error) {
 		return -1, err
 	}
 
-	percentage, err := strconv.Atoi(data[:len(data)-1]) // Remove trailing ';'.
+	fmt.Println(data)
+
+	percentage, err := strconv.Atoi(data[:len(data)-2]) // Remove trailing ' ;'.
 	if err != nil {
 		return -1, fmt.Errorf("error parsing battery percentage")
 	}
