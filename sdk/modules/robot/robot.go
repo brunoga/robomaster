@@ -40,14 +40,14 @@ func (r *Robot) GetMotionMode() (MotionMode, error) {
 	}
 
 	switch data {
-	case "chassis_lead":
+	case "chassis_lead;":
 		return MotionModeChassisLead, nil
-	case "gimbal_lead":
+	case "gimbal_lead;":
 		return MotionModeGimbalLead, nil
-	case "free":
+	case "free;":
 		return MotionModeFree, nil
 	default:
-		return MotionModeInvalid, fmt.Errorf("unknown robot mode")
+		return MotionModeInvalid, fmt.Errorf("unknown robot mode %q", data)
 	}
 }
 
