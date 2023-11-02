@@ -2,6 +2,9 @@
 
 package event
 
+// Key represents a Unity Bridge event key. Keys represent actions that
+// and can be performed, and attributes that can be read or written.
+// This is used to control the robot through the bridge.
 type Key int32
 
 const (
