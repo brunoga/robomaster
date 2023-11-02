@@ -8,24 +8,24 @@ import (
 )
 
 const (
-	_TypeName_0      = "SetValueGetValueGetAvailableValuePerformActionStartListeningStopListeningActivationLocalAlbumFirmwareUpgrade"
-	_TypeLowerName_0 = "setvaluegetvaluegetavailablevalueperformactionstartlisteningstoplisteningactivationlocalalbumfirmwareupgrade"
-	_TypeName_1      = "ConnectionSecurity"
-	_TypeLowerName_1 = "connectionsecurity"
-	_TypeName_2      = "PrintLog"
-	_TypeLowerName_2 = "printlog"
-	_TypeName_3      = "StartVideoStopVideoRenderGetNativeTextureVideoTransferSpeedAudioDataRecvVideoDataRecv"
-	_TypeLowerName_3 = "startvideostopvideorendergetnativetexturevideotransferspeedaudiodatarecvvideodatarecv"
-	_TypeName_4      = "NativeFunctions"
-	_TypeLowerName_4 = "nativefunctions"
+	_TypeName_0      = "TypeSetValueTypeGetValueTypeGetAvailableValueTypePerformActionTypeStartListeningTypeStopListeningTypeActivationTypeLocalAlbumTypeFirmwareUpgrade"
+	_TypeLowerName_0 = "typesetvaluetypegetvaluetypegetavailablevaluetypeperformactiontypestartlisteningtypestoplisteningtypeactivationtypelocalalbumtypefirmwareupgrade"
+	_TypeName_1      = "TypeConnectionTypeSecurity"
+	_TypeLowerName_1 = "typeconnectiontypesecurity"
+	_TypeName_2      = "TypePrintLog"
+	_TypeLowerName_2 = "typeprintlog"
+	_TypeName_3      = "TypeStartVideoTypeStopVideoTypeRenderTypeGetNativeTextureTypeVideoTransferSpeedTypeAudioDataRecvTypeVideoDataRecv"
+	_TypeLowerName_3 = "typestartvideotypestopvideotyperendertypegetnativetexturetypevideotransferspeedtypeaudiodatarecvtypevideodatarecv"
+	_TypeName_4      = "TypeNativeFunctions"
+	_TypeLowerName_4 = "typenativefunctions"
 )
 
 var (
-	_TypeIndex_0 = [...]uint8{0, 8, 16, 33, 46, 60, 73, 83, 93, 108}
-	_TypeIndex_1 = [...]uint8{0, 10, 18}
-	_TypeIndex_2 = [...]uint8{0, 8}
-	_TypeIndex_3 = [...]uint8{0, 10, 19, 25, 41, 59, 72, 85}
-	_TypeIndex_4 = [...]uint8{0, 15}
+	_TypeIndex_0 = [...]uint8{0, 12, 24, 45, 62, 80, 97, 111, 125, 144}
+	_TypeIndex_1 = [...]uint8{0, 14, 26}
+	_TypeIndex_2 = [...]uint8{0, 12}
+	_TypeIndex_3 = [...]uint8{0, 14, 27, 37, 57, 79, 96, 113}
+	_TypeIndex_4 = [...]uint8{0, 19}
 )
 
 func (i Type) String() string {
@@ -51,94 +51,94 @@ func (i Type) String() string {
 // Re-run the stringer command to generate them again.
 func _TypeNoOp() {
 	var x [1]struct{}
-	_ = x[SetValue-(0)]
-	_ = x[GetValue-(1)]
-	_ = x[GetAvailableValue-(2)]
-	_ = x[PerformAction-(3)]
-	_ = x[StartListening-(4)]
-	_ = x[StopListening-(5)]
-	_ = x[Activation-(6)]
-	_ = x[LocalAlbum-(7)]
-	_ = x[FirmwareUpgrade-(8)]
-	_ = x[Connection-(100)]
-	_ = x[Security-(101)]
-	_ = x[PrintLog-(200)]
-	_ = x[StartVideo-(300)]
-	_ = x[StopVideo-(301)]
-	_ = x[Render-(302)]
-	_ = x[GetNativeTexture-(303)]
-	_ = x[VideoTransferSpeed-(304)]
-	_ = x[AudioDataRecv-(305)]
-	_ = x[VideoDataRecv-(306)]
-	_ = x[NativeFunctions-(500)]
+	_ = x[TypeSetValue-(0)]
+	_ = x[TypeGetValue-(1)]
+	_ = x[TypeGetAvailableValue-(2)]
+	_ = x[TypePerformAction-(3)]
+	_ = x[TypeStartListening-(4)]
+	_ = x[TypeStopListening-(5)]
+	_ = x[TypeActivation-(6)]
+	_ = x[TypeLocalAlbum-(7)]
+	_ = x[TypeFirmwareUpgrade-(8)]
+	_ = x[TypeConnection-(100)]
+	_ = x[TypeSecurity-(101)]
+	_ = x[TypePrintLog-(200)]
+	_ = x[TypeStartVideo-(300)]
+	_ = x[TypeStopVideo-(301)]
+	_ = x[TypeRender-(302)]
+	_ = x[TypeGetNativeTexture-(303)]
+	_ = x[TypeVideoTransferSpeed-(304)]
+	_ = x[TypeAudioDataRecv-(305)]
+	_ = x[TypeVideoDataRecv-(306)]
+	_ = x[TypeNativeFunctions-(500)]
 }
 
-var _TypeValues = []Type{SetValue, GetValue, GetAvailableValue, PerformAction, StartListening, StopListening, Activation, LocalAlbum, FirmwareUpgrade, Connection, Security, PrintLog, StartVideo, StopVideo, Render, GetNativeTexture, VideoTransferSpeed, AudioDataRecv, VideoDataRecv, NativeFunctions}
+var _TypeValues = []Type{TypeSetValue, TypeGetValue, TypeGetAvailableValue, TypePerformAction, TypeStartListening, TypeStopListening, TypeActivation, TypeLocalAlbum, TypeFirmwareUpgrade, TypeConnection, TypeSecurity, TypePrintLog, TypeStartVideo, TypeStopVideo, TypeRender, TypeGetNativeTexture, TypeVideoTransferSpeed, TypeAudioDataRecv, TypeVideoDataRecv, TypeNativeFunctions}
 
 var _TypeNameToValueMap = map[string]Type{
-	_TypeName_0[0:8]:         SetValue,
-	_TypeLowerName_0[0:8]:    SetValue,
-	_TypeName_0[8:16]:        GetValue,
-	_TypeLowerName_0[8:16]:   GetValue,
-	_TypeName_0[16:33]:       GetAvailableValue,
-	_TypeLowerName_0[16:33]:  GetAvailableValue,
-	_TypeName_0[33:46]:       PerformAction,
-	_TypeLowerName_0[33:46]:  PerformAction,
-	_TypeName_0[46:60]:       StartListening,
-	_TypeLowerName_0[46:60]:  StartListening,
-	_TypeName_0[60:73]:       StopListening,
-	_TypeLowerName_0[60:73]:  StopListening,
-	_TypeName_0[73:83]:       Activation,
-	_TypeLowerName_0[73:83]:  Activation,
-	_TypeName_0[83:93]:       LocalAlbum,
-	_TypeLowerName_0[83:93]:  LocalAlbum,
-	_TypeName_0[93:108]:      FirmwareUpgrade,
-	_TypeLowerName_0[93:108]: FirmwareUpgrade,
-	_TypeName_1[0:10]:        Connection,
-	_TypeLowerName_1[0:10]:   Connection,
-	_TypeName_1[10:18]:       Security,
-	_TypeLowerName_1[10:18]:  Security,
-	_TypeName_2[0:8]:         PrintLog,
-	_TypeLowerName_2[0:8]:    PrintLog,
-	_TypeName_3[0:10]:        StartVideo,
-	_TypeLowerName_3[0:10]:   StartVideo,
-	_TypeName_3[10:19]:       StopVideo,
-	_TypeLowerName_3[10:19]:  StopVideo,
-	_TypeName_3[19:25]:       Render,
-	_TypeLowerName_3[19:25]:  Render,
-	_TypeName_3[25:41]:       GetNativeTexture,
-	_TypeLowerName_3[25:41]:  GetNativeTexture,
-	_TypeName_3[41:59]:       VideoTransferSpeed,
-	_TypeLowerName_3[41:59]:  VideoTransferSpeed,
-	_TypeName_3[59:72]:       AudioDataRecv,
-	_TypeLowerName_3[59:72]:  AudioDataRecv,
-	_TypeName_3[72:85]:       VideoDataRecv,
-	_TypeLowerName_3[72:85]:  VideoDataRecv,
-	_TypeName_4[0:15]:        NativeFunctions,
-	_TypeLowerName_4[0:15]:   NativeFunctions,
+	_TypeName_0[0:12]:         TypeSetValue,
+	_TypeLowerName_0[0:12]:    TypeSetValue,
+	_TypeName_0[12:24]:        TypeGetValue,
+	_TypeLowerName_0[12:24]:   TypeGetValue,
+	_TypeName_0[24:45]:        TypeGetAvailableValue,
+	_TypeLowerName_0[24:45]:   TypeGetAvailableValue,
+	_TypeName_0[45:62]:        TypePerformAction,
+	_TypeLowerName_0[45:62]:   TypePerformAction,
+	_TypeName_0[62:80]:        TypeStartListening,
+	_TypeLowerName_0[62:80]:   TypeStartListening,
+	_TypeName_0[80:97]:        TypeStopListening,
+	_TypeLowerName_0[80:97]:   TypeStopListening,
+	_TypeName_0[97:111]:       TypeActivation,
+	_TypeLowerName_0[97:111]:  TypeActivation,
+	_TypeName_0[111:125]:      TypeLocalAlbum,
+	_TypeLowerName_0[111:125]: TypeLocalAlbum,
+	_TypeName_0[125:144]:      TypeFirmwareUpgrade,
+	_TypeLowerName_0[125:144]: TypeFirmwareUpgrade,
+	_TypeName_1[0:14]:         TypeConnection,
+	_TypeLowerName_1[0:14]:    TypeConnection,
+	_TypeName_1[14:26]:        TypeSecurity,
+	_TypeLowerName_1[14:26]:   TypeSecurity,
+	_TypeName_2[0:12]:         TypePrintLog,
+	_TypeLowerName_2[0:12]:    TypePrintLog,
+	_TypeName_3[0:14]:         TypeStartVideo,
+	_TypeLowerName_3[0:14]:    TypeStartVideo,
+	_TypeName_3[14:27]:        TypeStopVideo,
+	_TypeLowerName_3[14:27]:   TypeStopVideo,
+	_TypeName_3[27:37]:        TypeRender,
+	_TypeLowerName_3[27:37]:   TypeRender,
+	_TypeName_3[37:57]:        TypeGetNativeTexture,
+	_TypeLowerName_3[37:57]:   TypeGetNativeTexture,
+	_TypeName_3[57:79]:        TypeVideoTransferSpeed,
+	_TypeLowerName_3[57:79]:   TypeVideoTransferSpeed,
+	_TypeName_3[79:96]:        TypeAudioDataRecv,
+	_TypeLowerName_3[79:96]:   TypeAudioDataRecv,
+	_TypeName_3[96:113]:       TypeVideoDataRecv,
+	_TypeLowerName_3[96:113]:  TypeVideoDataRecv,
+	_TypeName_4[0:19]:         TypeNativeFunctions,
+	_TypeLowerName_4[0:19]:    TypeNativeFunctions,
 }
 
 var _TypeNames = []string{
-	_TypeName_0[0:8],
-	_TypeName_0[8:16],
-	_TypeName_0[16:33],
-	_TypeName_0[33:46],
-	_TypeName_0[46:60],
-	_TypeName_0[60:73],
-	_TypeName_0[73:83],
-	_TypeName_0[83:93],
-	_TypeName_0[93:108],
-	_TypeName_1[0:10],
-	_TypeName_1[10:18],
-	_TypeName_2[0:8],
-	_TypeName_3[0:10],
-	_TypeName_3[10:19],
-	_TypeName_3[19:25],
-	_TypeName_3[25:41],
-	_TypeName_3[41:59],
-	_TypeName_3[59:72],
-	_TypeName_3[72:85],
-	_TypeName_4[0:15],
+	_TypeName_0[0:12],
+	_TypeName_0[12:24],
+	_TypeName_0[24:45],
+	_TypeName_0[45:62],
+	_TypeName_0[62:80],
+	_TypeName_0[80:97],
+	_TypeName_0[97:111],
+	_TypeName_0[111:125],
+	_TypeName_0[125:144],
+	_TypeName_1[0:14],
+	_TypeName_1[14:26],
+	_TypeName_2[0:12],
+	_TypeName_3[0:14],
+	_TypeName_3[14:27],
+	_TypeName_3[27:37],
+	_TypeName_3[37:57],
+	_TypeName_3[57:79],
+	_TypeName_3[79:96],
+	_TypeName_3[96:113],
+	_TypeName_4[0:19],
 }
 
 // TypeString retrieves an enum value from the enum constants string name.
