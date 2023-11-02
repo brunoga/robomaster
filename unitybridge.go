@@ -29,15 +29,15 @@ type UnityBridge interface {
 	// SendEvent sends an event with given eventCode, data, and tag. The data
 	// field in this case will usually be uintptr(0) to indicate no data. As
 	// there is no way to express the actual length of the data being sent.
-	SendEvent(event uint64, data uintptr, tag uint64)
+	SendEvent(eventCode uint64, data uintptr, tag uint64)
 
 	// SendEventWithString sends an event with given eventCode, string data, and
 	// tag.
-	SendEventWithString(event uint64, data string, tag uint64)
+	SendEventWithString(eventCode uint64, data string, tag uint64)
 
 	// SendEventWithNumber sends an event with given eventCode, number data, and
 	/// tag.
-	SendEventWithNumber(event, data, tag uint64)
+	SendEventWithNumber(eventCode, data, tag uint64)
 
 	// GetSecurityKeyByKeyChainIndex returns the security key associated with
 	// the given index.

@@ -45,7 +45,7 @@ func RunEventCallback(eventCode uint64, data []byte, tag uint64) error {
 		return fmt.Errorf("no handlers for event code %d", eventCode)
 	}
 
-	callback(eventCode, data, tag)
+	go callback(eventCode, data, tag)
 
 	return nil
 }

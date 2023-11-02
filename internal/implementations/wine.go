@@ -80,7 +80,7 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 
 	if data != nil {
 		// Write total data len.
-		err = binary.Write(localWritePipe, binary.LittleEndian, uint16(data.Len()))
+		err = binary.Write(localWritePipe, binary.BigEndian, uint16(data.Len()))
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +90,7 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 			return nil, err
 		}
 	} else {
-		err = binary.Write(localWritePipe, binary.LittleEndian, uint16(0))
+		err = binary.Write(localWritePipe, binary.BigEndian, uint16(0))
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +110,7 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 	}
 
 	// Read response length.
-	length := binary.LittleEndian.Uint16(headerBuf[1:3])
+	length := binary.BigEndian.Uint16(headerBuf[1:3])
 
 	if length > 0 {
 		// Read response data.
@@ -136,10 +136,10 @@ func (ub wineUnityBridgeImpl) Create(name string, debuggable bool,
 		b.WriteByte(0)
 	}
 
-	binary.Write(&b, binary.LittleEndian, uint16(len(name)))
+	binary.Write(&b, binary.BigEndian, uint16(len(name)))
 	b.WriteString(name)
 
-	binary.Write(&b, binary.LittleEndian, uint16(len(logPath)))
+	binary.Write(&b, binary.BigEndian, uint16(len(logPath)))
 	b.WriteString(logPath)
 
 	_, err := sendRequest(0x00, &b)
@@ -179,8 +179,8 @@ func (ub wineUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr,
 		panic("SendEvent only supports data == 0 on Wine.")
 	}
 
-	binary.Write(&b, binary.LittleEndian, eventCode)
-	binary.Write(&b, binary.LittleEndian, tag)
+	binary.Write(&b, binary.BigEndian, eventCode)
+	binary.Write(&b, binary.BigEndian, tag)
 
 	_, err := sendRequest(0x04, &b)
 	if err != nil {
@@ -192,9 +192,9 @@ func (ub wineUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
 	tag uint64) {
 	var b bytes.Buffer
 
-	binary.Write(&b, binary.LittleEndian, eventCode)
-	binary.Write(&b, binary.LittleEndian, tag)
-	binary.Write(&b, binary.LittleEndian, uint16(len(data)))
+	binary.Write(&b, binary.BigEndian, eventCode)
+	binary.Write(&b, binary.BigEndian, tag)
+	binary.Write(&b, binary.BigEndian, uint16(len(data)))
 	b.WriteString(data)
 
 	_, err := sendRequest(0x05, &b)
@@ -207,9 +207,9 @@ func (ub wineUnityBridgeImpl) SendEventWithNumber(eventCode uint64, data uint64,
 	tag uint64) {
 	var b bytes.Buffer
 
-	binary.Write(&b, binary.LittleEndian, eventCode)
-	binary.Write(&b, binary.LittleEndian, tag)
-	binary.Write(&b, binary.LittleEndian, data)
+	binary.Write(&b, binary.BigEndian, eventCode)
+	binary.Write(&b, binary.BigEndian, tag)
+	binary.Write(&b, binary.BigEndian, data)
 
 	_, err := sendRequest(0x06, &b)
 	if err != nil {
@@ -221,8 +221,8 @@ func (ub wineUnityBridgeImpl) SetEventCallback(eventCode uint64,
 	callback event.Callback) {
 	var b bytes.Buffer
 
-	binary.Write(&b, binary.LittleEndian, eventCode)
-	binary.Write(&b, binary.LittleEndian, callback != nil)
+	binary.Write(&b, binary.BigEndian, eventCode)
+	binary.Write(&b, binary.BigEndian, callback != nil)
 
 	_, err := sendRequest(0x07, &b)
 	if err != nil {
@@ -235,7 +235,7 @@ func (ub wineUnityBridgeImpl) SetEventCallback(eventCode uint64,
 func (ub wineUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
 	var b bytes.Buffer
 
-	binary.Write(&b, binary.LittleEndian, uint64(index))
+	binary.Write(&b, binary.BigEndian, uint64(index))
 
 	res, err := sendRequest(0x08, &b)
 	if err != nil {
@@ -347,9 +347,9 @@ func loop() {
 			panic(fmt.Sprintf("Error reading data: %s", err))
 		}
 
-		eventCode := binary.LittleEndian.Uint64(headerBuf[0:4])
-		tag := binary.LittleEndian.Uint64(headerBuf[4:8])
-		length := binary.LittleEndian.Uint16(headerBuf[8:10])
+		eventCode := binary.BigEndian.Uint64(headerBuf[0:8])
+		tag := binary.BigEndian.Uint64(headerBuf[8:16])
+		length := binary.BigEndian.Uint16(headerBuf[16:18])
 
 		data := make([]byte, length)
 		if _, err := io.ReadFull(localEventPipe, data); err != nil {
