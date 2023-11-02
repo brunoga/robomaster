@@ -1,4 +1,4 @@
-//go:build !(windows && amd64) && !(ios && arm64)
+//go:build !(windows && amd64) && !(ios && arm64) && !(android && (arm || arm64)) && !(darwin && amd64)
 
 package implementations
 
