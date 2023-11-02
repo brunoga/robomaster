@@ -171,13 +171,16 @@ func (ub wineUnityBridgeImpl) Uninitialize() {
 	}
 }
 
-func (ub wineUnityBridgeImpl) SendEvent(eventCode int64, data []byte, tag int64) {
+func (ub wineUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr,
+	tag uint64) {
 	var b bytes.Buffer
+
+	if data != 0 {
+		panic("SendEvent only supports data == 0 on Wine.")
+	}
 
 	binary.Write(&b, binary.LittleEndian, eventCode)
 	binary.Write(&b, binary.LittleEndian, tag)
-	binary.Write(&b, binary.LittleEndian, uint16(len(data)))
-	b.Write(data)
 
 	_, err := sendRequest(0x04, &b)
 	if err != nil {
@@ -185,8 +188,8 @@ func (ub wineUnityBridgeImpl) SendEvent(eventCode int64, data []byte, tag int64)
 	}
 }
 
-func (ub wineUnityBridgeImpl) SendEventWithString(eventCode int64, data string,
-	tag int64) {
+func (ub wineUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
+	tag uint64) {
 	var b bytes.Buffer
 
 	binary.Write(&b, binary.LittleEndian, eventCode)
@@ -200,8 +203,8 @@ func (ub wineUnityBridgeImpl) SendEventWithString(eventCode int64, data string,
 	}
 }
 
-func (ub wineUnityBridgeImpl) SendEventWithNumber(eventCode int64, data int64,
-	tag int64) {
+func (ub wineUnityBridgeImpl) SendEventWithNumber(eventCode uint64, data uint64,
+	tag uint64) {
 	var b bytes.Buffer
 
 	binary.Write(&b, binary.LittleEndian, eventCode)
@@ -229,10 +232,10 @@ func (ub wineUnityBridgeImpl) SetEventCallback(eventCode uint64,
 	internal_event.SetEventCallback(eventCode, callback)
 }
 
-func (ub wineUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int64) string {
+func (ub wineUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
 	var b bytes.Buffer
 
-	binary.Write(&b, binary.LittleEndian, index)
+	binary.Write(&b, binary.LittleEndian, uint64(index))
 
 	res, err := sendRequest(0x08, &b)
 	if err != nil {

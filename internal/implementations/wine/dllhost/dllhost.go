@@ -193,19 +193,8 @@ func runUnitializeUnityBridge(data []byte, b *bytes.Buffer) {
 func runUnitySendEvent(data []byte, b *bytes.Buffer) {
 	eventCode := binary.LittleEndian.Uint64(data[0:8])
 	tag := binary.LittleEndian.Uint64(data[8:16])
-	length := binary.LittleEndian.Uint16(data[16:18])
 
-	var data2 []byte
-	if length != 0 {
-		// This does not appear to happen at any place. Which is good as there
-		// is no way to express the length of the data. We keep it here for
-		// reference only. It is possible that this might still work as expected
-		// if data is a null-terminated string.
-		data2 = data[18 : 18+length]
-		unitybridge.Get().SendEvent(eventCode, uintptr(unsafe.Pointer(&data2[0])), tag)
-	} else {
-		unitybridge.Get().SendEvent(eventCode, 0, tag)
-	}
+	unitybridge.Get().SendEvent(eventCode, 0, tag)
 
 	// Write data size.
 	binary.Write(b, binary.LittleEndian, uint16(0))
