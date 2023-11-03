@@ -1,356 +1,403 @@
-//go:generate go run github.com/dmarkham/enumer -type=Key
-
 package event
 
-// Key represents a Unity Bridge event key. Keys represent actions that
-// and can be performed, and attributes that can be read or written.
-// This is used to control the robot through the bridge.
-type Key int32
+import (
+	"fmt"
 
-const (
-	KeyNone Key = iota
-	KeyProductTest
-	KeyProductType
-	KeyCameraConnection
-	KeyCameraFirmwareVersion
-	KeyCameraStartShootPhoto
-	KeyCameraIsShootingPhoto
-	KeyCameraPhotoSize
-	KeyCameraStartRecordVideo
-	KeyCameraStopRecordVideo
-	KeyCameraIsRecording
-	KeyCameraCurrentRecordingTimeInSeconds
-	KeyCameraVideoFormat
-	KeyCameraMode
-	KeyCameraDigitalZoomFactor
-	KeyCameraAntiFlicker
-	KeyCameraSwitch
-	KeyCameraCurrentCameraIndex
-	KeyCameraHasMainCamera
-	KeyCameraHasSecondaryCamera
-	KeyCameraFormatSDCard
-	KeyCameraSDCardIsFormatting
-	KeyCameraSDCardIsFull
-	KeyCameraSDCardHasError
-	KeyCameraSDCardIsInserted
-	KeyCameraSDCardTotalSpaceInMB
-	KeyCameraSDCardRemaingSpaceInMB
-	KeyCameraSDCardAvailablePhotoCount
-	KeyCameraSDCardAvailableRecordingTimeInSeconds
-	KeyCameraIsTimeSynced
-	KeyCameraDate
-	KeyCameraVideoTransRate
-	KeyCameraRequestIFrame
-	KeyCameraAntiLarsenAlgorithmEnable
-	KeyMainControllerConnection
-	KeyMainControllerFirmwareVersion
-	KeyMainControllerLoaderVersion
-	KeyMainControllerVirtualStick
-	KeyMainControllerVirtualStickEnabled
-	KeyMainControllerChassisSpeedMode
-	KeyMainControllerChassisFollowMode
-	KeyMainControllerChassisCarControlMode
-	KeyMainControllerRecordState
-	KeyMainControllerGetRecordSetting
-	KeyMainControllerSetRecordSetting
-	KeyMainControllerPlayRecordAttr
-	KeyMainControllerGetPlayRecordSetting
-	KeyMainControllerSetPlayRecordSetting
-	KeyMainControllerMaxSpeedForward
-	KeyMainControllerMaxSpeedBackward
-	KeyMainControllerMaxSpeedLateral
-	KeyMainControllerSlopeY
-	KeyMainControllerSlopeX
-	KeyMainControllerSlopeBreakY
-	KeyMainControllerSlopeBreakX
-	KeyMainControllerMaxSpeedForwardConfig
-	KeyMainControllerMaxSpeedBackwardConfig
-	KeyMainControllerMaxSpeedLateralConfig
-	KeyMainControllerSlopSpeedYConfig
-	KeyMainControllerSlopSpeedXConfig
-	KeyMainControllerSlopBreakYConfig
-	KeyMainControllerSlopBreakXConfig
-	KeyMainControllerChassisPosition
-	KeyMainControllerWheelSpeed
-	KeyRobomasterMainControllerEscEncodingStatus
-	KeyRobomasterMainControllerEscEncodeFlag
-	KeyRobomasterMainControllerStartIMUCalibration
-	KeyRobomasterMainControllerIMUCalibrationState
-	KeyRobomasterMainControllerIMUCalibrationCurrSide
-	KeyRobomasterMainControllerIMUCalibrationProgress
-	KeyRobomasterMainControllerIMUCalibrationFailCode
-	KeyRobomasterMainControllerIMUCalibrationFinishFlag
-	KeyRobomasterMainControllerStopIMUCalibration
-	KeyRobomasterChassisMode
-	KeyRobomasterChassisSpeed
-	KeyRobomasterOpenChassisSpeedUpdates
-	KeyRobomasterCloseChassisSpeedUpdates
-	KeyRobomasterMainControllerRelativePosition
-	KeyMainControllerArmServoID
-	KeyMainControllerServoAddressing
-	KeyRemoteControllerConnection
-	KeyGimbalConnection
-	KeyGimbalESCFirmwareVersion
-	KeyGimbalFirmwareVersion
-	KeyGimbalWorkMode
-	KeyGimbalControlMode
-	KeyGimbalResetPosition
-	KeyGimbalResetPositionState
-	KeyGimbalCalibration
-	KeyGimbalSpeedRotation
-	KeyGimbalSpeedRotationEnabled
-	KeyGimbalAngleIncrementRotation
-	KeyGimbalAngleFrontYawRotation
-	KeyGimbalAngleFrontPitchRotation
-	KeyGimbalAttitude
-	KeyGimbalAutoCalibrate
-	KeyGimbalCalibrationStatus
-	KeyGimbalCalibrationProgress
-	KeyGimbalOpenAttitudeUpdates
-	KeyGimbalCloseAttitudeUpdates
-	KeyRobomasterSystemConnection
-	KeyRobomasterSystemFirmwareVersion
-	KeyRobomasterSystemCANFirmwareVersion
-	KeyRobomasterSystemScratchFirmwareVersion
-	KeyRobomasterSystemSerialNumber
-	KeyRobomasterSystemAbilitiesAttack
-	KeyRobomasterSystemUnderAbilitiesAttack
-	KeyRobomasterSystemKill
-	KeyRobomasterSystemRevive
-	KeyRobomasterSystemGet1860LinkAck
-	KeyMainControllerGetLinkAck
-	KeyGimbalGetLinkAck
-	KeyRobomasterSystemGameRoleConfig
-	KeyRobomasterSystemGameColorConfig
-	KeyRobomasterSystemGameStart
-	KeyRobomasterSystemGameEnd
-	KeyRobomasterSystemDebugLog
-	KeyRobomasterSystemSoundEnabled
-	KeyRobomasterSystemLeftHeadlightBrightness
-	KeyRobomasterSystemRightHeadlightBrightness
-	KeyRobomasterSystemLEDColor
-	KeyRobomasterSystemUploadScratch
-	KeyRobomasterSystemUploadScratchByFTP
-	KeyRobomasterSystemUninstallScratchSkill
-	KeyRobomasterSystemInstallScratchSkill
-	KeyRobomasterSystemInquiryDspMd5
-	KeyRobomasterSystemInquiryDspMd5Ack
-	KeyRobomasterSystemInquiryDspResourceMd5
-	KeyRobomasterSystemInquiryDspResourceMd5Ack
-	KeyRobomasterSystemLaunchSinglePlayerCustomSkill
-	KeyRobomasterSystemStopSinglePlayerCustomSkill
-	KeyRobomasterSystemControlScratch
-	KeyRobomasterSystemScratchState
-	KeyRobomasterSystemScratchCallback
-	KeyRobomasterSystemForesightPosition
-	KeyRobomasterSystemPullLogFiles
-	KeyRobomasterSystemCurrentHP
-	KeyRobomasterSystemTotalHP
-	KeyRobomasterSystemCurrentBullets
-	KeyRobomasterSystemTotalBullets
-	KeyRobomasterSystemEquipments
-	KeyRobomasterSystemBuffs
-	KeyRobomasterSystemSkillStatus
-	KeyRobomasterSystemGunCoolDown
-	KeyRobomasterSystemGameConfigList
-	KeyRobomasterSystemCarAndSkillID
-	KeyRobomasterSystemAppStatus
-	KeyRobomasterSystemLaunchMultiPlayerSkill
-	KeyRobomasterSystemStopMultiPlayerSkill
-	KeyRobomasterSystemConfigSkillTable
-	KeyRobomasterSystemWorkingDevices
-	KeyRobomasterSystemExceptions
-	KeyRobomasterSystemTaskStatus
-	KeyRobomasterSystemReturnEnabled
-	KeyRobomasterSystemSafeMode
-	KeyRobomasterSystemScratchExecuteState
-	KeyRobomasterSystemAttitudeInfo
-	KeyRobomasterSystemSightBeadPosition
-	KeyRobomasterSystemSpeakerLanguage
-	KeyRobomasterSystemSpeakerVolumn
-	KeyRobomasterSystemChassisSpeedLevel
-	KeyRobomasterSystemIsEncryptedFirmware
-	KeyRobomasterSystemScratchErrorInfo
-	KeyRobomasterSystemScratchOutputInfo
-	KeyRobomasterSystemBarrelCoolDown
-	KeyRobomasterSystemResetBarrelOverheat
-	KeyRobomasterSystemMobileAccelerInfo
-	KeyRobomasterSystemMobileGyroAttitudeAngleInfo
-	KeyRobomasterSystemMobileGyroRotationRateInfo
-	KeyRobomasterSystemEnableAcceleratorSubscribe
-	KeyRobomasterSystemEnableGyroRotationRateSubscribe
-	KeyRobomasterSystemEnableGyroAttitudeAngleSubscribe
-	KeyRobomasterSystemDeactivate
-	KeyRobomasterSystemFunctionEnable
-	KeyRobomasterSystemIsGameRunning
-	KeyRobomasterSystemIsActivated
-	KeyRobomasterSystemLowPowerConsumption
-	KeyRobomasterSystemEnterLowPowerConsumption
-	KeyRobomasterSystemExitLowPowerConsumption
-	KeyRobomasterSystemIsLowPowerConsumption
-	KeyRobomasterSystemPushFile
-	KeyRobomasterSystemPlaySound
-	KeyRobomasterSystemPlaySoundStatus
-	KeyRobomasterSystemCustomUIAttribute
-	KeyRobomasterSystemCustomUIFunctionEvent
-	KeyRobomasterSystemTotalMileage
-	KeyRobomasterSystemTotalDrivingTime
-	KeyRobomasterSystemSetPlayMode
-	KeyRobomasterSystemCustomSkillInfo
-	KeyRobomasterSystemAddressing
-	KeyRobomasterSystemLEDLightEffect
-	KeyRobomasterSystemOpenImageTransmission
-	KeyRobomasterSystemCloseImageTransmission
-	KeyVisionFirmwareVersion
-	KeyVisionTrackingAutoLockTarget
-	KeyVisionARParameters
-	KeyVisionARTagEnabled
-	KeyVisionDebugRect
-	KeyVisionLaserPosition
-	KeyVisionDetectionEnable
-	KeyVisionMarkerRunningStatus
-	KeyVisionTrackingRunningStatus
-	KeyVisionAimbotRunningStatus
-	KeyVisionHeadAndShoulderStatus
-	KeyVisionHumanDetectionRunningStatus
-	KeyVisionUserConfirm
-	KeyVisionUserCancel
-	KeyVisionUserTrackingRect
-	KeyVisionTrackingDistance
-	KeyVisionLineColor
-	KeyVisionMarkerColor
-	KeyVisionMarkerAdvanceStatus
-	KeyPerceptionFirmwareVersion
-	KeyPerceptionMarkerEnable
-	KeyPerceptionMarkerResult
-	KeyESCFirmwareVersion1
-	KeyESCFirmwareVersion2
-	KeyESCFirmwareVersion3
-	KeyESCFirmwareVersion4
-	KeyESCMotorInfomation1
-	KeyESCMotorInfomation2
-	KeyESCMotorInfomation3
-	KeyESCMotorInfomation4
-	KeyWiFiLinkFirmwareVersion
-	KeyWiFiLinkDebugInfo
-	KeyWiFiLinkMode
-	KeyWiFiLinkSSID
-	KeyWiFiLinkPassword
-	KeyWiFiLinkAvailableChannelNumbers
-	KeyWiFiLinkCurrentChannelNumber
-	KeyWiFiLinkSNR
-	KeyWiFiLinkSNRPushEnabled
-	KeyWiFiLinkReboot
-	KeyWiFiLinkChannelSelectionMode
-	KeyWiFiLinkInterference
-	KeyWiFiLinkDeleteNetworkConfig
-	KeySDRLinkSNR
-	KeySDRLinkBandwidth
-	KeySDRLinkChannelSelectionMode
-	KeySDRLinkCurrentFreqPoint
-	KeySDRLinkCurrentFreqBand
-	KeySDRLinkIsDualFreqSupported
-	KeySDRLinkUpdateConfigs
-	KeyAirLinkConnection
-	KeyAirLinkSignalQuality
-	KeyAirLinkCountryCode
-	KeyAirLinkCountryCodeUpdated
-	KeyArmorFirmwareVersion1
-	KeyArmorFirmwareVersion2
-	KeyArmorFirmwareVersion3
-	KeyArmorFirmwareVersion4
-	KeyArmorFirmwareVersion5
-	KeyArmorFirmwareVersion6
-	KeyArmorUnderAttack
-	KeyArmorEnterResetID
-	KeyArmorCancelResetID
-	KeyArmorSkipCurrentID
-	KeyArmorResetStatus
-	KeyRobomasterWaterGunFirmwareVersion
-	KeyRobomasterWaterGunWaterGunFire
-	KeyRobomasterWaterGunWaterGunFireWithTimes
-	KeyRobomasterWaterGunShootSpeed
-	KeyRobomasterWaterGunShootFrequency
-	KeyRobomasterInfraredGunConnection
-	KeyRobomasterInfraredGunFirmwareVersion
-	KeyRobomasterInfraredGunInfraredGunFire
-	KeyRobomasterInfraredGunShootFrequency
-	KeyRobomasterBatteryFirmwareVersion
-	KeyRobomasterBatteryPowerPercent
-	KeyRobomasterBatteryVoltage
-	KeyRobomasterBatteryTemperature
-	KeyRobomasterBatteryCurrent
-	KeyRobomasterBatteryShutdown
-	KeyRobomasterBatteryReboot
-	KeyRobomasterGamePadConnection
-	KeyRobomasterGamePadFirmwareVersion
-	KeyRobomasterGamePadHasMouse
-	KeyRobomasterGamePadHasKeyboard
-	KeyRobomasterGamePadCtrlSensitivityX
-	KeyRobomasterGamePadCtrlSensitivityY
-	KeyRobomasterGamePadCtrlSensitivityYaw
-	KeyRobomasterGamePadCtrlSensitivityYawSlop
-	KeyRobomasterGamePadCtrlSensitivityYawDeadZone
-	KeyRobomasterGamePadCtrlSensitivityPitch
-	KeyRobomasterGamePadCtrlSensitivityPitchSlop
-	KeyRobomasterGamePadCtrlSensitivityPitchDeadZone
-	KeyRobomasterGamePadMouseLeftButton
-	KeyRobomasterGamePadMouseRightButton
-	KeyRobomasterGamePadC1
-	KeyRobomasterGamePadC2
-	KeyRobomasterGamePadFire
-	KeyRobomasterGamePadFn
-	KeyRobomasterGamePadNoCalibrate
-	KeyRobomasterGamePadNotAtMiddle
-	KeyRobomasterGamePadBatteryWarning
-	KeyRobomasterGamePadBatteryPercent
-	KeyRobomasterGamePadActivationSettings
-	KeyRobomasterGamePadControlEnabled
-	KeyRobomasterClawConnection
-	KeyRobomasterClawFirmwareVersion
-	KeyRobomasterClawCtrl
-	KeyRobomasterClawStatus
-	KeyRobomasterClawInfoSubscribe
-	KeyRobomasterEnableClawInfoSubscribe
-	KeyRobomasterArmConnection
-	KeyRobomasterArmCtrl
-	KeyRobomasterArmCtrlMode
-	KeyRobomasterArmCalibration
-	KeyRobomasterArmBlockedFlag
-	KeyRobomasterArmPositionSubscribe
-	KeyRobomasterArmReachLimitX
-	KeyRobomasterArmReachLimitY
-	KeyRobomasterEnableArmInfoSubscribe
-	KeyRobomasterArmControlMode
-	KeyRobomasterTOFConnection
-	KeyRobomasterTOFLEDColor
-	KeyRobomasterTOFOnlineModules
-	KeyRobomasterTOFInfoSubscribe
-	KeyRobomasterEnableTOFInfoSubscribe
-	KeyRobomasterTOFFirmwareVersion1
-	KeyRobomasterTOFFirmwareVersion2
-	KeyRobomasterTOFFirmwareVersion3
-	KeyRobomasterTOFFirmwareVersion4
-	KeyRobomasterServoConnection
-	KeyRobomasterServoLEDColor
-	KeyRobomasterServoSpeed
-	KeyRobomasterServoOnlineModules
-	KeyRobomasterServoInfoSubscribe
-	KeyRobomasterEnableServoInfoSubscribe
-	KeyRobomasterServoFirmwareVersion1
-	KeyRobomasterServoFirmwareVersion2
-	KeyRobomasterServoFirmwareVersion3
-	KeyRobomasterServoFirmwareVersion4
-	KeyRobomasterSensorAdapterConnection
-	KeyRobomasterSensorAdapterOnlineModules
-	KeyRobomasterSensorAdapterInfoSubscribe
-	KeyRobomasterEnableSensorAdapterInfoSubscribe
-	KeyRobomasterSensorAdapterFirmwareVersion1
-	KeyRobomasterSensorAdapterFirmwareVersion2
-	KeyRobomasterSensorAdapterFirmwareVersion3
-	KeyRobomasterSensorAdapterFirmwareVersion4
-	KeyRobomasterSensorAdapterFirmwareVersion5
-	KeyRobomasterSensorAdapterFirmwareVersion6
-	KeyRobomasterSensorAdapterLEDColor
-	KeyCount
+	"github.com/brunoga/unitybridge/event/key"
 )
+
+// Key represents a Unity Bridge event key. Keys represent actions that can be
+// performed and attributes that can be read or written. This is used to control
+// the robot through the bridge.
+//
+// All the known keys are listed in the var section below. As can be seen, the
+// absolute majority of the attribute values are not set mostly due to the sheer
+// number of them. I will set the attributes that I need as I need them.
+type Key struct {
+	name       string
+	value      int32
+	accessType key.AccessType
+}
+
+func newKey(name string, value int32, accessType key.AccessType) *Key {
+	k := &Key{
+		name:       name,
+		value:      value,
+		accessType: accessType,
+	}
+
+	keyByValue[value] = k
+
+	return k
+}
+
+const numKeys = 343
+
+var (
+	keyByValue = make(map[int32]*Key, numKeys)
+
+	KeyProductTest                                      = newKey("KeyProductTest", 1, key.AccessTypeWrite)
+	KeyProductType                                      = newKey("KeyProductType", 2, key.AccessTypeRead)
+	KeyCameraConnection                                 = newKey("KeyCameraConnection", 16777217, key.AccessTypeRead)
+	KeyCameraFirmwareVersion                            = newKey("KeyCameraFirmwareVersion", 16777218, key.AccessTypeRead)
+	KeyCameraStartShootPhoto                            = newKey("KeyCameraStartShootPhoto", 16777219, key.AccessTypeAction)
+	KeyCameraIsShootingPhoto                            = newKey("KeyCameraIsShootingPhoto", 16777220, key.AccessTypeRead)
+	KeyCameraPhotoSize                                  = newKey("KeyCameraPhotoSize", 16777221, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraStartRecordVideo                           = newKey("KeyCameraStartRecordVideo", 16777222, key.AccessTypeAction)
+	KeyCameraStopRecordVideo                            = newKey("KeyCameraStopRecordVideo", 16777223, key.AccessTypeAction)
+	KeyCameraIsRecording                                = newKey("KeyCameraIsRecording", 16777224, key.AccessTypeRead)
+	KeyCameraCurrentRecordingTimeInSeconds              = newKey("KeyCameraCurrentRecordingTimeInSeconds", 16777225, key.AccessTypeRead)
+	KeyCameraVideoFormat                                = newKey("KeyCameraVideoFormat", 16777226, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraMode                                       = newKey("KeyCameraMode", 16777227, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraDigitalZoomFactor                          = newKey("KeyCameraDigitalZoomFactor", 16777228, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraAntiFlicker                                = newKey("KeyCameraAntiFlicker", 16777229, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraSwitch                                     = newKey("KeyCameraSwitch", 16777230, key.AccessTypeAction)
+	KeyCameraCurrentCameraIndex                         = newKey("KeyCameraCurrentCameraIndex", 16777231, key.AccessTypeRead)
+	KeyCameraHasMainCamera                              = newKey("KeyCameraHasMainCamera", 16777232, key.AccessTypeRead)
+	KeyCameraHasSecondaryCamera                         = newKey("KeyCameraHasSecondaryCamera", 16777233, key.AccessTypeRead)
+	KeyCameraFormatSDCard                               = newKey("KeyCameraFormatSDCard", 16777234, key.AccessTypeAction)
+	KeyCameraSDCardIsFormatting                         = newKey("KeyCameraSDCardIsFormatting", 16777235, key.AccessTypeRead)
+	KeyCameraSDCardIsFull                               = newKey("KeyCameraSDCardIsFull", 16777236, key.AccessTypeRead)
+	KeyCameraSDCardHasError                             = newKey("KeyCameraSDCardHasError", 16777237, key.AccessTypeRead)
+	KeyCameraSDCardIsInserted                           = newKey("KeyCameraSDCardIsInserted", 16777238, key.AccessTypeRead)
+	KeyCameraSDCardTotalSpaceInMB                       = newKey("KeyCameraSDCardTotalSpaceInMB", 16777239, key.AccessTypeRead)
+	KeyCameraSDCardRemaingSpaceInMB                     = newKey("KeyCameraSDCardRemaingSpaceInMB", 16777240, key.AccessTypeRead)
+	KeyCameraSDCardAvailablePhotoCount                  = newKey("KeyCameraSDCardAvailablePhotoCount", 16777241, key.AccessTypeRead)
+	KeyCameraSDCardAvailableRecordingTimeInSeconds      = newKey("KeyCameraSDCardAvailableRecordingTimeInSeconds", 16777242, key.AccessTypeRead)
+	KeyCameraIsTimeSynced                               = newKey("KeyCameraIsTimeSynced", 16777243, key.AccessTypeRead)
+	KeyCameraDate                                       = newKey("KeyCameraDate", 16777244, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyCameraVideoTransRate                             = newKey("KeyCameraVideoTransRate", 16777245, key.AccessTypeWrite)
+	KeyCameraRequestIFrame                              = newKey("KeyCameraRequestIFrame", 16777246, key.AccessTypeAction)
+	KeyCameraAntiLarsenAlgorithmEnable                  = newKey("KeyCameraAntiLarsenAlgorithmEnable", 16777247, key.AccessTypeWrite)
+	KeyMainControllerConnection                         = newKey("KeyMainControllerConnection", 33554433, key.AccessTypeRead)
+	KeyMainControllerFirmwareVersion                    = newKey("KeyMainControllerFirmwareVersion", 33554434, key.AccessTypeRead)
+	KeyMainControllerLoaderVersion                      = newKey("KeyMainControllerLoaderVersion", 33554435, key.AccessTypeRead)
+	KeyMainControllerVirtualStick                       = newKey("KeyMainControllerVirtualStick", 33554436, key.AccessTypeAction)
+	KeyMainControllerVirtualStickEnabled                = newKey("KeyMainControllerVirtualStickEnabled", 33554437, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerChassisSpeedMode                   = newKey("KeyMainControllerChassisSpeedMode", 33554438, key.AccessTypeWrite)
+	KeyMainControllerChassisFollowMode                  = newKey("KeyMainControllerChassisFollowMode", 33554439, key.AccessTypeWrite)
+	KeyMainControllerChassisCarControlMode              = newKey("KeyMainControllerChassisCarControlMode", 33554440, key.AccessTypeWrite)
+	KeyMainControllerRecordState                        = newKey("KeyMainControllerRecordState", 33554441, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerGetRecordSetting                   = newKey("KeyMainControllerGetRecordSetting", 33554442, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSetRecordSetting                   = newKey("KeyMainControllerSetRecordSetting", 33554443, key.AccessTypeRead)
+	KeyMainControllerPlayRecordAttr                     = newKey("KeyMainControllerPlayRecordAttr", 33554444, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerGetPlayRecordSetting               = newKey("KeyMainControllerGetPlayRecordSetting", 33554445, key.AccessTypeRead)
+	KeyMainControllerSetPlayRecordSetting               = newKey("KeyMainControllerSetPlayRecordSetting", 33554446, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedForward                    = newKey("KeyMainControllerMaxSpeedForward", 33554447, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedBackward                   = newKey("KeyMainControllerMaxSpeedBackward", 33554448, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedLateral                    = newKey("KeyMainControllerMaxSpeedLateral", 33554449, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopeY                             = newKey("KeyMainControllerSlopeY", 33554450, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopeX                             = newKey("KeyMainControllerSlopeX", 33554451, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopeBreakY                        = newKey("KeyMainControllerSlopeBreakY", 33554452, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopeBreakX                        = newKey("KeyMainControllerSlopeBreakX", 33554453, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedForwardConfig              = newKey("KeyMainControllerMaxSpeedForwardConfig", 33554454, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedBackwardConfig             = newKey("KeyMainControllerMaxSpeedBackwardConfig", 33554455, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerMaxSpeedLateralConfig              = newKey("KeyMainControllerMaxSpeedLateralConfig", 33554456, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopSpeedYConfig                   = newKey("KeyMainControllerSlopSpeedYConfig", 33554457, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopSpeedXConfig                   = newKey("KeyMainControllerSlopSpeedXConfig", 33554458, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopBreakYConfig                   = newKey("KeyMainControllerSlopBreakYConfig", 33554459, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerSlopBreakXConfig                   = newKey("KeyMainControllerSlopBreakXConfig", 33554460, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerChassisPosition                    = newKey("KeyMainControllerChassisPosition", 33554461, key.AccessTypeAction)
+	KeyMainControllerWheelSpeed                         = newKey("KeyMainControllerWheelSpeed", 33554462, key.AccessTypeWrite)
+	KeyRobomasterMainControllerEscEncodingStatus        = newKey("KeyRobomasterMainControllerEscEncodingStatus", 33554463, key.AccessTypeRead)
+	KeyRobomasterMainControllerEscEncodeFlag            = newKey("KeyRobomasterMainControllerEscEncodeFlag", 33554464, key.AccessTypeWrite)
+	KeyRobomasterMainControllerStartIMUCalibration      = newKey("KeyRobomasterMainControllerStartIMUCalibration", 33554465, key.AccessTypeAction)
+	KeyRobomasterMainControllerIMUCalibrationState      = newKey("KeyRobomasterMainControllerIMUCalibrationState", 33554466, key.AccessTypeRead)
+	KeyRobomasterMainControllerIMUCalibrationCurrSide   = newKey("KeyRobomasterMainControllerIMUCalibrationCurrSide", 33554467, key.AccessTypeRead)
+	KeyRobomasterMainControllerIMUCalibrationProgress   = newKey("KeyRobomasterMainControllerIMUCalibrationProgress", 33554468, key.AccessTypeRead)
+	KeyRobomasterMainControllerIMUCalibrationFailCode   = newKey("KeyRobomasterMainControllerIMUCalibrationFailCode", 33554469, key.AccessTypeRead)
+	KeyRobomasterMainControllerIMUCalibrationFinishFlag = newKey("KeyRobomasterMainControllerIMUCalibrationFinishFlag", 33554470, key.AccessTypeRead)
+	KeyRobomasterMainControllerStopIMUCalibration       = newKey("KeyRobomasterMainControllerStopIMUCalibration", 33554471, key.AccessTypeAction)
+	KeyRobomasterChassisMode                            = newKey("KeyRobomasterChassisMode", 33554472, key.AccessTypeRead)
+	KeyRobomasterChassisSpeed                           = newKey("KeyRobomasterChassisSpeed", 33554473, key.AccessTypeRead)
+	KeyRobomasterOpenChassisSpeedUpdates                = newKey("KeyRobomasterOpenChassisSpeedUpdates", 33554474, key.AccessTypeAction)
+	KeyRobomasterCloseChassisSpeedUpdates               = newKey("KeyRobomasterCloseChassisSpeedUpdates", 33554475, key.AccessTypeAction)
+	KeyRobomasterMainControllerRelativePosition         = newKey("KeyRobomasterMainControllerRelativePosition", 33554476, key.AccessTypeRead)
+	KeyMainControllerArmServoID                         = newKey("KeyMainControllerArmServoID", 33554477, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyMainControllerServoAddressing                    = newKey("KeyMainControllerServoAddressing", 33554478, key.AccessTypeAction)
+	KeyRemoteControllerConnection                       = newKey("KeyRemoteControllerConnection", 50331649, key.AccessTypeRead)
+	KeyGimbalConnection                                 = newKey("KeyGimbalConnection", 67108865, key.AccessTypeRead)
+	KeyGimbalESCFirmwareVersion                         = newKey("KeyGimbalESCFirmwareVersion", 67108866, key.AccessTypeRead)
+	KeyGimbalFirmwareVersion                            = newKey("KeyGimbalFirmwareVersion", 67108867, key.AccessTypeRead)
+	KeyGimbalWorkMode                                   = newKey("KeyGimbalWorkMode", 67108868, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyGimbalControlMode                                = newKey("KeyGimbalControlMode", 67108869, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyGimbalResetPosition                              = newKey("KeyGimbalResetPosition", 67108870, key.AccessTypeAction)
+	KeyGimbalResetPositionState                         = newKey("KeyGimbalResetPositionState", 67108871, key.AccessTypeRead)
+	KeyGimbalCalibration                                = newKey("KeyGimbalCalibration", 67108872, key.AccessTypeAction)
+	KeyGimbalSpeedRotation                              = newKey("KeyGimbalSpeedRotation", 67108873, key.AccessTypeAction)
+	KeyGimbalSpeedRotationEnabled                       = newKey("KeyGimbalSpeedRotationEnabled", 67108874, key.AccessTypeWrite)
+	KeyGimbalAngleIncrementRotation                     = newKey("KeyGimbalAngleIncrementRotation", 67108875, key.AccessTypeAction)
+	KeyGimbalAngleFrontYawRotation                      = newKey("KeyGimbalAngleFrontYawRotation", 67108876, key.AccessTypeAction)
+	KeyGimbalAngleFrontPitchRotation                    = newKey("KeyGimbalAngleFrontPitchRotation", 67108877, key.AccessTypeAction)
+	KeyGimbalAttitude                                   = newKey("KeyGimbalAttitude", 67108878, key.AccessTypeRead)
+	KeyGimbalAutoCalibrate                              = newKey("KeyGimbalAutoCalibrate", 67108879, key.AccessTypeAction)
+	KeyGimbalCalibrationStatus                          = newKey("KeyGimbalCalibrationStatus", 67108880, key.AccessTypeRead)
+	KeyGimbalCalibrationProgress                        = newKey("KeyGimbalCalibrationProgress", 67108881, key.AccessTypeRead)
+	KeyGimbalOpenAttitudeUpdates                        = newKey("KeyGimbalOpenAttitudeUpdates", 67108882, key.AccessTypeAction)
+	KeyGimbalCloseAttitudeUpdates                       = newKey("KeyGimbalCloseAttitudeUpdates", 67108883, key.AccessTypeAction)
+	KeyRobomasterSystemConnection                       = newKey("KeyRobomasterSystemConnection", 83886081, key.AccessTypeRead)
+	KeyRobomasterSystemFirmwareVersion                  = newKey("KeyRobomasterSystemFirmwareVersion", 83886082, key.AccessTypeRead)
+	KeyRobomasterSystemCANFirmwareVersion               = newKey("KeyRobomasterSystemCANFirmwareVersion", 83886083, key.AccessTypeRead)
+	KeyRobomasterSystemScratchFirmwareVersion           = newKey("KeyRobomasterSystemScratchFirmwareVersion", 83886084, key.AccessTypeRead)
+	KeyRobomasterSystemSerialNumber                     = newKey("KeyRobomasterSystemSerialNumber", 83886085, key.AccessTypeRead)
+	KeyRobomasterSystemAbilitiesAttack                  = newKey("KeyRobomasterSystemAbilitiesAttack", 83886086, key.AccessTypeAction)
+	KeyRobomasterSystemUnderAbilitiesAttack             = newKey("KeyRobomasterSystemUnderAbilitiesAttack", 83886087, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemKill                             = newKey("KeyRobomasterSystemKill", 83886088, key.AccessTypeAction)
+	KeyRobomasterSystemRevive                           = newKey("KeyRobomasterSystemRevive", 83886089, key.AccessTypeAction)
+	KeyRobomasterSystemGet1860LinkAck                   = newKey("KeyRobomasterSystemGet1860LinkAck", 83886090, key.AccessTypeRead)
+	KeyMainControllerGetLinkAck                         = newKey("KeyMainControllerGetLinkAck", 83886091, key.AccessTypeRead)
+	KeyGimbalGetLinkAck                                 = newKey("KeyGimbalGetLinkAck", 83886092, key.AccessTypeRead)
+	KeyRobomasterSystemGameRoleConfig                   = newKey("KeyRobomasterSystemGameRoleConfig", 83886093, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemGameColorConfig                  = newKey("KeyRobomasterSystemGameColorConfig", 83886094, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemGameStart                        = newKey("KeyRobomasterSystemGameStart", 83886095, key.AccessTypeAction)
+	KeyRobomasterSystemGameEnd                          = newKey("KeyRobomasterSystemGameEnd", 83886096, key.AccessTypeAction)
+	KeyRobomasterSystemDebugLog                         = newKey("KeyRobomasterSystemDebugLog", 83886097, key.AccessTypeRead)
+	KeyRobomasterSystemSoundEnabled                     = newKey("KeyRobomasterSystemSoundEnabled", 83886098, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemLeftHeadlightBrightness          = newKey("KeyRobomasterSystemLeftHeadlightBrightness", 83886099, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemRightHeadlightBrightness         = newKey("KeyRobomasterSystemRightHeadlightBrightness", 83886100, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemLEDColor                         = newKey("KeyRobomasterSystemLEDColor", 83886101, key.AccessTypeWrite)
+	KeyRobomasterSystemUploadScratch                    = newKey("KeyRobomasterSystemUploadScratch", 83886102, key.AccessTypeWrite)
+	KeyRobomasterSystemUploadScratchByFTP               = newKey("KeyRobomasterSystemUploadScratchByFTP", 83886103, key.AccessTypeWrite)
+	KeyRobomasterSystemUninstallScratchSkill            = newKey("KeyRobomasterSystemUninstallScratchSkill", 83886104, key.AccessTypeAction)
+	KeyRobomasterSystemInstallScratchSkill              = newKey("KeyRobomasterSystemInstallScratchSkill", 83886105, key.AccessTypeAction)
+	KeyRobomasterSystemInquiryDspMd5                    = newKey("KeyRobomasterSystemInquiryDspMd5", 83886106, key.AccessTypeWrite)
+	KeyRobomasterSystemInquiryDspMd5Ack                 = newKey("KeyRobomasterSystemInquiryDspMd5Ack", 83886107, key.AccessTypeWrite)
+	KeyRobomasterSystemInquiryDspResourceMd5            = newKey("KeyRobomasterSystemInquiryDspResourceMd5", 83886108, key.AccessTypeWrite)
+	KeyRobomasterSystemInquiryDspResourceMd5Ack         = newKey("KeyRobomasterSystemInquiryDspResourceMd5Ack", 83886109, key.AccessTypeWrite)
+	KeyRobomasterSystemLaunchSinglePlayerCustomSkill    = newKey("KeyRobomasterSystemLaunchSinglePlayerCustomSkill", 83886110, key.AccessTypeAction)
+	KeyRobomasterSystemStopSinglePlayerCustomSkill      = newKey("KeyRobomasterSystemStopSinglePlayerCustomSkill", 83886111, key.AccessTypeAction)
+	KeyRobomasterSystemControlScratch                   = newKey("KeyRobomasterSystemControlScratch", 83886112, key.AccessTypeAction)
+	KeyRobomasterSystemScratchState                     = newKey("KeyRobomasterSystemScratchState", 83886113, key.AccessTypeRead)
+	KeyRobomasterSystemScratchCallback                  = newKey("KeyRobomasterSystemScratchCallback", 83886114, key.AccessTypeRead)
+	KeyRobomasterSystemForesightPosition                = newKey("KeyRobomasterSystemForesightPosition", 83886115, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemPullLogFiles                     = newKey("KeyRobomasterSystemPullLogFiles", 83886116, key.AccessTypeRead)
+	KeyRobomasterSystemCurrentHP                        = newKey("KeyRobomasterSystemCurrentHP", 83886117, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemTotalHP                          = newKey("KeyRobomasterSystemTotalHP", 83886118, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemCurrentBullets                   = newKey("KeyRobomasterSystemCurrentBullets", 83886119, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemTotalBullets                     = newKey("KeyRobomasterSystemTotalBullets", 83886120, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemEquipments                       = newKey("KeyRobomasterSystemEquipments", 83886121, key.AccessTypeRead)
+	KeyRobomasterSystemBuffs                            = newKey("KeyRobomasterSystemBuffs", 83886122, key.AccessTypeRead)
+	KeyRobomasterSystemSkillStatus                      = newKey("KeyRobomasterSystemSkillStatus", 83886123, key.AccessTypeRead)
+	KeyRobomasterSystemGunCoolDown                      = newKey("KeyRobomasterSystemGunCoolDown", 83886124, key.AccessTypeRead)
+	KeyRobomasterSystemGameConfigList                   = newKey("KeyRobomasterSystemGameConfigList", 83886125, key.AccessTypeWrite)
+	KeyRobomasterSystemCarAndSkillID                    = newKey("KeyRobomasterSystemCarAndSkillID", 83886126, key.AccessTypeWrite)
+	KeyRobomasterSystemAppStatus                        = newKey("KeyRobomasterSystemAppStatus", 83886127, key.AccessTypeWrite)
+	KeyRobomasterSystemLaunchMultiPlayerSkill           = newKey("KeyRobomasterSystemLaunchMultiPlayerSkill", 83886128, key.AccessTypeAction)
+	KeyRobomasterSystemStopMultiPlayerSkill             = newKey("KeyRobomasterSystemStopMultiPlayerSkill", 83886129, key.AccessTypeAction)
+	KeyRobomasterSystemConfigSkillTable                 = newKey("KeyRobomasterSystemConfigSkillTable", 83886130, key.AccessTypeWrite)
+	KeyRobomasterSystemWorkingDevices                   = newKey("KeyRobomasterSystemWorkingDevices", 83886131, key.AccessTypeRead)
+	KeyRobomasterSystemExceptions                       = newKey("KeyRobomasterSystemExceptions", 83886132, key.AccessTypeRead)
+	KeyRobomasterSystemTaskStatus                       = newKey("KeyRobomasterSystemTaskStatus", 83886133, key.AccessTypeRead)
+	KeyRobomasterSystemReturnEnabled                    = newKey("KeyRobomasterSystemReturnEnabled", 83886134, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemSafeMode                         = newKey("KeyRobomasterSystemSafeMode", 83886135, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemScratchExecuteState              = newKey("KeyRobomasterSystemScratchExecuteState", 83886136, key.AccessTypeRead)
+	KeyRobomasterSystemAttitudeInfo                     = newKey("KeyRobomasterSystemAttitudeInfo", 83886137, key.AccessTypeRead)
+	KeyRobomasterSystemSightBeadPosition                = newKey("KeyRobomasterSystemSightBeadPosition", 83886138, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemSpeakerLanguage                  = newKey("KeyRobomasterSystemSpeakerLanguage", 83886139, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemSpeakerVolumn                    = newKey("KeyRobomasterSystemSpeakerVolumn", 83886140, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemChassisSpeedLevel                = newKey("KeyRobomasterSystemChassisSpeedLevel", 83886141, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemIsEncryptedFirmware              = newKey("KeyRobomasterSystemIsEncryptedFirmware", 83886142, key.AccessTypeRead)
+	KeyRobomasterSystemScratchErrorInfo                 = newKey("KeyRobomasterSystemScratchErrorInfo", 83886143, key.AccessTypeRead)
+	KeyRobomasterSystemScratchOutputInfo                = newKey("KeyRobomasterSystemScratchOutputInfo", 83886144, key.AccessTypeRead)
+	KeyRobomasterSystemBarrelCoolDown                   = newKey("KeyRobomasterSystemBarrelCoolDown", 83886145, key.AccessTypeAction)
+	KeyRobomasterSystemResetBarrelOverheat              = newKey("KeyRobomasterSystemResetBarrelOverheat", 83886146, key.AccessTypeAction)
+	KeyRobomasterSystemMobileAccelerInfo                = newKey("KeyRobomasterSystemMobileAccelerInfo", 83886147, key.AccessTypeWrite)
+	KeyRobomasterSystemMobileGyroAttitudeAngleInfo      = newKey("KeyRobomasterSystemMobileGyroAttitudeAngleInfo", 83886148, key.AccessTypeWrite)
+	KeyRobomasterSystemMobileGyroRotationRateInfo       = newKey("KeyRobomasterSystemMobileGyroRotationRateInfo", 83886149, key.AccessTypeWrite)
+	KeyRobomasterSystemEnableAcceleratorSubscribe       = newKey("KeyRobomasterSystemEnableAcceleratorSubscribe", 83886150, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemEnableGyroRotationRateSubscribe  = newKey("KeyRobomasterSystemEnableGyroRotationRateSubscribe", 83886151, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemEnableGyroAttitudeAngleSubscribe = newKey("KeyRobomasterSystemEnableGyroAttitudeAngleSubscribe", 83886152, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemDeactivate                       = newKey("KeyRobomasterSystemDeactivate", 83886153, key.AccessTypeAction)
+	KeyRobomasterSystemFunctionEnable                   = newKey("KeyRobomasterSystemFunctionEnable", 83886154, key.AccessTypeAction)
+	KeyRobomasterSystemIsGameRunning                    = newKey("KeyRobomasterSystemIsGameRunning", 83886155, key.AccessTypeRead)
+	KeyRobomasterSystemIsActivated                      = newKey("KeyRobomasterSystemIsActivated", 83886156, key.AccessTypeRead)
+	KeyRobomasterSystemLowPowerConsumption              = newKey("KeyRobomasterSystemLowPowerConsumption", 83886157, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterSystemEnterLowPowerConsumption         = newKey("KeyRobomasterSystemEnterLowPowerConsumption", 83886158, key.AccessTypeAction)
+	KeyRobomasterSystemExitLowPowerConsumption          = newKey("KeyRobomasterSystemExitLowPowerConsumption", 83886159, key.AccessTypeAction)
+	KeyRobomasterSystemIsLowPowerConsumption            = newKey("KeyRobomasterSystemIsLowPowerConsumption", 83886160, key.AccessTypeRead)
+	KeyRobomasterSystemPushFile                         = newKey("KeyRobomasterSystemPushFile", 83886161, key.AccessTypeAction)
+	KeyRobomasterSystemPlaySound                        = newKey("KeyRobomasterSystemPlaySound", 83886162, key.AccessTypeAction)
+	KeyRobomasterSystemPlaySoundStatus                  = newKey("KeyRobomasterSystemPlaySoundStatus", 83886163, key.AccessTypeRead)
+	KeyRobomasterSystemCustomUIAttribute                = newKey("KeyRobomasterSystemCustomUIAttribute", 83886164, key.AccessTypeRead)
+	KeyRobomasterSystemCustomUIFunctionEvent            = newKey("KeyRobomasterSystemCustomUIFunctionEvent", 83886165, key.AccessTypeAction)
+	KeyRobomasterSystemTotalMileage                     = newKey("KeyRobomasterSystemTotalMileage", 83886166, key.AccessTypeRead)
+	KeyRobomasterSystemTotalDrivingTime                 = newKey("KeyRobomasterSystemTotalDrivingTime", 83886167, key.AccessTypeRead)
+	KeyRobomasterSystemSetPlayMode                      = newKey("KeyRobomasterSystemSetPlayMode", 83886168, key.AccessTypeWrite)
+	KeyRobomasterSystemCustomSkillInfo                  = newKey("KeyRobomasterSystemCustomSkillInfo", 83886169, key.AccessTypeRead)
+	KeyRobomasterSystemAddressing                       = newKey("KeyRobomasterSystemAddressing", 83886170, key.AccessTypeAction)
+	KeyRobomasterSystemLEDLightEffect                   = newKey("KeyRobomasterSystemLEDLightEffect", 83886171, key.AccessTypeAction)
+	KeyRobomasterSystemOpenImageTransmission            = newKey("KeyRobomasterSystemOpenImageTransmission", 83886172, key.AccessTypeAction)
+	KeyRobomasterSystemCloseImageTransmission           = newKey("KeyRobomasterSystemCloseImageTransmission", 83886173, key.AccessTypeAction)
+	KeyVisionFirmwareVersion                            = newKey("KeyVisionFirmwareVersion", 100663297, key.AccessTypeRead)
+	KeyVisionTrackingAutoLockTarget                     = newKey("KeyVisionTrackingAutoLockTarget", 100663298, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyVisionARParameters                               = newKey("KeyVisionARParameters", 100663299, key.AccessTypeRead)
+	KeyVisionARTagEnabled                               = newKey("KeyVisionARTagEnabled", 100663300, key.AccessTypeRead)
+	KeyVisionDebugRect                                  = newKey("KeyVisionDebugRect", 100663301, key.AccessTypeRead)
+	KeyVisionLaserPosition                              = newKey("KeyVisionLaserPosition", 100663302, key.AccessTypeRead)
+	KeyVisionDetectionEnable                            = newKey("KeyVisionDetectionEnable", 100663303, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyVisionMarkerRunningStatus                        = newKey("KeyVisionMarkerRunningStatus", 100663304, key.AccessTypeRead)
+	KeyVisionTrackingRunningStatus                      = newKey("KeyVisionTrackingRunningStatus", 100663305, key.AccessTypeRead)
+	KeyVisionAimbotRunningStatus                        = newKey("KeyVisionAimbotRunningStatus", 100663306, key.AccessTypeRead)
+	KeyVisionHeadAndShoulderStatus                      = newKey("KeyVisionHeadAndShoulderStatus", 100663307, key.AccessTypeRead)
+	KeyVisionHumanDetectionRunningStatus                = newKey("KeyVisionHumanDetectionRunningStatus", 100663308, key.AccessTypeRead)
+	KeyVisionUserConfirm                                = newKey("KeyVisionUserConfirm", 100663309, key.AccessTypeAction)
+	KeyVisionUserCancel                                 = newKey("KeyVisionUserCancel", 100663310, key.AccessTypeAction)
+	KeyVisionUserTrackingRect                           = newKey("KeyVisionUserTrackingRect", 100663311, key.AccessTypeWrite)
+	KeyVisionTrackingDistance                           = newKey("KeyVisionTrackingDistance", 100663312, key.AccessTypeWrite)
+	KeyVisionLineColor                                  = newKey("KeyVisionLineColor", 100663313, key.AccessTypeWrite)
+	KeyVisionMarkerColor                                = newKey("KeyVisionMarkerColor", 100663314, key.AccessTypeWrite)
+	KeyVisionMarkerAdvanceStatus                        = newKey("KeyVisionMarkerAdvanceStatus", 100663315, key.AccessTypeRead)
+	KeyPerceptionFirmwareVersion                        = newKey("KeyPerceptionFirmwareVersion", 184549377, key.AccessTypeRead)
+	KeyPerceptionMarkerEnable                           = newKey("KeyPerceptionMarkerEnable", 184549378, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyPerceptionMarkerResult                           = newKey("KeyPerceptionMarkerResult", 184549379, key.AccessTypeRead)
+	KeyESCFirmwareVersion1                              = newKey("KeyESCFirmwareVersion1", 201326593, key.AccessTypeRead)
+	KeyESCFirmwareVersion2                              = newKey("KeyESCFirmwareVersion2", 201326594, key.AccessTypeRead)
+	KeyESCFirmwareVersion3                              = newKey("KeyESCFirmwareVersion3", 201326595, key.AccessTypeRead)
+	KeyESCFirmwareVersion4                              = newKey("KeyESCFirmwareVersion4", 201326596, key.AccessTypeRead)
+	KeyESCMotorInfomation1                              = newKey("KeyESCMotorInfomation1", 201326597, key.AccessTypeRead)
+	KeyESCMotorInfomation2                              = newKey("KeyESCMotorInfomation2", 201326598, key.AccessTypeRead)
+	KeyESCMotorInfomation3                              = newKey("KeyESCMotorInfomation3", 201326599, key.AccessTypeRead)
+	KeyESCMotorInfomation4                              = newKey("KeyESCMotorInfomation4", 201326600, key.AccessTypeRead)
+	KeyWiFiLinkFirmwareVersion                          = newKey("KeyWiFiLinkFirmwareVersion", 134217729, key.AccessTypeRead)
+	KeyWiFiLinkDebugInfo                                = newKey("KeyWiFiLinkDebugInfo", 134217730, key.AccessTypeRead)
+	KeyWiFiLinkMode                                     = newKey("KeyWiFiLinkMode", 134217731, key.AccessTypeRead)
+	KeyWiFiLinkSSID                                     = newKey("KeyWiFiLinkSSID", 134217732, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyWiFiLinkPassword                                 = newKey("KeyWiFiLinkPassword", 134217733, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyWiFiLinkAvailableChannelNumbers                  = newKey("KeyWiFiLinkAvailableChannelNumbers", 134217734, key.AccessTypeRead)
+	KeyWiFiLinkCurrentChannelNumber                     = newKey("KeyWiFiLinkCurrentChannelNumber", 134217735, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyWiFiLinkSNR                                      = newKey("KeyWiFiLinkSNR", 134217736, key.AccessTypeRead)
+	KeyWiFiLinkSNRPushEnabled                           = newKey("KeyWiFiLinkSNRPushEnabled", 134217737, key.AccessTypeWrite)
+	KeyWiFiLinkReboot                                   = newKey("KeyWiFiLinkReboot", 134217738, key.AccessTypeAction)
+	KeyWiFiLinkChannelSelectionMode                     = newKey("KeyWiFiLinkChannelSelectionMode", 134217739, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyWiFiLinkInterference                             = newKey("KeyWiFiLinkInterference", 134217740, key.AccessTypeRead)
+	KeyWiFiLinkDeleteNetworkConfig                      = newKey("KeyWiFiLinkDeleteNetworkConfig", 134217741, key.AccessTypeAction)
+	KeySDRLinkSNR                                       = newKey("KeySDRLinkSNR", 268435457, key.AccessTypeRead)
+	KeySDRLinkBandwidth                                 = newKey("KeySDRLinkBandwidth", 268435458, key.AccessTypeRead|key.AccessTypeWrite)
+	KeySDRLinkChannelSelectionMode                      = newKey("KeySDRLinkChannelSelectionMode", 268435459, key.AccessTypeRead|key.AccessTypeWrite)
+	KeySDRLinkCurrentFreqPoint                          = newKey("KeySDRLinkCurrentFreqPoint", 268435460, key.AccessTypeRead|key.AccessTypeWrite)
+	KeySDRLinkCurrentFreqBand                           = newKey("KeySDRLinkCurrentFreqBand", 268435461, key.AccessTypeRead|key.AccessTypeWrite)
+	KeySDRLinkIsDualFreqSupported                       = newKey("KeySDRLinkIsDualFreqSupported", 268435462, key.AccessTypeRead)
+	KeySDRLinkUpdateConfigs                             = newKey("KeySDRLinkUpdateConfigs", 268435463, key.AccessTypeAction)
+	KeyAirLinkConnection                                = newKey("KeyAirLinkConnection", 117440513, key.AccessTypeRead)
+	KeyAirLinkSignalQuality                             = newKey("KeyAirLinkSignalQuality", 117440514, key.AccessTypeRead)
+	KeyAirLinkCountryCode                               = newKey("KeyAirLinkCountryCode", 117440515, key.AccessTypeWrite)
+	KeyAirLinkCountryCodeUpdated                        = newKey("KeyAirLinkCountryCodeUpdated", 117440516, key.AccessTypeRead)
+	KeyArmorFirmwareVersion1                            = newKey("KeyArmorFirmwareVersion1", 150994945, key.AccessTypeRead)
+	KeyArmorFirmwareVersion2                            = newKey("KeyArmorFirmwareVersion2", 150994946, key.AccessTypeRead)
+	KeyArmorFirmwareVersion3                            = newKey("KeyArmorFirmwareVersion3", 150994947, key.AccessTypeRead)
+	KeyArmorFirmwareVersion4                            = newKey("KeyArmorFirmwareVersion4", 150994948, key.AccessTypeRead)
+	KeyArmorFirmwareVersion5                            = newKey("KeyArmorFirmwareVersion5", 150994949, key.AccessTypeRead)
+	KeyArmorFirmwareVersion6                            = newKey("KeyArmorFirmwareVersion6", 150994950, key.AccessTypeRead)
+	KeyArmorUnderAttack                                 = newKey("KeyArmorUnderAttack", 150994951, key.AccessTypeRead)
+	KeyArmorEnterResetID                                = newKey("KeyArmorEnterResetID", 150994952, key.AccessTypeAction)
+	KeyArmorCancelResetID                               = newKey("KeyArmorCancelResetID", 150994953, key.AccessTypeAction)
+	KeyArmorSkipCurrentID                               = newKey("KeyArmorSkipCurrentID", 150994954, key.AccessTypeAction)
+	KeyArmorResetStatus                                 = newKey("KeyArmorResetStatus", 150994955, key.AccessTypeRead)
+	KeyRobomasterWaterGunFirmwareVersion                = newKey("KeyRobomasterWaterGunFirmwareVersion", 167772161, key.AccessTypeRead)
+	KeyRobomasterWaterGunWaterGunFire                   = newKey("KeyRobomasterWaterGunWaterGunFire", 167772162, key.AccessTypeAction)
+	KeyRobomasterWaterGunWaterGunFireWithTimes          = newKey("KeyRobomasterWaterGunWaterGunFireWithTimes", 167772163, key.AccessTypeAction)
+	KeyRobomasterWaterGunShootSpeed                     = newKey("KeyRobomasterWaterGunShootSpeed", 167772164, key.AccessTypeRead)
+	KeyRobomasterWaterGunShootFrequency                 = newKey("KeyRobomasterWaterGunShootFrequency", 167772165, key.AccessTypeRead)
+	KeyRobomasterInfraredGunConnection                  = newKey("KeyRobomasterInfraredGunConnection", 301989889, key.AccessTypeRead)
+	KeyRobomasterInfraredGunFirmwareVersion             = newKey("KeyRobomasterInfraredGunFirmwareVersion", 301989890, key.AccessTypeRead)
+	KeyRobomasterInfraredGunInfraredGunFire             = newKey("KeyRobomasterInfraredGunInfraredGunFire", 301989891, key.AccessTypeAction)
+	KeyRobomasterInfraredGunShootFrequency              = newKey("KeyRobomasterInfraredGunShootFrequency", 301989892, key.AccessTypeRead)
+	KeyRobomasterBatteryFirmwareVersion                 = newKey("KeyRobomasterBatteryFirmwareVersion", 218103809, key.AccessTypeRead)
+	KeyRobomasterBatteryPowerPercent                    = newKey("KeyRobomasterBatteryPowerPercent", 218103810, key.AccessTypeRead)
+	KeyRobomasterBatteryVoltage                         = newKey("KeyRobomasterBatteryVoltage", 218103811, key.AccessTypeRead)
+	KeyRobomasterBatteryTemperature                     = newKey("KeyRobomasterBatteryTemperature", 218103812, key.AccessTypeRead)
+	KeyRobomasterBatteryCurrent                         = newKey("KeyRobomasterBatteryCurrent", 218103813, key.AccessTypeRead)
+	KeyRobomasterBatteryShutdown                        = newKey("KeyRobomasterBatteryShutdown", 218103814, key.AccessTypeAction)
+	KeyRobomasterBatteryReboot                          = newKey("KeyRobomasterBatteryReboot", 218103815, key.AccessTypeAction)
+	KeyRobomasterGamePadConnection                      = newKey("KeyRobomasterGamePadConnection", 234881025, key.AccessTypeRead)
+	KeyRobomasterGamePadFirmwareVersion                 = newKey("KeyRobomasterGamePadFirmwareVersion", 234881026, key.AccessTypeRead)
+	KeyRobomasterGamePadHasMouse                        = newKey("KeyRobomasterGamePadHasMouse", 234881027, key.AccessTypeRead)
+	KeyRobomasterGamePadHasKeyboard                     = newKey("KeyRobomasterGamePadHasKeyboard", 234881028, key.AccessTypeRead)
+	KeyRobomasterGamePadCtrlSensitivityX                = newKey("KeyRobomasterGamePadCtrlSensitivityX", 234881029, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityY                = newKey("KeyRobomasterGamePadCtrlSensitivityY", 234881030, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityYaw              = newKey("KeyRobomasterGamePadCtrlSensitivityYaw", 234881031, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityYawSlop          = newKey("KeyRobomasterGamePadCtrlSensitivityYawSlop", 234881032, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityYawDeadZone      = newKey("KeyRobomasterGamePadCtrlSensitivityYawDeadZone", 234881033, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityPitch            = newKey("KeyRobomasterGamePadCtrlSensitivityPitch", 234881034, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityPitchSlop        = newKey("KeyRobomasterGamePadCtrlSensitivityPitchSlop", 234881035, key.AccessTypeWrite)
+	KeyRobomasterGamePadCtrlSensitivityPitchDeadZone    = newKey("KeyRobomasterGamePadCtrlSensitivityPitchDeadZone", 234881036, key.AccessTypeWrite)
+	KeyRobomasterGamePadMouseLeftButton                 = newKey("KeyRobomasterGamePadMouseLeftButton", 234881037, key.AccessTypeRead)
+	KeyRobomasterGamePadMouseRightButton                = newKey("KeyRobomasterGamePadMouseRightButton", 234881038, key.AccessTypeRead)
+	KeyRobomasterGamePadC1                              = newKey("KeyRobomasterGamePadC1", 234881039, key.AccessTypeRead)
+	KeyRobomasterGamePadC2                              = newKey("KeyRobomasterGamePadC2", 234881040, key.AccessTypeRead)
+	KeyRobomasterGamePadFire                            = newKey("KeyRobomasterGamePadFire", 234881041, key.AccessTypeRead)
+	KeyRobomasterGamePadFn                              = newKey("KeyRobomasterGamePadFn", 234881042, key.AccessTypeRead)
+	KeyRobomasterGamePadNoCalibrate                     = newKey("KeyRobomasterGamePadNoCalibrate", 234881043, key.AccessTypeRead)
+	KeyRobomasterGamePadNotAtMiddle                     = newKey("KeyRobomasterGamePadNotAtMiddle", 234881044, key.AccessTypeRead)
+	KeyRobomasterGamePadBatteryWarning                  = newKey("KeyRobomasterGamePadBatteryWarning", 234881045, key.AccessTypeRead)
+	KeyRobomasterGamePadBatteryPercent                  = newKey("KeyRobomasterGamePadBatteryPercent", 234881046, key.AccessTypeRead)
+	KeyRobomasterGamePadActivationSettings              = newKey("KeyRobomasterGamePadActivationSettings", 234881047, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterGamePadControlEnabled                  = newKey("KeyRobomasterGamePadControlEnabled", 234881048, key.AccessTypeWrite)
+	KeyRobomasterClawConnection                         = newKey("KeyRobomasterClawConnection", 251658241, key.AccessTypeRead)
+	KeyRobomasterClawFirmwareVersion                    = newKey("KeyRobomasterClawFirmwareVersion", 251658242, key.AccessTypeRead)
+	KeyRobomasterClawCtrl                               = newKey("KeyRobomasterClawCtrl", 251658243, key.AccessTypeAction)
+	KeyRobomasterClawStatus                             = newKey("KeyRobomasterClawStatus", 251658244, key.AccessTypeRead)
+	KeyRobomasterClawInfoSubscribe                      = newKey("KeyRobomasterClawInfoSubscribe", 251658245, key.AccessTypeRead)
+	KeyRobomasterEnableClawInfoSubscribe                = newKey("KeyRobomasterEnableClawInfoSubscribe", 251658246, key.AccessTypeAction)
+	KeyRobomasterArmConnection                          = newKey("KeyRobomasterArmConnection", 285212673, key.AccessTypeRead)
+	KeyRobomasterArmCtrl                                = newKey("KeyRobomasterArmCtrl", 285212674, key.AccessTypeAction)
+	KeyRobomasterArmCtrlMode                            = newKey("KeyRobomasterArmCtrlMode", 285212675, key.AccessTypeAction)
+	KeyRobomasterArmCalibration                         = newKey("KeyRobomasterArmCalibration", 285212676, key.AccessTypeAction)
+	KeyRobomasterArmBlockedFlag                         = newKey("KeyRobomasterArmBlockedFlag", 285212677, key.AccessTypeRead)
+	KeyRobomasterArmPositionSubscribe                   = newKey("KeyRobomasterArmPositionSubscribe", 285212678, key.AccessTypeRead)
+	KeyRobomasterArmReachLimitX                         = newKey("KeyRobomasterArmReachLimitX", 285212679, key.AccessTypeRead)
+	KeyRobomasterArmReachLimitY                         = newKey("KeyRobomasterArmReachLimitY", 285212680, key.AccessTypeRead)
+	KeyRobomasterEnableArmInfoSubscribe                 = newKey("KeyRobomasterEnableArmInfoSubscribe", 285212681, key.AccessTypeAction)
+	KeyRobomasterArmControlMode                         = newKey("KeyRobomasterArmControlMode", 285212682, key.AccessTypeRead|key.AccessTypeWrite)
+	KeyRobomasterTOFConnection                          = newKey("KeyRobomasterTOFConnection", 318767105, key.AccessTypeRead)
+	KeyRobomasterTOFLEDColor                            = newKey("KeyRobomasterTOFLEDColor", 318767106, key.AccessTypeWrite)
+	KeyRobomasterTOFOnlineModules                       = newKey("KeyRobomasterTOFOnlineModules", 318767107, key.AccessTypeRead)
+	KeyRobomasterTOFInfoSubscribe                       = newKey("KeyRobomasterTOFInfoSubscribe", 318767108, key.AccessTypeRead)
+	KeyRobomasterEnableTOFInfoSubscribe                 = newKey("KeyRobomasterEnableTOFInfoSubscribe", 318767109, key.AccessTypeAction)
+	KeyRobomasterTOFFirmwareVersion1                    = newKey("KeyRobomasterTOFFirmwareVersion1", 318767110, key.AccessTypeRead)
+	KeyRobomasterTOFFirmwareVersion2                    = newKey("KeyRobomasterTOFFirmwareVersion2", 318767111, key.AccessTypeRead)
+	KeyRobomasterTOFFirmwareVersion3                    = newKey("KeyRobomasterTOFFirmwareVersion3", 318767112, key.AccessTypeRead)
+	KeyRobomasterTOFFirmwareVersion4                    = newKey("KeyRobomasterTOFFirmwareVersion4", 318767113, key.AccessTypeRead)
+	KeyRobomasterServoConnection                        = newKey("KeyRobomasterServoConnection", 335544321, key.AccessTypeRead)
+	KeyRobomasterServoLEDColor                          = newKey("KeyRobomasterServoLEDColor", 335544322, key.AccessTypeWrite)
+	KeyRobomasterServoSpeed                             = newKey("KeyRobomasterServoSpeed", 335544323, key.AccessTypeWrite)
+	KeyRobomasterServoOnlineModules                     = newKey("KeyRobomasterServoOnlineModules", 335544324, key.AccessTypeRead)
+	KeyRobomasterServoInfoSubscribe                     = newKey("KeyRobomasterServoInfoSubscribe", 335544325, key.AccessTypeRead)
+	KeyRobomasterEnableServoInfoSubscribe               = newKey("KeyRobomasterEnableServoInfoSubscribe", 335544326, key.AccessTypeAction)
+	KeyRobomasterServoFirmwareVersion1                  = newKey("KeyRobomasterServoFirmwareVersion1", 335544327, key.AccessTypeRead)
+	KeyRobomasterServoFirmwareVersion2                  = newKey("KeyRobomasterServoFirmwareVersion2", 335544328, key.AccessTypeRead)
+	KeyRobomasterServoFirmwareVersion3                  = newKey("KeyRobomasterServoFirmwareVersion3", 335544329, key.AccessTypeRead)
+	KeyRobomasterServoFirmwareVersion4                  = newKey("KeyRobomasterServoFirmwareVersion4", 335544330, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterConnection                = newKey("KeyRobomasterSensorAdapterConnection", 352321537, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterOnlineModules             = newKey("KeyRobomasterSensorAdapterOnlineModules", 352321538, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterInfoSubscribe             = newKey("KeyRobomasterSensorAdapterInfoSubscribe", 352321539, key.AccessTypeRead)
+	KeyRobomasterEnableSensorAdapterInfoSubscribe       = newKey("KeyRobomasterEnableSensorAdapterInfoSubscribe", 352321540, key.AccessTypeAction)
+	KeyRobomasterSensorAdapterFirmwareVersion1          = newKey("KeyRobomasterSensorAdapterFirmwareVersion1", 352321541, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterFirmwareVersion2          = newKey("KeyRobomasterSensorAdapterFirmwareVersion2", 352321542, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterFirmwareVersion3          = newKey("KeyRobomasterSensorAdapterFirmwareVersion3", 352321543, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterFirmwareVersion4          = newKey("KeyRobomasterSensorAdapterFirmwareVersion4", 352321544, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterFirmwareVersion5          = newKey("KeyRobomasterSensorAdapterFirmwareVersion5", 352321545, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterFirmwareVersion6          = newKey("KeyRobomasterSensorAdapterFirmwareVersion6", 352321546, key.AccessTypeRead)
+	KeyRobomasterSensorAdapterLEDColor                  = newKey("KeyRobomasterSensorAdapterLEDColor", 352321547, key.AccessTypeWrite)
+)
+
+func (k *Key) String() string {
+	return k.name
+}
+
+func (k *Key) Value() int32 {
+	return k.value
+}
+
+func (k *Key) AccessType() key.AccessType {
+	return k.accessType
+}
+
+func KeyByValue(value int32) *Key {
+	k, ok := keyByValue[value]
+	if !ok {
+		panic(fmt.Sprintf("KeyByValue: invalid value %d", value))
+	}
+
+	return k
+}
