@@ -4,7 +4,9 @@ package implementations
 
 /*
 #include <dlfcn.h>
-#include <stdlib.h
+#include <stdlib.h>
+
+#include "../event/callback.h"
 
 void CreateUnityBridgeCaller(void *f, const char *name, bool debuggable,
                              const char *log_path) {
@@ -17,10 +19,9 @@ bool UnityBridgeInitializeCaller(void *f) { return ((bool (*)())f)(); }
 
 void UnityBridgeUninitializeCaller(void *f) { ((void (*)())f)(); }
 
-void UnitySendEventCaller(void *f, uint64_t event_code, uintptr_t data,
-                          int length, uint64_t tag) {
-  ((void (*)(uint64_t, uintptr_t, int, uint64_t))f)(event_code, data, length,
-                                                    tag);
+void UnitySendEventCaller(void *f, uint64_t event_code, intptr_t data,
+	                      uint64_t tag) {
+  ((void (*)(uint64_t, uintptr_t, uint64_t))f)(event_code, data, tag);
 }
 
 void UnitySendEventWithStringCaller(void *f, uint64_t event_code,
@@ -76,7 +77,7 @@ func init() {
 	defer C.free(unsafe.Pointer(cLibPath))
 
 	UnityBridgeImpl.handle = C.dlopen(cLibPath, C.RTLD_NOW)
-	if unityBridge.handle == nil {
+	if UnityBridgeImpl.handle == nil {
 		cError := C.dlerror()
 
 		panic(fmt.Sprintf("Could not load Unity Bridge library at \"%s\": %s",
