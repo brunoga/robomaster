@@ -8,8 +8,8 @@ Supported platforms:
 |Platform            | Support                                          |
 |--------------------|--------------------------------------------------|
 |Windows (AMD64)     | Native                                           |
-|MacOS (AMD64, ARM64)| Native for AMD64 and through Rosetta for ARM64.  |
-|Linux (AMD64)       | Through a Wine bridge that hosts the Windows DLL.| 
+|MacOS (AMD64, ARM64)| Native for AMD64 and through Rosetta for ARM64   |
+|Linux (AMD64)       | Through a Wine bridge that hosts the Windows DLL | 
 |iOS (ARM64)         | Native                                           |
 |Android (ARM, ARM64)| Native                                           |
 
