@@ -1,7 +1,7 @@
 package event
 
 // Type represents a Unity Bridge event type.
-type Type int32
+type Type uint32
 
 const (
 	TypeSetValue          Type = iota // Sets the value of an attribute.

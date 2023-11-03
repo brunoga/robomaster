@@ -227,15 +227,13 @@ func runUnitySendEventWithNumber(data []byte, b *bytes.Buffer) {
 }
 
 func runUnitySetEventCallback(data []byte, b *bytes.Buffer) {
-	eventCode := binary.BigEndian.Uint64(data[0:8])
-	add := data[8] != 0
-
-	e := event.NewFromCode(eventCode)
+	eventType := event.Type(binary.BigEndian.Uint32(data[0:4]))
+	add := data[4] != 0
 
 	if add {
-		unitybridge.Get().SetEventCallback(e, callbackHandler.HandleCallback)
+		unitybridge.Get().SetEventCallback(eventType, callbackHandler.HandleCallback)
 	} else {
-		unitybridge.Get().SetEventCallback(e, nil)
+		unitybridge.Get().SetEventCallback(eventType, nil)
 	}
 
 	// Write data size.

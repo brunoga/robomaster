@@ -15,7 +15,7 @@ import (
 // number of them. I will set the attributes that I need as I need them.
 type Key struct {
 	name       string
-	value      int32
+	value      uint32
 	accessType key.AccessType
 }
 
@@ -28,7 +28,7 @@ func init() {
 }
 
 var (
-	keyByValue = make(map[int32]*Key, numKeys)
+	keyByValue = make(map[uint32]*Key, numKeys)
 
 	KeyProductTest                                      = newKey("KeyProductTest", 1, key.AccessTypeWrite)
 	KeyProductType                                      = newKey("KeyProductType", 2, key.AccessTypeRead)
@@ -381,7 +381,7 @@ func (k *Key) String() string {
 }
 
 // Value returns the value of the Key.
-func (k *Key) Value() int32 {
+func (k *Key) Value() uint32 {
 	return k.value
 }
 
@@ -392,7 +392,7 @@ func (k *Key) AccessType() key.AccessType {
 
 // KeyByValue returns a Key by its value. It panics in case the value is not
 // known.
-func KeyByValue(value int32) *Key {
+func KeyByValue(value uint32) *Key {
 	k, ok := keyByValue[value]
 	if !ok {
 		panic(fmt.Sprintf("KeyByValue: invalid value %d", value))
@@ -401,7 +401,7 @@ func KeyByValue(value int32) *Key {
 	return k
 }
 
-func newKey(name string, value int32, accessType key.AccessType) *Key {
+func newKey(name string, value uint32, accessType key.AccessType) *Key {
 	k := &Key{
 		name:       name,
 		value:      value,

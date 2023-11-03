@@ -94,21 +94,21 @@ func (u *loadLibraryUnityBridgeImpl) Initialize() bool {
 	return ret != 0
 }
 
-func (u *loadLibraryUnityBridgeImpl) SetEventCallback(e *event.Event,
+func (u *loadLibraryUnityBridgeImpl) SetEventCallback(t event.Type,
 	callback event.Callback) {
 	var eventCallbackUintptr uintptr
 	if callback != nil {
 		eventCallbackUintptr = uintptr(C.eventCallbackC)
 	}
 
-	eventCode := e.Code()
+	eventCode := event.NewFromType(t).Code()
 
 	_, _, _ = u.unitySetEventCallback.Call(
 		uintptr(eventCode),
 		eventCallbackUintptr,
 	)
 
-	internal_event.SetEventCallback(eventCode, callback)
+	internal_event.SetEventCallback(t, callback)
 }
 
 func (u *loadLibraryUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,

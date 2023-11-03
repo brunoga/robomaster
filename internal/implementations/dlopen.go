@@ -133,19 +133,19 @@ func (d *dlOpenUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitializeCaller(d.unityBridgeInitialize))
 }
 
-func (d *dlOpenUnityBridgeImpl) SetEventCallback(e *event.Event,
+func (d *dlOpenUnityBridgeImpl) SetEventCallback(t event.Type,
 	callback event.Callback) {
 	var eventCallback C.EventCallback
 	if callback != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
 
-	eventCode := e.Code()
+	eventCode := event.NewFromType(t).Code()
 
 	C.UnitySetEventCallbackCaller(unsafe.Pointer(d.unitySetEventCallback),
 		C.uint64_t(eventCode), eventCallback)
 
-	internal_event.SetEventCallback(eventCode, callback)
+	internal_event.SetEventCallback(t, callback)
 }
 
 func (d *dlOpenUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,

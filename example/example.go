@@ -44,14 +44,12 @@ func main() {
 	defer ub.Uninitialize()
 
 	for _, typ := range event.AllTypes() {
-		e := event.NewFromType(typ)
-		ub.SetEventCallback(e, callbackHandler)
+		ub.SetEventCallback(typ, callbackHandler)
 	}
 
 	time.Sleep(5 * time.Second)
 
 	for _, typ := range event.AllTypes() {
-		e := event.NewFromType(typ)
-		ub.SetEventCallback(e, nil)
+		ub.SetEventCallback(typ, nil)
 	}
 }

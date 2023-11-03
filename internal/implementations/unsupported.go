@@ -26,7 +26,7 @@ func (u *unsupportedUnityBridgeImpl) Create(name string, debuggable bool,
 
 func (u *unsupportedUnityBridgeImpl) Initialize() bool { return false }
 
-func (u *unsupportedUnityBridgeImpl) SetEventCallback(e *event.Event,
+func (u *unsupportedUnityBridgeImpl) SetEventCallback(t event.Type,
 	callback event.Callback) {
 }
 

@@ -49,18 +49,18 @@ func (u *linkUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitialize())
 }
 
-func (u *linkUnityBridgeImpl) SetEventCallback(e *event.Event,
+func (u *linkUnityBridgeImpl) SetEventCallback(t event.Type,
 	callback event.Callback) {
 	var eventCallback C.EventCallback
 	if callback != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
 
-	eventCode := e.Code()
+	eventCode := event.NewFromType(t).Code()
 
 	C.UnitySetEventCallback(C.uint64_t(eventCode), eventCallback)
 
-	internal_event.SetEventCallback(eventCode, callback)
+	internal_event.SetEventCallback(t, callback)
 }
 
 func (u *linkUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,

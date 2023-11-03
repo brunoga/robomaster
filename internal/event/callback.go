@@ -11,26 +11,26 @@ import (
 
 var (
 	m                         sync.Mutex
-	eventCodeEventCallbackMap = make(map[uint64]event.Callback)
+	eventCodeEventCallbackMap = make(map[event.Type]event.Callback)
 )
 
-func SetEventCallback(eventCode uint64, callback event.Callback) error {
+func SetEventCallback(eventType event.Type, callback event.Callback) error {
 	m.Lock()
 	defer m.Unlock()
 
-	_, ok := eventCodeEventCallbackMap[eventCode]
+	_, ok := eventCodeEventCallbackMap[eventType]
 	if !ok {
 		if callback == nil {
-			return fmt.Errorf("no callback for event code %d found", eventCode)
+			return fmt.Errorf("no callback for event type %q found", eventType)
 		}
 
-		eventCodeEventCallbackMap[eventCode] = callback
+		eventCodeEventCallbackMap[eventType] = callback
 	} else {
 		if callback == nil {
-			delete(eventCodeEventCallbackMap, eventCode)
+			delete(eventCodeEventCallbackMap, eventType)
 		} else {
-			return fmt.Errorf("callback for event code %d already set",
-				eventCode)
+			return fmt.Errorf("callback for event type %q already set",
+				eventType)
 		}
 	}
 
@@ -41,14 +41,14 @@ func RunEventCallback(eventCode uint64, data []byte, tag uint64) error {
 	m.Lock()
 	defer m.Unlock()
 
-	callback, ok := eventCodeEventCallbackMap[eventCode]
+	e := event.NewFromCode(eventCode)
+
+	callback, ok := eventCodeEventCallbackMap[e.Type()]
 	if !ok {
-		return fmt.Errorf("no handlers for event code %d", eventCode)
+		return fmt.Errorf("no handlers for event type %s", e.Type())
 	}
 
-	ev := event.NewFromCode(eventCode)
-
-	go callback(ev, data, tag)
+	go callback(e, data, tag)
 
 	return nil
 }

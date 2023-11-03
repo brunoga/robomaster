@@ -8,4 +8,4 @@ package event
 // information about the data type of the event (0 for string and 1 for uint64)
 // but only when the event refers to a event type only and not to an actual
 // specific event.
-type Callback func(e *Event, data []byte, tag uint64)
+type Callback func(t *Event, data []byte, tag uint64)
