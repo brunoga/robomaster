@@ -29,7 +29,8 @@ func SetEventCallback(eventCode uint64, callback event.Callback) error {
 		if callback == nil {
 			delete(eventCodeEventCallbackMap, eventCode)
 		} else {
-			return fmt.Errorf("callback for event code %d already set", eventCode)
+			return fmt.Errorf("callback for event code %d already set",
+				eventCode)
 		}
 	}
 
@@ -45,7 +46,9 @@ func RunEventCallback(eventCode uint64, data []byte, tag uint64) error {
 		return fmt.Errorf("no handlers for event code %d", eventCode)
 	}
 
-	go callback(eventCode, data, tag)
+	ev := event.NewFromCode(eventCode)
+
+	go callback(ev, data, tag)
 
 	return nil
 }

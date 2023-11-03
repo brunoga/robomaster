@@ -69,7 +69,8 @@ type loadLibraryUnityBridgeImpl struct {
 	UnityGetSecurityKeyByKeyChainIndex *syscall.Proc
 }
 
-func (u *loadLibraryUnityBridgeImpl) Create(name string, debuggable bool, logPath string) {
+func (u *loadLibraryUnityBridgeImpl) Create(name string, debuggable bool,
+	logPath string) {
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -93,12 +94,14 @@ func (u *loadLibraryUnityBridgeImpl) Initialize() bool {
 	return ret != 0
 }
 
-func (u *loadLibraryUnityBridgeImpl) SetEventCallback(eventCode uint64,
+func (u *loadLibraryUnityBridgeImpl) SetEventCallback(e *event.Event,
 	callback event.Callback) {
 	var eventCallbackUintptr uintptr
 	if callback != nil {
 		eventCallbackUintptr = uintptr(C.eventCallbackC)
 	}
+
+	eventCode := e.Code()
 
 	_, _, _ = u.unitySetEventCallback.Call(
 		uintptr(eventCode),
@@ -108,35 +111,39 @@ func (u *loadLibraryUnityBridgeImpl) SetEventCallback(eventCode uint64,
 	internal_event.SetEventCallback(eventCode, callback)
 }
 
-func (u *loadLibraryUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr, tag uint64) {
+func (u *loadLibraryUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
+	tag uint64) {
 	_, _, _ = u.unitySendEvent.Call(
-		uintptr(eventCode),
+		uintptr(e.Code()),
 		data,
 		uintptr(tag),
 	)
 
 }
 
-func (u *loadLibraryUnityBridgeImpl) SendEventWithString(eventCode uint64, data string, tag uint64) {
+func (u *loadLibraryUnityBridgeImpl) SendEventWithString(e *event.Event,
+	data string, tag uint64) {
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
 	_, _, _ = u.unitySendEventWithString.Call(
-		uintptr(eventCode),
+		uintptr(e.Code()),
 		uintptr(unsafe.Pointer(cData)),
 		uintptr(tag),
 	)
 }
 
-func (u *loadLibraryUnityBridgeImpl) SendEventWithNumber(eventCode, data, tag uint64) {
+func (u *loadLibraryUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
+	tag uint64) {
 	_, _, _ = u.unitySendEventWithNumber.Call(
-		uintptr(eventCode),
+		uintptr(e.Code()),
 		uintptr(data),
 		uintptr(tag),
 	)
 }
 
-func (u *loadLibraryUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
+func (u *loadLibraryUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(
+	index int) string {
 	cKeyUintptr, _, _ := u.UnityGetSecurityKeyByKeyChainIndex.Call(
 		uintptr(index),
 	)

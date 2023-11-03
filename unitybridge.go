@@ -20,24 +20,27 @@ type UnityBridge interface {
 	// successful.
 	Initialize() bool
 
-	// SetEventCallback sets the callback function for given eventCode.
-	// Note that eventCode can also represent an event type (by making sure
-	// subType is zero) and then any events with that type will be sent to the
-	// given callback.
-	SetEventCallback(eventCode uint64, callback event.Callback)
+	// SetEventCallback sets the callback function for given event. Note that
+	// event seems to always represent an event type (by making sure sub-type
+	// is zero) and then any events with that type will be sent to the given
+	// callback. It might or might not work with a specified sub-type.
+	//
+	// TODO(bga): Test if it works with a specified sub-type. Meaning that
+	//            setting a callback to a specific event should only get
+	//            notifications about it (and not about all events of the same
+	//            type).
+	SetEventCallback(event *event.Event, callback event.Callback)
 
-	// SendEvent sends an event with given eventCode, data, and tag. The data
-	// field in this case will usually be uintptr(0) to indicate no data. As
-	// there is no way to express the actual length of the data being sent.
-	SendEvent(eventCode uint64, data uintptr, tag uint64)
+	// SendEvent sends an event with the given data and tag. The data field in
+	// this case will usually be uintptr(0) to indicate no data. As there is no
+	// way to express the actual length of the data being sent.
+	SendEvent(event *event.Event, data uintptr, tag uint64)
 
-	// SendEventWithString sends an event with given eventCode, string data, and
-	// tag.
-	SendEventWithString(eventCode uint64, data string, tag uint64)
+	// SendEventWithString sends an event with the given string data and tag.
+	SendEventWithString(event *event.Event, data string, tag uint64)
 
-	// SendEventWithNumber sends an event with given eventCode, number data, and
-	/// tag.
-	SendEventWithNumber(eventCode, data, tag uint64)
+	// SendEventWithNumber sends an event with the given number data and tag.
+	SendEventWithNumber(event *event.Event, data, tag uint64)
 
 	// GetSecurityKeyByKeyChainIndex returns the security key associated with
 	// the given index.

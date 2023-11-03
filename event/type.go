@@ -1,5 +1,3 @@
-//go:generate go run github.com/dmarkham/enumer -type=Type
-
 package event
 
 // Type represents a Unity Bridge event type.
@@ -28,3 +26,75 @@ const (
 	TypeVideoDataRecv      Type = 306
 	TypeNativeFunctions    Type = 500
 )
+
+func (t Type) String() string {
+	switch t {
+	case TypeSetValue:
+		return "SetValue"
+	case TypeGetValue:
+		return "GetValue"
+	case TypeGetAvailableValue:
+		return "GetAvailableValue"
+	case TypePerformAction:
+		return "PerformAction"
+	case TypeStartListening:
+		return "StartListening"
+	case TypeStopListening:
+		return "StopListening"
+	case TypeActivation:
+		return "Activation"
+	case TypeLocalAlbum:
+		return "LocalAlbum"
+	case TypeFirmwareUpgrade:
+		return "FirmwareUpgrade"
+	case TypeConnection:
+		return "Connection"
+	case TypeSecurity:
+		return "Security"
+	case TypePrintLog:
+		return "PrintLog"
+	case TypeStartVideo:
+		return "StartVideo"
+	case TypeStopVideo:
+		return "StopVideo"
+	case TypeRender:
+		return "Render"
+	case TypeGetNativeTexture:
+		return "GetNativeTexture"
+	case TypeVideoTransferSpeed:
+		return "VideoTransferSpeed"
+	case TypeAudioDataRecv:
+		return "AudioDataRecv"
+	case TypeVideoDataRecv:
+		return "VideoDataRecv"
+	case TypeNativeFunctions:
+		return "NativeFunctions"
+	}
+
+	return "Unknown"
+}
+
+func AllTypes() []Type {
+	return []Type{
+		TypeSetValue,
+		TypeGetValue,
+		TypeGetAvailableValue,
+		TypePerformAction,
+		TypeStartListening,
+		TypeStopListening,
+		TypeActivation,
+		TypeLocalAlbum,
+		TypeFirmwareUpgrade,
+		TypeConnection,
+		TypeSecurity,
+		TypePrintLog,
+		TypeStartVideo,
+		TypeStopVideo,
+		TypeRender,
+		TypeGetNativeTexture,
+		TypeVideoTransferSpeed,
+		TypeAudioDataRecv,
+		TypeVideoDataRecv,
+		TypeNativeFunctions,
+	}
+}

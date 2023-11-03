@@ -4,18 +4,20 @@ import (
 	"bytes"
 	"encoding/binary"
 	"os"
+
+	"github.com/brunoga/unitybridge/event"
 )
 
 type CallbackHandler struct {
 	eventFile *os.File
 }
 
-func (c *CallbackHandler) HandleCallback(eventCode uint64, data []byte,
+func (c *CallbackHandler) HandleCallback(e *event.Event, data []byte,
 	tag uint64) {
 	var b bytes.Buffer
 
 	// TOOD(bga): Add error checking.
-	binary.Write(&b, binary.BigEndian, eventCode)
+	binary.Write(&b, binary.BigEndian, e.Code())
 	binary.Write(&b, binary.BigEndian, tag)
 	binary.Write(&b, binary.BigEndian, uint16(len(data)))
 	b.Write(data)

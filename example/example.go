@@ -9,9 +9,7 @@ import (
 	"github.com/brunoga/unitybridge/event"
 )
 
-func callbackHandler(eventCode uint64, data []byte, tag uint64) {
-	ev := event.NewFromCode(eventCode)
-
+func callbackHandler(e *event.Event, data []byte, tag uint64) {
 	dataType := (tag >> 56) & 0xff
 
 	dataTypeStr := "unknown"
@@ -25,7 +23,7 @@ func callbackHandler(eventCode uint64, data []byte, tag uint64) {
 	tag = tag & 0x0000ffffffffffff
 
 	fmt.Printf("Callback handler called for event with type %s, sub-type %d, data type %s and tag %d\n",
-		ev.Type(), ev.SubType(), dataTypeStr, tag)
+		e.Type(), e.SubType(), dataTypeStr, tag)
 
 	if dataType == 0 {
 		fmt.Printf("Data: %s\n", string(data))
@@ -45,15 +43,15 @@ func main() {
 	}
 	defer ub.Uninitialize()
 
-	for _, typ := range event.TypeValues() {
-		ev := event.NewFromType(typ)
-		ub.SetEventCallback(ev.Code(), callbackHandler)
+	for _, typ := range event.AllTypes() {
+		e := event.NewFromType(typ)
+		ub.SetEventCallback(e, callbackHandler)
 	}
 
 	time.Sleep(5 * time.Second)
 
-	for _, typ := range event.TypeValues() {
-		ev := event.NewFromType(typ)
-		ub.SetEventCallback(ev.Code(), nil)
+	for _, typ := range event.AllTypes() {
+		e := event.NewFromType(typ)
+		ub.SetEventCallback(e, nil)
 	}
 }

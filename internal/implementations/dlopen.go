@@ -50,6 +50,7 @@ import (
 	"unsafe"
 
 	"github.com/brunoga/unitybridge/event"
+
 	internal_event "github.com/brunoga/unitybridge/internal/event"
 )
 
@@ -132,12 +133,14 @@ func (d *dlOpenUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitializeCaller(d.unityBridgeInitialize))
 }
 
-func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventCode uint64,
+func (d *dlOpenUnityBridgeImpl) SetEventCallback(e *event.Event,
 	callback event.Callback) {
 	var eventCallback C.EventCallback
 	if callback != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
+
+	eventCode := e.Code()
 
 	C.UnitySetEventCallbackCaller(unsafe.Pointer(d.unitySetEventCallback),
 		C.uint64_t(eventCode), eventCallback)
@@ -145,25 +148,25 @@ func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventCode uint64,
 	internal_event.SetEventCallback(eventCode, callback)
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr,
+func (d *dlOpenUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
 	tag uint64) {
 	C.UnitySendEventCaller(unsafe.Pointer(d.unitySendEvent),
-		C.uint64_t(eventCode), C.intptr_t(data), C.uint64_t(tag))
+		C.uint64_t(e.Code()), C.intptr_t(data), C.uint64_t(tag))
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEventWithString(eventCode uint64,
+func (d *dlOpenUnityBridgeImpl) SendEventWithString(e *event.Event,
 	data string, tag uint64) {
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
 	C.UnitySendEventWithStringCaller(unsafe.Pointer(d.unitySendEventWithString),
-		C.uint64_t(eventCode), cData, C.uint64_t(tag))
+		C.uint64_t(e.Code()), cData, C.uint64_t(tag))
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEventWithNumber(eventCode, data,
+func (d *dlOpenUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
 	tag uint64) {
 	C.UnitySendEventWithNumberCaller(unsafe.Pointer(d.unitySendEventWithNumber),
-		C.uint64_t(eventCode), C.uint64_t(data), C.uint64_t(tag))
+		C.uint64_t(e.Code()), C.uint64_t(data), C.uint64_t(tag))
 }
 
 func (d *dlOpenUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(

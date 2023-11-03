@@ -26,19 +26,19 @@ func (u *unsupportedUnityBridgeImpl) Create(name string, debuggable bool,
 
 func (u *unsupportedUnityBridgeImpl) Initialize() bool { return false }
 
-func (u *unsupportedUnityBridgeImpl) SetEventCallback(eventCode uint64,
+func (u *unsupportedUnityBridgeImpl) SetEventCallback(e *event.Event,
 	callback event.Callback) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr,
+func (u *unsupportedUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
 	tag uint64) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEventWithString(eventCode uint64,
+func (u *unsupportedUnityBridgeImpl) SendEventWithString(e *event.Event,
 	data string, tag uint64) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEventWithNumber(eventCode, data,
+func (u *unsupportedUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
 	tag uint64) {
 }
 

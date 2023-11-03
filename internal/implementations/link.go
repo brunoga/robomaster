@@ -49,30 +49,38 @@ func (u *linkUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitialize())
 }
 
-func (u *linkUnityBridgeImpl) SetEventCallback(eventCode uint64, callback event.Callback) {
+func (u *linkUnityBridgeImpl) SetEventCallback(e *event.Event,
+	callback event.Callback) {
 	var eventCallback C.EventCallback
 	if callback != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
+
+	eventCode := e.Code()
 
 	C.UnitySetEventCallback(C.uint64_t(eventCode), eventCallback)
 
 	internal_event.SetEventCallback(eventCode, callback)
 }
 
-func (u *linkUnityBridgeImpl) SendEvent(eventCode uint64, data uintptr, tag uint64) {
-	C.UnitySendEvent(C.uint64_t(eventCode), C.intptr_t(data), C.uint64_t(tag))
+func (u *linkUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
+	tag uint64) {
+	C.UnitySendEvent(C.uint64_t(e.Code()), C.intptr_t(data),
+		C.uint64_t(tag))
 }
 
-func (u *linkUnityBridgeImpl) SendEventWithString(eventCode uint64, data string, tag uint64) {
+func (u *linkUnityBridgeImpl) SendEventWithString(e *event.Event, data string,
+	tag uint64) {
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
-	C.UnitySendEventWithString(C.uint64_t(eventCode), cData, C.uint64_t(tag))
+	C.UnitySendEventWithString(C.uint64_t(e.Code()), cData, C.uint64_t(tag))
 }
 
-func (u *linkUnityBridgeImpl) SendEventWithNumber(eventCode, data, tag uint64) {
-	C.UnitySendEventWithNumber(C.uint64_t(eventCode), C.uint64_t(data), C.uint64_t(tag))
+func (u *linkUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
+	tag uint64) {
+	C.UnitySendEventWithNumber(C.uint64_t(e.Code()), C.uint64_t(data),
+		C.uint64_t(tag))
 }
 
 func (u *linkUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
