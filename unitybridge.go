@@ -20,10 +20,10 @@ type UnityBridge interface {
 	// successful.
 	Initialize() bool
 
-	// SetEventCallback sets the callback function for given event. Note that
-	// event seems to always represent an event type (by making sure sub-type
-	// is zero) and then any events with that type will be sent to the given
-	// callback. It might or might not work with a specified sub-type.
+	// SetEventCallback sets the callback function for the given event. Note
+	// that the event seems to always represent an event type (sub-type is zero)
+	// and then any events with that type will be sent to the given callback. It
+	// might or might not work with a specified sub-type.
 	//
 	// TODO(bga): Test if it works with a specified sub-type. Meaning that
 	//            setting a callback to a specific event should only get
