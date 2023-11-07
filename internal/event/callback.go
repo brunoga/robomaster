@@ -6,7 +6,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 var (

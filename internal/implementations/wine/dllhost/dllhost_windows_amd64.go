@@ -11,7 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 var (

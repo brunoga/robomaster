@@ -1,8 +1,8 @@
 package unitybridge
 
 import (
-	"github.com/brunoga/unitybridge/event"
 	"github.com/brunoga/unitybridge/internal/implementations"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 // UnityBridge is the interface to the UnityBridge library. It will always wrap

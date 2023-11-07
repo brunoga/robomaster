@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/event"
 
 	internal_event "github.com/brunoga/unitybridge/internal/event"
 )

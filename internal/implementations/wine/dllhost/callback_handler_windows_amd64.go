@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"os"
 
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 type CallbackHandler struct {

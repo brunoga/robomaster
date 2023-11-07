@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 func init() {

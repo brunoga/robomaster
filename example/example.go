@@ -6,26 +6,16 @@ import (
 	"time"
 
 	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/event"
+	"github.com/brunoga/unitybridge/unity/datatype"
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 func callbackHandler(e *event.Event, data []byte, tag uint64) {
-	dataType := (tag >> 56) & 0xff
-
-	dataTypeStr := "unknown"
-	switch dataType {
-	case 0:
-		dataTypeStr = "string"
-	case 1:
-		dataTypeStr = "uint64"
-	}
-
-	tag = tag & 0x0000ffffffffffff
-
+	dataType, tag := datatype.FromTag(tag)
 	fmt.Printf("Callback handler called for event with type %s, sub-type %d, data type %s and tag %d\n",
-		e.Type(), e.SubType(), dataTypeStr, tag)
+		e.Type(), e.SubType(), dataType, tag)
 
-	if dataType == 0 {
+	if dataType == datatype.String {
 		fmt.Printf("Data: %s\n", string(data))
 	} else {
 		fmt.Printf("Data: %d\n", binary.NativeEndian.Uint64(data))
