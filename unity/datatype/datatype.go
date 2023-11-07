@@ -4,10 +4,7 @@ package datatype
 type DataType int
 
 const (
-	// String indicates the data returned is a string.
 	String DataType = iota
-
-	// Number indicates the data returned is a number (uint64).
 	Number
 )
 
