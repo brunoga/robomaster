@@ -1,5 +1,7 @@
 package datatype
 
+import "encoding/binary"
+
 // DataType is the type of data returned in an event callback.
 type DataType int
 
@@ -8,6 +10,7 @@ const (
 	Number
 )
 
+// String returns the string representation of the DataType.
 func (d DataType) String() string {
 	switch d {
 	case String:
@@ -16,6 +19,19 @@ func (d DataType) String() string {
 		return "Number"
 	default:
 		return "Unknown"
+	}
+}
+
+// ParseData parses the data according to the DataType and returns it as an any
+// type.
+func (d DataType) ParseData(data []byte) any {
+	switch d {
+	case String:
+		return string(data)
+	case Number:
+		return binary.LittleEndian.Uint64(data)
+	default:
+		return nil
 	}
 }
 

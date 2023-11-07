@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"time"
 
@@ -14,12 +13,7 @@ func callbackHandler(e *event.Event, data []byte, tag uint64) {
 	dataType, tag := datatype.FromTag(tag)
 	fmt.Printf("Callback handler called for event with type %s, sub-type %d, data type %s and tag %d\n",
 		e.Type(), e.SubType(), dataType, tag)
-
-	if dataType == datatype.String {
-		fmt.Printf("Data: %s\n", string(data))
-	} else {
-		fmt.Printf("Data: %d\n", binary.NativeEndian.Uint64(data))
-	}
+	fmt.Printf("Data: %v\n", dataType.ParseData(data))
 }
 
 func main() {
@@ -33,6 +27,7 @@ func main() {
 	}
 	defer ub.Uninitialize()
 
+	fmt.Println("Started listening for events. We should get callbacks.")
 	for _, typ := range event.AllTypes() {
 		ub.SetEventCallback(typ, callbackHandler)
 	}
@@ -42,4 +37,7 @@ func main() {
 	for _, typ := range event.AllTypes() {
 		ub.SetEventCallback(typ, nil)
 	}
+	fmt.Println("Stopped listening for events. We should not get callbacks anymore.")
+
+	time.Sleep(5 * time.Second)
 }
