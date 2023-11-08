@@ -1,4 +1,4 @@
-package unitybridge
+package event
 
 import (
 	"C"
