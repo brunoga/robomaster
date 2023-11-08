@@ -19,7 +19,7 @@ func callbackHandler(e *event.Event, data []byte, tag uint64) {
 func main() {
 	ub := unitybridge.Get()
 
-	ub.Create("Robo master", true, "./log")
+	ub.Create("Robomaster", true, "./log")
 	defer ub.Destroy()
 
 	if !ub.Initialize() {
