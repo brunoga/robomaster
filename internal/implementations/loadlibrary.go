@@ -91,7 +91,7 @@ func (u *loadLibraryUnityBridgeImpl) Create(name string, debuggable bool,
 
 func (u *loadLibraryUnityBridgeImpl) Initialize() bool {
 	ret, _, _ := u.unityBridgeInitialize.Call()
-	return ret != 0
+	return ret == 1
 }
 
 func (u *loadLibraryUnityBridgeImpl) SetEventCallback(t event.Type,

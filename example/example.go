@@ -19,11 +19,12 @@ func callbackHandler(e *event.Event, data []byte, tag uint64) {
 func main() {
 	ub := unitybridge.Get()
 
-	ub.Create("Robomaster", true, "./log")
+	ub.Create("Robo master", true, "./log")
 	defer ub.Destroy()
 
 	if !ub.Initialize() {
-		panic("Could not initialize UnityBridge.")
+		panic("Could not initialize UnityBridge. Did you call Create() and " +
+			"passed \"Robomaster\" as name?")
 	}
 	defer ub.Uninitialize()
 
