@@ -24,9 +24,11 @@ type UnityBridge interface {
 	// Any events with that type will be sent to the given callback.
 	SetEventCallback(eventTypeCode uint64, c callback.Callback)
 
-	// SendEvent sends an event with the given data and tag. The data field in
-	// this case will usually be uintptr(0) to indicate no data. As there is no
-	// way to express the actual length of the data being sent.
+	// SendEvent sends an event with the given tag. The output field in this
+	// case, if not nil or empty, will be filled with any data immediatelly
+	// returned as a result of this call. The original Robomaster code seems to
+	// always use a 2048 byte output for this but we may want to double check
+	// what is actually used.
 	SendEvent(eventCode uint64, output []byte, tag uint64)
 
 	// SendEventWithString sends an event with the given string data and tag.

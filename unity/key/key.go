@@ -2,6 +2,8 @@ package key
 
 import (
 	"fmt"
+
+	"github.com/brunoga/unitybridge/unity/event"
 )
 
 // Key represents a Unity Bridge event key which are actions that can be
@@ -11,7 +13,7 @@ import (
 // All the known keys are listed in the var section below.
 type Key struct {
 	name       string
-	value      uint32
+	subType    uint32
 	accessType AccessType
 }
 
@@ -19,14 +21,14 @@ const numKeys = 343
 
 func init() {
 	// Simple key validation. Make sure we have the right number of them.
-	if len(keyByValue) != numKeys {
+	if len(keyBySubType) != numKeys {
 		panic(fmt.Sprintf("Unexpected number of keys: %d (wanted %d)",
-			len(keyByValue), numKeys))
+			len(keyBySubType), numKeys))
 	}
 }
 
 var (
-	keyByValue = make(map[uint32]*Key, numKeys)
+	keyBySubType = make(map[uint32]*Key, numKeys)
 
 	KeyProductTest = newKey("KeyProductTest", 1, AccessTypeWrite)
 	KeyProductType = newKey("KeyProductType", 2, AccessTypeRead)
@@ -401,9 +403,9 @@ func (k *Key) String() string {
 	return k.name
 }
 
-// Value returns the value of the
-func (k *Key) Value() uint32 {
-	return k.value
+// SubType returns the sub-type associated wit hhis key. Used for events.
+func (k *Key) SubType() uint32 {
+	return k.subType
 }
 
 // AccessType returns the access type of the
@@ -411,25 +413,26 @@ func (k *Key) AccessType() AccessType {
 	return k.accessType
 }
 
-// KeyByValue returns a Key by its value. It panics in case the value is not
-// known.
-func KeyByValue(value uint32) *Key {
-	k, ok := keyByValue[value]
+// FromEvent returns a Key associated with the given event. It returns
+// an error in case the key cna not be inferred.
+func FromEvent(ev *event.Event) (*Key, error) {
+	k, ok := keyBySubType[ev.SubType()]
 	if !ok {
-		panic(fmt.Sprintf("KeyByValue: invalid value %d", value))
+		return nil, fmt.Errorf("event sub-type does not match any key: %d",
+			ev.SubType())
 	}
 
-	return k
+	return k, nil
 }
 
-func newKey(name string, value uint32, accessType AccessType) *Key {
+func newKey(name string, subType uint32, accessType AccessType) *Key {
 	k := &Key{
 		name:       name,
-		value:      value,
+		subType:    subType,
 		accessType: accessType,
 	}
 
-	keyByValue[value] = k
+	keyBySubType[subType] = k
 
 	return k
 }
