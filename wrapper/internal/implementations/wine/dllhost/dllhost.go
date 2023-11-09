@@ -1,3 +1,5 @@
+//go:build windows && amd64
+
 package main
 
 import (
@@ -10,8 +12,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/unity/event"
+	"github.com/brunoga/unitybridge/wrapper"
 )
 
 var (
@@ -158,21 +159,21 @@ func runCreateUnityBridge(data []byte, b *bytes.Buffer) {
 	// the buffer. So we just make sure we skip the size.
 	logPath := string(data[3+nameLength+2:])
 
-	unitybridge.Get().Create(name, debuggable, logPath)
+	wrapper.Get().Create(name, debuggable, logPath)
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(0))
 }
 
 func runDestroyUnityBridge(data []byte, b *bytes.Buffer) {
-	unitybridge.Get().Destroy()
+	wrapper.Get().Destroy()
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(0))
 }
 
 func runInitializeUnityBridge(data []byte, b *bytes.Buffer) {
-	res := unitybridge.Get().Initialize()
+	res := wrapper.Get().Initialize()
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(1))
@@ -185,7 +186,7 @@ func runInitializeUnityBridge(data []byte, b *bytes.Buffer) {
 }
 
 func runUnitializeUnityBridge(data []byte, b *bytes.Buffer) {
-	unitybridge.Get().Uninitialize()
+	wrapper.Get().Uninitialize()
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(0))
@@ -194,11 +195,16 @@ func runUnitializeUnityBridge(data []byte, b *bytes.Buffer) {
 func runUnitySendEvent(data []byte, b *bytes.Buffer) {
 	eventCode := binary.BigEndian.Uint64(data[0:8])
 	tag := binary.BigEndian.Uint64(data[8:16])
+	outputLen := binary.BigEndian.Uint16(data[16:18])
 
-	unitybridge.Get().SendEvent(event.NewFromCode(eventCode), 0, tag)
+	output := make([]byte, outputLen)
+
+	wrapper.Get().SendEvent(eventCode, output, tag)
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	binary.Write(b, binary.BigEndian, uint16(outputLen))
+
+	b.Write(output)
 }
 
 func runUnitySendEventWithString(data []byte, b *bytes.Buffer) {
@@ -207,8 +213,7 @@ func runUnitySendEventWithString(data []byte, b *bytes.Buffer) {
 	length := binary.BigEndian.Uint16(data[16:18])
 	data2 := string(data[18 : 18+length])
 
-	unitybridge.Get().SendEventWithString(event.NewFromCode(eventCode), data2,
-		tag)
+	wrapper.Get().SendEventWithString(eventCode, data2, tag)
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(0))
@@ -219,21 +224,21 @@ func runUnitySendEventWithNumber(data []byte, b *bytes.Buffer) {
 	tag := binary.BigEndian.Uint64(data[8:16])
 	data2 := binary.BigEndian.Uint64(data[16:24])
 
-	unitybridge.Get().SendEventWithNumber(event.NewFromCode(eventCode), data2,
-		tag)
+	wrapper.Get().SendEventWithNumber(eventCode, data2, tag)
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(0))
 }
 
 func runUnitySetEventCallback(data []byte, b *bytes.Buffer) {
-	eventType := event.Type(binary.BigEndian.Uint32(data[0:4]))
-	add := data[4] != 0
+	eventTypeCode := binary.BigEndian.Uint64(data[0:8])
+	add := data[8] != 0
 
 	if add {
-		unitybridge.Get().SetEventCallback(eventType, callbackHandler.HandleCallback)
+		wrapper.Get().SetEventCallback(eventTypeCode,
+			callbackHandler.HandleCallback)
 	} else {
-		unitybridge.Get().SetEventCallback(eventType, nil)
+		wrapper.Get().SetEventCallback(eventTypeCode, nil)
 	}
 
 	// Write data size.
@@ -243,7 +248,7 @@ func runUnitySetEventCallback(data []byte, b *bytes.Buffer) {
 func runGetSecurityKeyByKeyChainIndex(data []byte, b *bytes.Buffer) {
 	index := binary.BigEndian.Uint64(data[0:8])
 
-	key := unitybridge.Get().GetSecurityKeyByKeyChainIndex(int(index))
+	key := wrapper.Get().GetSecurityKeyByKeyChainIndex(int(index))
 
 	// Write data size.
 	binary.Write(b, binary.BigEndian, uint16(len(key)))

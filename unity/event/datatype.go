@@ -1,21 +1,24 @@
-package datatype
+package event
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 // DataType is the type of data returned in an event callback.
 type DataType int
 
 const (
-	String DataType = iota
-	Number
+	StringDataType DataType = iota
+	NumberDataType
 )
 
 // String returns the string representation of the DataType.
 func (d DataType) String() string {
 	switch d {
-	case String:
+	case StringDataType:
 		return "String"
-	case Number:
+	case NumberDataType:
 		return "Number"
 	default:
 		return "Unknown"
@@ -26,17 +29,21 @@ func (d DataType) String() string {
 // type.
 func (d DataType) ParseData(data []byte) any {
 	switch d {
-	case String:
+	case StringDataType:
 		return string(data)
-	case Number:
+	case NumberDataType:
+		if len(data) != 8 {
+			panic(fmt.Sprintf("Invalid number data length. Expected 8, got %d.",
+				len(data)))
+		}
 		return binary.LittleEndian.Uint64(data)
 	default:
 		return nil
 	}
 }
 
-// FromTag returns the DataType and the actual tag value (i.e. without the data
-// type) from a tag.
-func FromTag(tag uint64) (DataType, uint64) {
+// DataTypeFromTag returns the DataType and the actual tag value (i.e. without
+// the data type) from a tag.
+func DataTypeFromTag(tag uint64) (DataType, uint64) {
 	return DataType((tag >> 56) & 0xff), tag & 0x00ffffffffffffff
 }
