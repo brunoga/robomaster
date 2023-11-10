@@ -1,16 +1,28 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/finder"
+	"github.com/brunoga/unitybridge/support/qrcode"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/wrapper"
+)
+
+var (
+	ssid     = flag.String("ssid", "", "SSID of the network to connect to.")
+	password = flag.String("password", "", "Password of the network to connect "+
+		"to.")
+	appID = flag.Uint64("app_id", 0, "App ID to use. If 0, a random one will be "+
+		"generated.")
 )
 
 // Simple example of connecting to Robomaster S1 or EP. This *REQUIRES* a
@@ -19,6 +31,12 @@ import (
 // connection status. It will then wait for the connection to be lost and
 // print the connection status again. It will then exit.
 func main() {
+	flag.Parse()
+
+	if strings.TrimSpace(*ssid) == "" || strings.TrimSpace(*password) == "" {
+		panic("SSID and password must be provided.")
+	}
+
 	ub := unitybridge.Get(wrapper.Get(), true)
 
 	// Start unity bridge.
@@ -28,12 +46,39 @@ func main() {
 	}
 	defer ub.Stop()
 
+	// We are an app, so generate our app ID.
+	if *appID == 0 {
+		*appID, err = support.GenerateAppID()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println("Using App ID:", *appID)
+
+	// And generate a QRCode to pair a Robomaster.
+	qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the QRCode.
+	fmt.Println(qrCode.Text())
+
+	f := finder.New(*appID)
+	var robotIP net.IP
+
 	// Listen for connection status changes.
 	var wg sync.WaitGroup
 	wg.Add(2) // Connection status should change twice.
 	token, err := ub.AddKeyListener(key.KeyAirLinkConnection, func(data []byte) {
 		// Just print whatever we get as result.
 		fmt.Println(string(data))
+
+		// TODO(bga): Remove this hack after parsing of results is implemented.
+		if strings.Contains(string(data), "{\"value\":false}") {
+			f.SendACK(robotIP, *appID)
+		}
 
 		wg.Done()
 	}, false)
@@ -42,30 +87,23 @@ func main() {
 	}
 	defer ub.RemoveKeyListener(key.KeyAirLinkConnection, token)
 
-	ip, err := findRobot()
+	// Find a robot. Wait for up to 1 minute.
+	broadcast, err := f.Find(1 * time.Minute)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Found robot with IP:", ip)
+	robotIP = broadcast.SourceIp()
+	fmt.Println("Found robot at", robotIP)
 
-	resetRobotConnection(ub, ip)
+	// Setup connection and connect to robot.
+	resetRobotConnection(ub, robotIP)
 
 	time.Sleep(5 * time.Second)
 
 	closeRobotConnection(ub)
 
 	wg.Wait()
-}
-
-func findRobot() (net.IP, error) {
-	f := finder.New(0) // Any robot in any state.
-	broadcast, err := f.Find(5 * time.Second)
-	if err != nil {
-		return nil, err
-	}
-
-	return broadcast.SourceIp(), nil
 }
 
 // resetRobotConnection should be called whenever the IP for the robot
