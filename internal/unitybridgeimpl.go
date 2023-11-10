@@ -13,7 +13,8 @@ import (
 )
 
 type UnityBridgeImpl struct {
-	uw wrapper.UnityBridge
+	uw               wrapper.UnityBridge
+	unityBridgeDebug bool
 
 	m            sync.Mutex
 	started      bool
@@ -22,11 +23,13 @@ type UnityBridgeImpl struct {
 	currentToken uint64
 }
 
-func NewUnityBridgeImpl(uw wrapper.UnityBridge) *UnityBridgeImpl {
+func NewUnityBridgeImpl(uw wrapper.UnityBridge,
+	unityBridgeDebug bool) *UnityBridgeImpl {
 	return &UnityBridgeImpl{
-		uw:        uw,
-		listeners: make(map[*key.Key]map[uint64]event.Callback),
-		callbacks: make(map[uint64]event.Callback),
+		uw:               uw,
+		unityBridgeDebug: unityBridgeDebug,
+		listeners:        make(map[*key.Key]map[uint64]event.Callback),
+		callbacks:        make(map[uint64]event.Callback),
 	}
 }
 
@@ -38,7 +41,12 @@ func (u *UnityBridgeImpl) Start() error {
 		return fmt.Errorf("unity bridge already started")
 	}
 
-	u.uw.Create("Robomaster", true, "./log")
+	var logPath string
+	if u.unityBridgeDebug {
+		logPath = "./log"
+	}
+
+	u.uw.Create("Robomaster", u.unityBridgeDebug, logPath)
 	if !u.uw.Initialize() {
 		return fmt.Errorf("failed to initialize Unity Bridge library")
 	}

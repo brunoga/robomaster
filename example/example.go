@@ -19,7 +19,7 @@ import (
 // connection status. It will then wait for the connection to be lost and
 // print the connection status again. It will then exit.
 func main() {
-	ub := unitybridge.Get(wrapper.Get())
+	ub := unitybridge.Get(wrapper.Get(), true)
 
 	// Start unity bridge.
 	err := ub.Start()

@@ -61,6 +61,6 @@ type UnityBridge interface {
 // Get returns an instance of the high level Unity Bridge API using the given
 // low-level Unity Bridge library wrapper (mostly so irt can be mocked for
 // tests).
-func Get(wu wrapper.UnityBridge) UnityBridge {
-	return internal.NewUnityBridgeImpl(wu)
+func Get(wu wrapper.UnityBridge, unityBridgeDebug bool) UnityBridge {
+	return internal.NewUnityBridgeImpl(wu, unityBridgeDebug)
 }
