@@ -6,7 +6,7 @@ package implementations
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../event/callback.h"
+#include "../callback/callback.h"
 
 extern void CreateUnityBridge(const char* name, bool debuggable, const char* logPath);
 extern bool UnityBridgeInitialize();
@@ -23,9 +23,9 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/brunoga/unitybridge/unity/event"
+	"github.com/brunoga/unitybridge/wrapper/callback"
 
-	internal_event "github.com/brunoga/unitybridge/internal/event"
+	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
 )
 
 var (
@@ -49,37 +49,40 @@ func (u *linkUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitialize())
 }
 
-func (u *linkUnityBridgeImpl) SetEventCallback(t event.Type,
-	callback event.Callback) {
+func (u *linkUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
+	c callback.Callback) {
 	var eventCallback C.EventCallback
-	if callback != nil {
+	if c != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
 
-	eventCode := event.NewFromType(t).Code()
+	C.UnitySetEventCallback(C.uint64_t(eventTypeCode), eventCallback)
 
-	C.UnitySetEventCallback(C.uint64_t(eventCode), eventCallback)
-
-	internal_event.SetEventCallback(t, callback)
+	internal_callback.Set(eventTypeCode, c)
 }
 
-func (u *linkUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
+func (u *linkUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
-	C.UnitySendEvent(C.uint64_t(e.Code()), C.intptr_t(data),
+	var outputUintptr uintptr
+	if len(output) > 0 {
+		outputUintptr = uintptr(unsafe.Pointer(&output[0]))
+	}
+
+	C.UnitySendEvent(C.uint64_t(eventCode), C.intptr_t(outputUintptr),
 		C.uint64_t(tag))
 }
 
-func (u *linkUnityBridgeImpl) SendEventWithString(e *event.Event, data string,
+func (u *linkUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
 	tag uint64) {
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
-	C.UnitySendEventWithString(C.uint64_t(e.Code()), cData, C.uint64_t(tag))
+	C.UnitySendEventWithString(C.uint64_t(eventCode), cData, C.uint64_t(tag))
 }
 
-func (u *linkUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
+func (u *linkUnityBridgeImpl) SendEventWithNumber(eventCode, data,
 	tag uint64) {
-	C.UnitySendEventWithNumber(C.uint64_t(e.Code()), C.uint64_t(data),
+	C.UnitySendEventWithNumber(C.uint64_t(eventCode), C.uint64_t(data),
 		C.uint64_t(tag))
 }
 

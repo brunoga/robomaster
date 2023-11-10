@@ -5,8 +5,9 @@ package implementations
 /*
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-#include "../event/callback.h"
+#include "../callback/callback.h"
 
 void CreateUnityBridgeCaller(void *f, const char *name, bool debuggable,
                              const char *log_path) {
@@ -50,9 +51,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/brunoga/unitybridge/unity/event"
+	"github.com/brunoga/unitybridge/wrapper/callback"
 
-	internal_event "github.com/brunoga/unitybridge/internal/event"
+	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
 )
 
 var (
@@ -134,40 +135,43 @@ func (d *dlOpenUnityBridgeImpl) Initialize() bool {
 	return bool(C.UnityBridgeInitializeCaller(d.unityBridgeInitialize))
 }
 
-func (d *dlOpenUnityBridgeImpl) SetEventCallback(t event.Type,
-	callback event.Callback) {
+func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
+	c callback.Callback) {
 	var eventCallback C.EventCallback
-	if callback != nil {
+	if c != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
 	}
 
-	eventCode := event.NewFromType(t).Code()
-
 	C.UnitySetEventCallbackCaller(unsafe.Pointer(d.unitySetEventCallback),
-		C.uint64_t(eventCode), eventCallback)
+		C.uint64_t(eventTypeCode), eventCallback)
 
-	internal_event.SetEventCallback(t, callback)
+	internal_callback.Set(eventTypeCode, c)
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
+func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
+	var outputUintptr uintptr
+	if len(output) > 0 {
+		outputUintptr = uintptr(unsafe.Pointer(&output[0]))
+	}
+
 	C.UnitySendEventCaller(unsafe.Pointer(d.unitySendEvent),
-		C.uint64_t(e.Code()), C.intptr_t(data), C.uint64_t(tag))
+		C.uint64_t(eventCode), C.intptr_t(outputUintptr), C.uint64_t(tag))
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEventWithString(e *event.Event,
+func (d *dlOpenUnityBridgeImpl) SendEventWithString(eventCode uint64,
 	data string, tag uint64) {
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
 	C.UnitySendEventWithStringCaller(unsafe.Pointer(d.unitySendEventWithString),
-		C.uint64_t(e.Code()), cData, C.uint64_t(tag))
+		C.uint64_t(eventCode), cData, C.uint64_t(tag))
 }
 
-func (d *dlOpenUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
+func (d *dlOpenUnityBridgeImpl) SendEventWithNumber(eventCode, data,
 	tag uint64) {
 	C.UnitySendEventWithNumberCaller(unsafe.Pointer(d.unitySendEventWithNumber),
-		C.uint64_t(e.Code()), C.uint64_t(data), C.uint64_t(tag))
+		C.uint64_t(eventCode), C.uint64_t(data), C.uint64_t(tag))
 }
 
 func (d *dlOpenUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(
