@@ -5,10 +5,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
+	"image"
 	"net"
 	"strings"
 
 	"github.com/brunoga/unitybridge/support"
+	"github.com/skip2/go-qrcode"
 )
 
 // QRCode handles generating and parsing the data for the Robomaster connection
@@ -113,6 +115,40 @@ func (q *QRCode) String() string {
 // qr-code image that can be used by a Robomaster robot.
 func (q *QRCode) Message() string {
 	return q.encodeMessage()
+}
+
+// Image returns an size X size image.Image that represents the QRCode instance.
+// This image is readable by a Robomaster robot.
+func (q *QRCode) Image(size int) (image.Image, error) {
+	qrc, err := qrcode.New(q.encodeMessage(), qrcode.Medium)
+	if err != nil {
+		return nil, err
+	}
+
+	return qrc.Image(size), nil
+}
+
+// Text returns a string representation of the QRCode instance that can be
+// printed to the console. This should be readable by a Robomaster robot.
+func (q *QRCode) Text() (string, error) {
+	qrc, err := qrcode.New(q.encodeMessage(), qrcode.High)
+	if err != nil {
+		return "", err
+	}
+
+	var sb strings.Builder
+	for _, line := range qrc.Bitmap() {
+		for _, black := range line {
+			if black {
+				sb.WriteString("██") // Black square
+			} else {
+				sb.WriteString("  ") // White space
+			}
+		}
+		sb.WriteString("\n")
+	}
+
+	return sb.String(), nil
 }
 
 func (q *QRCode) encodeMessage() string {
