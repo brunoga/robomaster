@@ -414,7 +414,7 @@ func (k *Key) AccessType() AccessType {
 }
 
 // FromEvent returns a Key associated with the given event. It returns
-// an error in case the key cna not be inferred.
+// an error in case the key can not be inferred.
 func FromEvent(ev *event.Event) (*Key, error) {
 	k, ok := keyBySubType[ev.SubType()]
 	if !ok {

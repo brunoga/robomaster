@@ -2,23 +2,23 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"net"
 	"sync"
+	"time"
 
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support/finder"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
-// Simple example of connecting to Robomaster S1 or EP. This assumes the IP
-// is known.
+// Simple example of connecting to Robomaster S1 or EP. This *REQUIRES* a
+// robot broadcasting in the network. It will find the robot and connect to
+// it. It will then wait for the connection to be stablished and print the
+// connection status. It will then wait for the connection to be lost and
+// print the connection status again. It will then exit.
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Printf("Usage: %s <robot_ip>\n", os.Args[0])
-		os.Exit(1)
-	}
-
 	ub := unitybridge.Get(wrapper.Get())
 
 	// Start unity bridge.
@@ -30,10 +30,11 @@ func main() {
 
 	// Listen for connection status changes.
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2) // Connection status should change twice.
 	token, err := ub.AddKeyListener(key.KeyAirLinkConnection, func(data []byte) {
 		// Just print whatever we get as result.
 		fmt.Println(string(data))
+
 		wg.Done()
 	}, false)
 	if err != nil {
@@ -41,24 +42,55 @@ func main() {
 	}
 	defer ub.RemoveKeyListener(key.KeyAirLinkConnection, token)
 
-	// We will be sending connection events.
-	ev := event.NewFromType(event.TypeConnection)
+	ip, err := findRobot()
+	if err != nil {
+		panic(err)
+	}
 
-	// Set connection type (?).
-	ev.ResetSubType(1)
-	ub.SendEvent(ev)
+	fmt.Println("Found robot with IP:", ip)
 
-	// Set robot IP.
-	ev.ResetSubType(2)
-	ub.SendEventWithString(ev, os.Args[1])
+	resetRobotConnection(ub, ip)
 
-	// Set port.
-	ev.ResetSubType(3)
-	ub.SendEventWithUint64(ev, 10607)
+	time.Sleep(5 * time.Second)
 
-	// Connect.
-	ev.ResetSubType(0)
-	ub.SendEvent(ev)
+	closeRobotConnection(ub)
 
 	wg.Wait()
+}
+
+func findRobot() (net.IP, error) {
+	f := finder.New(0) // Any robot in any state.
+	broadcast, err := f.Find(5 * time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	return broadcast.SourceIp(), nil
+}
+
+// resetRobotConnection should be called whenever the IP for the robot
+// changes. It is safe to call it whenever a connection needs to be
+// stablished anyway.
+func resetRobotConnection(ub unitybridge.UnityBridge, ip net.IP) {
+	closeRobotConnection(ub)
+	setRobotIPAndPort(ub, ip, 10607)
+	openRobotConnection(ub)
+}
+
+func openRobotConnection(ub unitybridge.UnityBridge) {
+	ev := event.NewFromTypeAndSubType(event.TypeConnection, 0)
+	ub.SendEvent(ev)
+}
+
+func closeRobotConnection(ub unitybridge.UnityBridge) {
+	ev := event.NewFromTypeAndSubType(event.TypeConnection, 1)
+	ub.SendEvent(ev)
+}
+
+func setRobotIPAndPort(ub unitybridge.UnityBridge, ip net.IP, port uint64) {
+	ev := event.NewFromTypeAndSubType(event.TypeConnection, 2)
+	ub.SendEventWithString(ev, ip.String())
+
+	ev.ResetSubType(3)
+	ub.SendEventWithUint64(ev, port)
 }
