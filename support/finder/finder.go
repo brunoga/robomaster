@@ -154,7 +154,7 @@ L:
 				continue
 			}
 
-			if f.appID == 0 || (broadcast.AppId() == f.appID && !broadcast.IsPairing()) {
+			if f.appID == 0 || (broadcast.AppId() == f.appID && broadcast.IsPairing()) {
 				_, ok := f.broadcasts[broadcast.SourceIp().String()]
 				if !ok {
 					f.broadcasts[broadcast.SourceIp().String()] = broadcast
