@@ -131,7 +131,7 @@ func (q *QRCode) Image(size int) (image.Image, error) {
 // Text returns a string representation of the QRCode instance that can be
 // printed to the console. This should be readable by a Robomaster robot.
 func (q *QRCode) Text() (string, error) {
-	qrc, err := qrcode.New(q.encodeMessage(), qrcode.High)
+	qrc, err := qrcode.New(q.encodeMessage(), qrcode.Medium)
 	if err != nil {
 		return "", err
 	}
@@ -140,9 +140,9 @@ func (q *QRCode) Text() (string, error) {
 	for _, line := range qrc.Bitmap() {
 		for _, black := range line {
 			if black {
-				sb.WriteString("██") // Black square
-			} else {
 				sb.WriteString("  ") // White space
+			} else {
+				sb.WriteString("██") // Black square
 			}
 		}
 		sb.WriteString("\n")
