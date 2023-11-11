@@ -71,15 +71,19 @@ func main() {
 	var robotIP net.IP
 
 	// Listen for VideoTransferSpeed type events as these starting comming right away.
-	ub.AddEventTypeListener(event.TypeVideoTransferSpeed,
+	token, err := ub.AddEventTypeListener(event.TypeVideoTransferSpeed,
 		func(eventCode uint64, data []byte, tag uint64) {
 			fmt.Println("Video Transfer Speed:", binary.LittleEndian.Uint64(data))
 		})
+	if err != nil {
+		panic(err)
+	}
+	defer ub.RemoveEventTypeListener(event.TypeVideoTransferSpeed, token)
 
 	// Listen for connection status changes.
 	var wg sync.WaitGroup
 	wg.Add(2) // Connection status should change twice.
-	token, err := ub.AddKeyListener(key.KeyAirLinkConnection, func(r *result.Result) {
+	token, err = ub.AddKeyListener(key.KeyAirLinkConnection, func(r *result.Result) {
 		// Just print whatever we get as result.
 		fmt.Println(r)
 
