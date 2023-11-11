@@ -8,6 +8,8 @@ import (
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
+// UnityBridge is the high level Unity Bridge API. It allows controling a
+// Robomaster (S1 and EP) robot and also the underlying Unity bridge itself.
 type UnityBridge interface {
 	// Start configures and starts the Unity Bridge.
 	Start() error
