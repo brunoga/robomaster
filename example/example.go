@@ -76,7 +76,7 @@ func main() {
 	}
 	fmt.Println(text)
 
-	f := finder.New(*appID)
+	f := finder.New(*appID, l)
 	var robotIP net.IP
 
 	var videoTransferSpeed uint64

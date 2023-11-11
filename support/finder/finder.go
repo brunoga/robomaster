@@ -3,9 +3,12 @@ package finder
 import (
 	"encoding/binary"
 	"fmt"
+	"log/slog"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/brunoga/unitybridge/support/logger"
 )
 
 const (
@@ -18,6 +21,8 @@ const (
 type Finder struct {
 	appID uint64
 
+	l *logger.Logger
+
 	m             sync.Mutex
 	listeningConn *net.UDPConn
 	quit          chan struct{}
@@ -28,9 +33,14 @@ type Finder struct {
 // detected in the network regardless of their pairing status or appID. If appID
 // is non-zero, returns only robots with the given appID and that are not in
 // pairing mode.
-func New(appID uint64) *Finder {
+func New(appID uint64, l *logger.Logger) *Finder {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	return &Finder{
 		appID:      appID,
+		l:          l,
 		quit:       nil,
 		broadcasts: nil,
 	}
@@ -128,6 +138,9 @@ func (f *Finder) SendACK(ip net.IP, appID uint64) {
 }
 
 func (f *Finder) findLoop(ch chan<- *Broadcast) {
+	f.l.Debug("Starting to look for robots")
+	defer f.l.Debug("Stopped looking for robots")
+
 	buf := make([]byte, 1024)
 
 L:
@@ -150,9 +163,11 @@ L:
 
 			broadcast, err := parseAndValidateBroadcast(buf[:n], addr)
 			if err != nil {
-				fmt.Printf("error parsing broadcast message: %v\n", err)
+				f.l.Warn("error parsing broadcast message", "err", err)
 				continue
 			}
+
+			f.l.Debug("Received broadcast message", "broadcast", broadcast)
 
 			if f.appID == 0 || (broadcast.AppId() == f.appID) {
 				_, ok := f.broadcasts[broadcast.SourceIp().String()]
