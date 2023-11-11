@@ -41,18 +41,8 @@ func main() {
 		panic("SSID and password must be provided.")
 	}
 
-	l := logger.New(slog.LevelDebug)
-
-	ub := unitybridge.Get(wrapper.Get(l), true, l)
-
-	// Start unity bridge.
-	err := ub.Start()
-	if err != nil {
-		panic(err)
-	}
-	defer ub.Stop()
-
 	// We are an app, so generate our app ID.
+	var err error
 	if *appID == 0 {
 		*appID, err = support.GenerateAppID()
 		if err != nil {
@@ -60,7 +50,18 @@ func main() {
 		}
 	}
 
-	l.Info("application configuration", "appID", *appID)
+	l := logger.New(slog.LevelDebug)
+
+	l.Info("starting example application", "app_id", *appID)
+
+	ub := unitybridge.Get(wrapper.Get(l), true, l)
+
+	// Start unity bridge.
+	err = ub.Start()
+	if err != nil {
+		panic(err)
+	}
+	defer ub.Stop()
 
 	// And generate a QRCode to pair a Robomaster.
 	qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
