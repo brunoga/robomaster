@@ -6,6 +6,8 @@ import (
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
 	"github.com/brunoga/unitybridge/wrapper"
+
+	wrapper_callback "github.com/brunoga/unitybridge/wrapper/callback"
 )
 
 type UnityBridge interface {
@@ -54,6 +56,15 @@ type UnityBridge interface {
 	// uint64 data to the Unity Bridge. This is a low level function that should
 	// be used with care.
 	SendEventWithUint64(ev *event.Event, data uint64) error
+
+	// AddEventTypeListener adds a listener for events of the given type. Returns
+	// a token that can be used to remove the listener later.
+	AddEventTypeListener(t event.Type,
+		c wrapper_callback.Callback) (uint64, error)
+
+	// RemoveEventTypeListener removes the listener associated with the given
+	// token for events of the given type.
+	RemoveEventTypeListener(t event.Type, token uint64) error
 
 	// Stop cleans up and stops the Unity Bridge.
 	Stop() error

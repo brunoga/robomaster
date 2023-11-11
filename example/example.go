@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"net"
@@ -14,6 +15,7 @@ import (
 	"github.com/brunoga/unitybridge/support/qrcode"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
+	"github.com/brunoga/unitybridge/unity/result"
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
@@ -28,8 +30,8 @@ var (
 // Simple example of connecting to Robomaster S1 or EP. This *REQUIRES* a
 // robot broadcasting in the network. It will find the robot and connect to
 // it. It will then wait for the connection to be stablished and print the
-// connection status. It will then wait for the connection to be lost and
-// print the connection status again. It will then exit.
+// connection status. Then it will wait for the connection to be lost and
+// print the connection status again.
 func main() {
 	flag.Parse()
 
@@ -68,16 +70,29 @@ func main() {
 	f := finder.New(*appID)
 	var robotIP net.IP
 
+	// Listen for VideoTransferSpeed type events as these starting comming right away.
+	ub.AddEventTypeListener(event.TypeVideoTransferSpeed,
+		func(eventCode uint64, data []byte, tag uint64) {
+			fmt.Println("Video Transfer Speed:", binary.LittleEndian.Uint64(data))
+		})
+
 	// Listen for connection status changes.
 	var wg sync.WaitGroup
 	wg.Add(2) // Connection status should change twice.
-	token, err := ub.AddKeyListener(key.KeyAirLinkConnection, func(data []byte) {
+	token, err := ub.AddKeyListener(key.KeyAirLinkConnection, func(r *result.Result) {
 		// Just print whatever we get as result.
-		fmt.Println(string(data))
+		fmt.Println(r)
 
-		// TODO(bga): Remove this hack after parsing of results is implemented.
-		if strings.Contains(string(data), "{\"value\":false}") {
-			f.SendACK(robotIP, *appID)
+		if !r.Succeeded() {
+			fmt.Println("Result error:", r.ErrorDesc())
+		} else {
+			// Expected value is a bool.
+			value := r.Value().(bool)
+			if value {
+				fmt.Println("Connected to robot.")
+			} else {
+				fmt.Println("Disconnected from robot.")
+			}
 		}
 
 		wg.Done()
