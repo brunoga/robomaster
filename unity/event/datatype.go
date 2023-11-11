@@ -9,17 +9,17 @@ import (
 type DataType int
 
 const (
-	StringDataType DataType = iota
-	NumberDataType
+	DataTypeString DataType = iota
+	DataTypeUint64
 )
 
 // String returns the string representation of the DataType.
 func (d DataType) String() string {
 	switch d {
-	case StringDataType:
+	case DataTypeString:
 		return "String"
-	case NumberDataType:
-		return "Number"
+	case DataTypeUint64:
+		return "Uint64"
 	default:
 		return "Unknown"
 	}
@@ -29,9 +29,9 @@ func (d DataType) String() string {
 // type.
 func (d DataType) ParseData(data []byte) any {
 	switch d {
-	case StringDataType:
+	case DataTypeString:
 		return string(data)
-	case NumberDataType:
+	case DataTypeUint64:
 		if len(data) != 8 {
 			panic(fmt.Sprintf("Invalid number data length. Expected 8, got %d.",
 				len(data)))

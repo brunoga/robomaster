@@ -10,8 +10,6 @@ import (
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
 	"github.com/brunoga/unitybridge/wrapper"
-
-	wrapper_callback "github.com/brunoga/unitybridge/wrapper/callback"
 )
 
 type UnityBridgeImpl struct {
@@ -21,7 +19,7 @@ type UnityBridgeImpl struct {
 	m                  sync.Mutex
 	started            bool
 	listeners          map[*key.Key]map[uint64]result.Callback
-	eventTypeListeners map[event.Type]map[uint64]wrapper_callback.Callback
+	eventTypeListeners map[event.Type]map[uint64]event.TypeCallback
 	callbacks          map[uint64]result.Callback
 	currentToken       uint64
 }
@@ -32,7 +30,7 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 		uw:                 uw,
 		unityBridgeDebug:   unityBridgeDebug,
 		listeners:          make(map[*key.Key]map[uint64]result.Callback),
-		eventTypeListeners: make(map[event.Type]map[uint64]wrapper_callback.Callback),
+		eventTypeListeners: make(map[event.Type]map[uint64]event.TypeCallback),
 		callbacks:          make(map[uint64]result.Callback),
 	}
 }
@@ -252,7 +250,7 @@ func (u *UnityBridgeImpl) SendEventWithUint64(ev *event.Event,
 }
 
 func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
-	c wrapper_callback.Callback) (uint64, error) {
+	c event.TypeCallback) (uint64, error) {
 	if c == nil {
 		return 0, fmt.Errorf("callback cannot be nil")
 	}
@@ -261,7 +259,7 @@ func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 	defer u.m.Unlock()
 
 	if _, ok := u.eventTypeListeners[t]; !ok {
-		u.eventTypeListeners[t] = make(map[uint64]wrapper_callback.Callback)
+		u.eventTypeListeners[t] = make(map[uint64]event.TypeCallback)
 	}
 
 	token := u.getAndUpdateTokenLocked()
@@ -322,11 +320,11 @@ func (u *UnityBridgeImpl) Stop() error {
 func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint64) {
 	e := event.NewFromCode(eventCode)
 
-	// TODO(bga): Find a good way to use this.
-	// var dataType event.DataType
-	// dataType, tag = event.DataTypeFromTag(tag)
-
 	if e.SubType() == 0 {
+		// This is a type event.
+		var dataType event.DataType
+		dataType, tag = event.DataTypeFromTag(tag)
+
 		if len(u.eventTypeListeners[e.Type()]) == 0 {
 			// TODO(bga): Remove this after we undersand all event types or use
 			//            logging instead of Printf.
@@ -335,7 +333,7 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 		}
 
 		for _, c := range u.eventTypeListeners[e.Type()] {
-			c(eventCode, data, tag)
+			c(data, dataType)
 		}
 
 		return
