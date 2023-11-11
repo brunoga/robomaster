@@ -8,8 +8,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
+	"sync"
 	"syscall"
 
 	"github.com/brunoga/unitybridge/support/logger"
@@ -28,53 +30,55 @@ var (
 	localReadPipe  *os.File
 	localWritePipe *os.File
 	localEventPipe *os.File
+
+	once sync.Once
 )
-
-func init() {
-	// Check if wine is available.
-	winePath, err := getWinePath()
-	if err != nil {
-		panic(err)
-	}
-
-	// Check if dllhost.exe is available and is a Windows executable.
-	dllHostPath, err := getDLLHostPath()
-	if err != nil {
-		panic(err)
-	}
-
-	var remoteWritePipe *os.File
-	localReadPipe, remoteWritePipe, err = os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-
-	var remoteReadPipe *os.File
-	remoteReadPipe, localWritePipe, err = os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-
-	var remoteEventPipe *os.File
-	localEventPipe, remoteEventPipe, err = os.Pipe()
-	if err != nil {
-		panic(err)
-	}
-
-	err = startDllHost(winePath, dllHostPath, remoteReadPipe, remoteWritePipe,
-		remoteEventPipe)
-	if err != nil {
-		panic(err)
-	}
-
-	go loop()
-}
 
 type wineUnityBridgeImpl struct {
 	l *logger.Logger
 }
 
 func Get(l *logger.Logger) *wineUnityBridgeImpl {
+	once.Do(func() {
+		// Check if wine is available.
+		winePath, err := getWinePath()
+		if err != nil {
+			panic(err)
+		}
+
+		// Check if dllhost.exe is available and is a Windows executable.
+		dllHostPath, err := getDLLHostPath()
+		if err != nil {
+			panic(err)
+		}
+
+		var remoteWritePipe *os.File
+		localReadPipe, remoteWritePipe, err = os.Pipe()
+		if err != nil {
+			panic(err)
+		}
+
+		var remoteReadPipe *os.File
+		remoteReadPipe, localWritePipe, err = os.Pipe()
+		if err != nil {
+			panic(err)
+		}
+
+		var remoteEventPipe *os.File
+		localEventPipe, remoteEventPipe, err = os.Pipe()
+		if err != nil {
+			panic(err)
+		}
+
+		err = startDllHost(winePath, dllHostPath, remoteReadPipe, remoteWritePipe,
+			remoteEventPipe, l.Level())
+		if err != nil {
+			panic(err)
+		}
+
+		go loop()
+	})
+
 	UnityBridgeImpl.l = l
 
 	return UnityBridgeImpl
@@ -280,7 +284,7 @@ func getDLLHostPath() (string, error) {
 }
 
 func startDllHost(winePath, dllHostPath string, remoteReadPipe,
-	remoteWritePipe, remoteEventPipe *os.File) error {
+	remoteWritePipe, remoteEventPipe *os.File, level slog.Level) error {
 	argv := []string{
 		winePath,
 		dllHostPath,
@@ -290,6 +294,8 @@ func startDllHost(winePath, dllHostPath string, remoteReadPipe,
 		fmt.Sprintf("%d", getFd(remoteWritePipe)),
 		"-event-fd",
 		fmt.Sprintf("%d", getFd(remoteEventPipe)),
+		"-loglevel",
+		fmt.Sprintf("%d", level),
 	}
 
 	// Disable close on exec for the pipes.

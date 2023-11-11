@@ -22,7 +22,7 @@ var (
 	readFd   = flag.Int("read-fd", -1, "file descriptor to read from")
 	writeFd  = flag.Int("write-fd", -1, "file descriptor to write to")
 	eventFd  = flag.Int("event-fd", -1, "file descriptor to write events to")
-	logLevel = flag.Int("loglevel", 0, "log level")
+	logLevel = flag.Int("loglevel", int(slog.LevelError), "log level")
 
 	callbackHandler *CallbackHandler
 
