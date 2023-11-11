@@ -320,10 +320,12 @@ func (u *UnityBridgeImpl) Stop() error {
 func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint64) {
 	e := event.NewFromCode(eventCode)
 
+	var dataType event.DataType
+	dataType, tag = event.DataTypeFromTag(tag)
+
 	if e.SubType() == 0 {
 		// This is a type event.
-		var dataType event.DataType
-		dataType, tag = event.DataTypeFromTag(tag)
+		u.m.Lock()
 
 		if len(u.eventTypeListeners[e.Type()]) == 0 {
 			// TODO(bga): Remove this after we undersand all event types or use
@@ -335,6 +337,8 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 		for _, c := range u.eventTypeListeners[e.Type()] {
 			c(data, dataType)
 		}
+
+		u.m.Unlock()
 
 		return
 	}
