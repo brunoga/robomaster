@@ -416,10 +416,16 @@ func (k *Key) AccessType() AccessType {
 // FromEvent returns a Key associated with the given event. It returns
 // an error in case the key can not be inferred.
 func FromEvent(ev *event.Event) (*Key, error) {
-	k, ok := keyBySubType[ev.SubType()]
+	return FromSubType(ev.SubType())
+}
+
+// FromSubType returns a Key associated with the given sub-type. It returns
+// an error in case the key can not be inferred.
+func FromSubType(subType uint32) (*Key, error) {
+	k, ok := keyBySubType[subType]
 	if !ok {
 		return nil, fmt.Errorf("event sub-type does not match any key: %d",
-			ev.SubType())
+			subType)
 	}
 
 	return k, nil
