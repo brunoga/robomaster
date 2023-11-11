@@ -1,3 +1,3 @@
-package event
+package result
 
 type Callback func(data []byte)

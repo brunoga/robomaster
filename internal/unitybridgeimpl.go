@@ -9,6 +9,7 @@ import (
 
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
+	"github.com/brunoga/unitybridge/unity/result"
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
@@ -18,8 +19,8 @@ type UnityBridgeImpl struct {
 
 	m            sync.Mutex
 	started      bool
-	listeners    map[*key.Key]map[uint64]event.Callback
-	callbacks    map[uint64]event.Callback
+	listeners    map[*key.Key]map[uint64]result.Callback
+	callbacks    map[uint64]result.Callback
 	currentToken uint64
 }
 
@@ -28,8 +29,8 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 	return &UnityBridgeImpl{
 		uw:               uw,
 		unityBridgeDebug: unityBridgeDebug,
-		listeners:        make(map[*key.Key]map[uint64]event.Callback),
-		callbacks:        make(map[uint64]event.Callback),
+		listeners:        make(map[*key.Key]map[uint64]result.Callback),
+		callbacks:        make(map[uint64]result.Callback),
 	}
 }
 
@@ -61,7 +62,7 @@ func (u *UnityBridgeImpl) Start() error {
 	return nil
 }
 
-func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c event.Callback,
+func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	immediate bool) (uint64, error) {
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return 0, fmt.Errorf("key %s is not readable", k)
@@ -75,7 +76,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c event.Callback,
 	defer u.m.Unlock()
 
 	if _, ok := u.listeners[k]; !ok {
-		u.listeners[k] = make(map[uint64]event.Callback)
+		u.listeners[k] = make(map[uint64]result.Callback)
 	}
 
 	if len(u.listeners[k]) == 0 {
@@ -129,7 +130,7 @@ func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token uint64) error {
 	return nil
 }
 
-func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c event.Callback) error {
+func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return fmt.Errorf("key %s is not readable", k)
 	}
@@ -168,7 +169,7 @@ func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) ([]byte, error) {
 }
 
 func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
-	c event.Callback) error {
+	c result.Callback) error {
 	if k.AccessType()&key.AccessTypeWrite == 0 {
 		return fmt.Errorf("key %s is not writable", k)
 	}
@@ -193,7 +194,7 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 }
 
 func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
-	c event.Callback) error {
+	c result.Callback) error {
 	if k.AccessType()&key.AccessTypeAction == 0 {
 		return fmt.Errorf("key %s is not an action", k)
 	}
