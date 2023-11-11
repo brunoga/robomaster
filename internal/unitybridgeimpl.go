@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"sync"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
@@ -15,6 +17,7 @@ import (
 type UnityBridgeImpl struct {
 	uw               wrapper.UnityBridge
 	unityBridgeDebug bool
+	l                *logger.Logger
 
 	m                  sync.Mutex
 	started            bool
@@ -25,10 +28,16 @@ type UnityBridgeImpl struct {
 }
 
 func NewUnityBridgeImpl(uw wrapper.UnityBridge,
-	unityBridgeDebug bool) *UnityBridgeImpl {
+	unityBridgeDebug bool, l *logger.Logger) *UnityBridgeImpl {
+	if l == nil {
+		// Create a logger that only log errors.
+		l = logger.New(slog.LevelError)
+	}
+
 	return &UnityBridgeImpl{
 		uw:                 uw,
 		unityBridgeDebug:   unityBridgeDebug,
+		l:                  l,
 		listeners:          make(map[*key.Key]map[uint64]result.Callback),
 		eventTypeListeners: make(map[event.Type]map[uint64]event.TypeCallback),
 		callbacks:          make(map[uint64]result.Callback),
@@ -45,6 +54,7 @@ func (u *UnityBridgeImpl) Start() error {
 
 	var logPath string
 	if u.unityBridgeDebug {
+		u.l.Info("Unity Bridge debug mode enabled.")
 		logPath = "./log"
 	}
 
@@ -328,9 +338,7 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 		u.m.Lock()
 
 		if len(u.eventTypeListeners[e.Type()]) == 0 {
-			// TODO(bga): Remove this after we undersand all event types or use
-			//            logging instead of Printf.
-			fmt.Printf("No listeners registered for event type %s\n", e.Type())
+			u.l.Info("No listeners registered for event type", "eventType", e.Type())
 			return
 		}
 
@@ -345,8 +353,8 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 	k, err := key.FromEvent(e)
 	if err != nil {
-		fmt.Printf("error creating key from event sub-type %d: %s\n",
-			e.SubType(), err.Error())
+		u.l.Error("Error creating key from event sub-type", "subType",
+			e.SubType(), "err", err)
 		return
 	}
 

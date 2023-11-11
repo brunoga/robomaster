@@ -2,6 +2,7 @@ package unitybridge
 
 import (
 	"github.com/brunoga/unitybridge/internal"
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
@@ -73,6 +74,7 @@ type UnityBridge interface {
 // Get returns an instance of the high level Unity Bridge API using the given
 // low-level Unity Bridge library wrapper (mostly so irt can be mocked for
 // tests).
-func Get(wu wrapper.UnityBridge, unityBridgeDebug bool) UnityBridge {
-	return internal.NewUnityBridgeImpl(wu, unityBridgeDebug)
+func Get(wu wrapper.UnityBridge, unityBridgeDebug bool,
+	l *logger.Logger) UnityBridge {
+	return internal.NewUnityBridgeImpl(wu, unityBridgeDebug, l)
 }

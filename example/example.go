@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
+	"log/slog"
 	"net"
 	"strings"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/finder"
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/qrcode"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
@@ -39,7 +41,9 @@ func main() {
 		panic("SSID and password must be provided.")
 	}
 
-	ub := unitybridge.Get(wrapper.Get(), true)
+	l := logger.New(slog.LevelInfo)
+
+	ub := unitybridge.Get(wrapper.Get(), true, l)
 
 	// Start unity bridge.
 	err := ub.Start()
@@ -56,7 +60,7 @@ func main() {
 		}
 	}
 
-	fmt.Println("Using App ID:", *appID)
+	l.Info("application configuration", "appID", *appID)
 
 	// And generate a QRCode to pair a Robomaster.
 	qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
