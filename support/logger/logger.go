@@ -21,8 +21,7 @@ func New(level slog.Level) *Logger {
 	levelVar.Set(level)
 
 	opts := &tint.Options{
-		Level:     levelVar,
-		AddSource: true,
+		Level: levelVar,
 	}
 
 	return &Logger{

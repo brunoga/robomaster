@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/event"
 )
 
@@ -19,6 +20,10 @@ var (
 )
 
 type unsupportedUnityBridgeImpl struct{}
+
+func Get(l *logger.Logger) *unsupportedUnityBridgeImpl {
+	return nil
+}
 
 func (u *unsupportedUnityBridgeImpl) Create(name string, debuggable bool,
 	logPath string) {

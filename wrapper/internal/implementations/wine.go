@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"syscall"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
@@ -69,7 +70,15 @@ func init() {
 	go loop()
 }
 
-type wineUnityBridgeImpl struct{}
+type wineUnityBridgeImpl struct {
+	l *logger.Logger
+}
+
+func Get(l *logger.Logger) *wineUnityBridgeImpl {
+	UnityBridgeImpl.l = l
+
+	return UnityBridgeImpl
+}
 
 func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 	// Write function identifier

@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"unsafe"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
@@ -67,6 +68,14 @@ type loadLibraryUnityBridgeImpl struct {
 	unitySendEventWithNumber           *syscall.Proc
 	unitySetEventCallback              *syscall.Proc
 	UnityGetSecurityKeyByKeyChainIndex *syscall.Proc
+
+	l *logger.Logger
+}
+
+func Get(l *logger.Logger) *loadLibraryUnityBridgeImpl {
+	UnityBridgeImpl.l = l
+
+	return UnityBridgeImpl
 }
 
 func (u *loadLibraryUnityBridgeImpl) Create(name string, debuggable bool,

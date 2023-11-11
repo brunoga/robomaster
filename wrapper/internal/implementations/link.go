@@ -23,6 +23,7 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
@@ -33,7 +34,15 @@ var (
 	UnityBridgeImpl *linkUnityBridgeImpl = &linkUnityBridgeImpl{}
 )
 
-type linkUnityBridgeImpl struct{}
+type linkUnityBridgeImpl struct {
+	l *logger.Logger
+}
+
+func Get(l *logger.Logger) *wineUnityBridgeImpl {
+	UnityBridgeImpl.l = l
+
+	return UnityBridgeImpl
+}
 
 func (u *linkUnityBridgeImpl) Create(name string, debuggable bool, logPath string) {
 	cName := C.CString(name)

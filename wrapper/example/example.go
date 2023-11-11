@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"log/slog"
 	"time"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
@@ -31,7 +33,9 @@ func callbackHandler(eventCode uint64, data []byte, tag uint64) {
 }
 
 func main() {
-	ub := wrapper.Get()
+	l := logger.New(slog.LevelDebug)
+
+	ub := wrapper.Get(l)
 
 	ub.Create("Robomaster", true, "./log")
 	defer ub.Destroy()

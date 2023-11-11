@@ -41,9 +41,9 @@ func main() {
 		panic("SSID and password must be provided.")
 	}
 
-	l := logger.New(slog.LevelInfo)
+	l := logger.New(slog.LevelDebug)
 
-	ub := unitybridge.Get(wrapper.Get(), true, l)
+	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
 	// Start unity bridge.
 	err := ub.Start()

@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 	"github.com/brunoga/unitybridge/wrapper/internal/implementations"
 )
@@ -49,6 +50,6 @@ type UnityBridge interface {
 }
 
 // Get returns a platform specific singleton instance of the UnityBridge interface.
-func Get() UnityBridge {
-	return UnityBridge(implementations.UnityBridgeImpl)
+func Get(l *logger.Logger) UnityBridge {
+	return UnityBridge(implementations.Get(l))
 }

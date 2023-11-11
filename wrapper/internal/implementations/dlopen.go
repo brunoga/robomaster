@@ -51,6 +51,7 @@ import (
 	"runtime"
 	"unsafe"
 
+	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
@@ -117,6 +118,14 @@ type dlOpenUnityBridgeImpl struct {
 	unitySendEventWithNumber           unsafe.Pointer
 	unitySetEventCallback              unsafe.Pointer
 	UnityGetSecurityKeyByKeyChainIndex unsafe.Pointer
+
+	l *logger.Logger
+}
+
+func Get(l *logger.Logger) *dlOpenUnityBridgeImpl {
+	UnityBridgeImpl.l = l
+
+	return UnityBridgeImpl
 }
 
 func (d *dlOpenUnityBridgeImpl) Create(name string, debuggable bool,
