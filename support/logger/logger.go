@@ -32,3 +32,7 @@ func New(level slog.Level) *Logger {
 		levelVar: levelVar,
 	}
 }
+
+func (l *Logger) Level() slog.Level {
+	return l.levelVar.Level()
+}
