@@ -65,10 +65,16 @@ func main() {
 	}
 
 	// Print the QRCode.
-	fmt.Println(qrCode.Text())
+	text, err := qrCode.Text()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(text)
 
 	f := finder.New(*appID)
 	var robotIP net.IP
+
+	var videoTransferSpeed uint64
 
 	// Listen for VideoTransferSpeed type events as these starting comming right away.
 	token, err := ub.AddEventTypeListener(event.TypeVideoTransferSpeed,
@@ -77,8 +83,12 @@ func main() {
 			// his to ilustrate how dataType can be used.
 			switch dataType {
 			case event.DataTypeUint64:
-				fmt.Println("Video Transfer Speed (int64):",
-					binary.LittleEndian.Uint64(data))
+				newVideoTransferSpeed := binary.LittleEndian.Uint64(data)
+				if newVideoTransferSpeed != videoTransferSpeed {
+					fmt.Println("Video Transfer Speed (int64):",
+						newVideoTransferSpeed)
+					videoTransferSpeed = newVideoTransferSpeed
+				}
 			case event.DataTypeString:
 				fmt.Println("Video Transfer Speed (string):", string(data))
 			default:
