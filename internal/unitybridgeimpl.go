@@ -353,7 +353,7 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 	k, err := key.FromEvent(e)
 	if err != nil {
-		u.l.Error("Error creating key from event sub-type", "subType",
+		u.l.Warn("Error creating key from event sub-type", "subType",
 			e.SubType(), "err", err)
 		return
 	}
