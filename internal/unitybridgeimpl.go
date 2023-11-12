@@ -25,7 +25,7 @@ type UnityBridgeImpl struct {
 	started            bool
 	keyListeners       map[*key.Key]map[token.Token]result.Callback
 	eventTypeListeners map[event.Type]map[token.Token]event.TypeCallback
-	callbackListener   map[uint64]result.Callback
+	callbackListener   map[token.Token]result.Callback
 	currentToken       uint64
 }
 
@@ -43,7 +43,7 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 		tg:                 token.NewGenerator(),
 		keyListeners:       make(map[*key.Key]map[token.Token]result.Callback),
 		eventTypeListeners: make(map[event.Type]map[token.Token]event.TypeCallback),
-		callbackListener:   make(map[uint64]result.Callback),
+		callbackListener:   make(map[token.Token]result.Callback),
 	}
 }
 
@@ -155,7 +155,7 @@ func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 	u.m.Lock()
 	defer u.m.Unlock()
 
-	tag := u.getAndUpdateTokenLocked()
+	tag := u.tg.Next()
 
 	u.callbackListener[tag] = c
 
@@ -199,7 +199,7 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 	u.m.Lock()
 	defer u.m.Unlock()
 
-	tag := u.getAndUpdateTokenLocked()
+	tag := u.tg.Next()
 
 	u.callbackListener[tag] = c
 
@@ -221,11 +221,11 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 
 	ev := event.NewFromTypeAndSubType(event.TypePerformAction, k.SubType())
 
-	tag := u.getAndUpdateTokenLocked()
+	tag := u.tg.Next()
 
 	u.callbackListener[tag] = c
 
-	u.uw.SendEventWithString(ev.Code(), string(data), tag)
+	u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
 
 	return nil
 }
@@ -384,22 +384,10 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 }
 
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
-	if c, ok := u.callbackListener[tag]; ok {
+	if c, ok := u.callbackListener[token.Token(tag)]; ok {
 		c(result.NewFromJSON(data))
-		delete(u.callbackListener, tag)
+		delete(u.callbackListener, token.Token(tag))
 	} else {
 		u.l.Error("No callback registered for tag", "tag", tag)
 	}
-}
-
-func (u *UnityBridgeImpl) getAndUpdateTokenLocked() uint64 {
-	if u.currentToken == 0 {
-		u.currentToken = 1 // Never use 0.
-	}
-
-	next := u.currentToken
-
-	u.currentToken++
-
-	return next
 }
