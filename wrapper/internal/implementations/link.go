@@ -36,10 +36,12 @@ var (
 
 type linkUnityBridgeImpl struct {
 	l *logger.Logger
+	m *internal_callback.Manager
 }
 
 func Get(l *logger.Logger) *wineUnityBridgeImpl {
 	UnityBridgeImpl.l = l
+	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
 	return UnityBridgeImpl
 }
@@ -67,7 +69,7 @@ func (u *linkUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 
 	C.UnitySetEventCallback(C.uint64_t(eventTypeCode), eventCallback)
 
-	internal_callback.Set(eventTypeCode, c)
+	u.m.Set(eventTypeCode, c)
 }
 
 func (u *linkUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,

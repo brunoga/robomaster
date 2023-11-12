@@ -120,10 +120,12 @@ type dlOpenUnityBridgeImpl struct {
 	UnityGetSecurityKeyByKeyChainIndex unsafe.Pointer
 
 	l *logger.Logger
+	m *internal_callback.Manager
 }
 
 func Get(l *logger.Logger) *dlOpenUnityBridgeImpl {
 	UnityBridgeImpl.l = l
+	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
 	return UnityBridgeImpl
 }
@@ -154,7 +156,7 @@ func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 	C.UnitySetEventCallbackCaller(unsafe.Pointer(d.unitySetEventCallback),
 		C.uint64_t(eventTypeCode), eventCallback)
 
-	internal_callback.Set(eventTypeCode, c)
+	d.m.Set(eventTypeCode, c)
 }
 
 func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,

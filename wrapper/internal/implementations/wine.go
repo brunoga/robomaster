@@ -36,6 +36,7 @@ var (
 
 type wineUnityBridgeImpl struct {
 	l *logger.Logger
+	m *internal_callback.Manager
 }
 
 func Get(l *logger.Logger) *wineUnityBridgeImpl {
@@ -76,10 +77,11 @@ func Get(l *logger.Logger) *wineUnityBridgeImpl {
 			panic(err)
 		}
 
-		go loop()
+		go loop(internal_callback.NewManager(l))
 	})
 
 	UnityBridgeImpl.l = l
+	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
 	return UnityBridgeImpl
 }
@@ -243,7 +245,7 @@ func (u *wineUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 		panic(err)
 	}
 
-	internal_callback.Set(eventTypeCode, c)
+	u.m.Set(eventTypeCode, c)
 }
 
 func (u *wineUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
@@ -356,7 +358,7 @@ func getFd(file *os.File) uintptr {
 	return fileFd
 }
 
-func loop() {
+func loop(m *internal_callback.Manager) {
 	headerBuf := make([]byte, 18)
 	for {
 		if _, err := io.ReadFull(localEventPipe, headerBuf); err != nil {
@@ -372,6 +374,6 @@ func loop() {
 			panic(fmt.Sprintf("Error reading data: %s", err))
 		}
 
-		internal_callback.Run(eventCode, data, tag)
+		m.Run(eventCode, data, tag)
 	}
 }

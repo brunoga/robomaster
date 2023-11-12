@@ -70,10 +70,12 @@ type loadLibraryUnityBridgeImpl struct {
 	UnityGetSecurityKeyByKeyChainIndex *syscall.Proc
 
 	l *logger.Logger
+	m *internal_callback.Manager
 }
 
 func Get(l *logger.Logger) *loadLibraryUnityBridgeImpl {
 	UnityBridgeImpl.l = l
+	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
 	return UnityBridgeImpl
 }
@@ -115,7 +117,7 @@ func (u *loadLibraryUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 		eventCallbackUintptr,
 	)
 
-	internal_callback.Set(eventTypeCode, c)
+	u.m.Set(eventTypeCode, c)
 }
 
 func (u *loadLibraryUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
