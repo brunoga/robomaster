@@ -1,5 +1,7 @@
 package event
 
+import "fmt"
+
 // Event represents a Unity Bridge event with associated type and sub-type.
 type Event struct {
 	typ    Type
@@ -53,4 +55,9 @@ func (e *Event) Reset(typ Type, subTyp uint32) {
 // ResetSubType resets the event sub-type.
 func (e *Event) ResetSubType(subTyp uint32) {
 	e.subTyp = subTyp
+}
+
+// String returns a string representation of the event.
+func (e *Event) String() string {
+	return fmt.Sprintf("Event: %s/%d", e.typ, e.subTyp)
 }
