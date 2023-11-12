@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
@@ -18,11 +19,12 @@ type UnityBridgeImpl struct {
 	uw               wrapper.UnityBridge
 	unityBridgeDebug bool
 	l                *logger.Logger
+	tg               *token.Generator
 
 	m                  sync.Mutex
 	started            bool
-	keyListeners       map[*key.Key]map[uint64]result.Callback
-	eventTypeListeners map[event.Type]map[uint64]event.TypeCallback
+	keyListeners       map[*key.Key]map[token.Token]result.Callback
+	eventTypeListeners map[event.Type]map[token.Token]event.TypeCallback
 	callbackListener   map[uint64]result.Callback
 	currentToken       uint64
 }
@@ -38,8 +40,9 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 		uw:                 uw,
 		unityBridgeDebug:   unityBridgeDebug,
 		l:                  l,
-		keyListeners:       make(map[*key.Key]map[uint64]result.Callback),
-		eventTypeListeners: make(map[event.Type]map[uint64]event.TypeCallback),
+		tg:                 token.NewGenerator(),
+		keyListeners:       make(map[*key.Key]map[token.Token]result.Callback),
+		eventTypeListeners: make(map[event.Type]map[token.Token]event.TypeCallback),
 		callbackListener:   make(map[uint64]result.Callback),
 	}
 }
@@ -74,7 +77,7 @@ func (u *UnityBridgeImpl) Start() error {
 }
 
 func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
-	immediate bool) (uint64, error) {
+	immediate bool) (token.Token, error) {
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return 0, fmt.Errorf("key %s is not readable", k)
 	}
@@ -87,7 +90,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	defer u.m.Unlock()
 
 	if _, ok := u.keyListeners[k]; !ok {
-		u.keyListeners[k] = make(map[uint64]result.Callback)
+		u.keyListeners[k] = make(map[token.Token]result.Callback)
 	}
 
 	if len(u.keyListeners[k]) == 0 {
@@ -95,7 +98,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 		u.uw.SendEvent(ev.Code(), nil, 0)
 	}
 
-	token := u.getAndUpdateTokenLocked()
+	token := u.tg.Next()
 
 	u.keyListeners[k][token] = c
 
@@ -114,7 +117,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	return token, nil
 }
 
-func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token uint64) error {
+func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token token.Token) error {
 	if token == 0 {
 		return fmt.Errorf("token cannot be 0")
 	}
@@ -260,7 +263,7 @@ func (u *UnityBridgeImpl) SendEventWithUint64(ev *event.Event,
 }
 
 func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
-	c event.TypeCallback) (uint64, error) {
+	c event.TypeCallback) (token.Token, error) {
 	if c == nil {
 		return 0, fmt.Errorf("callback cannot be nil")
 	}
@@ -269,10 +272,10 @@ func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 	defer u.m.Unlock()
 
 	if _, ok := u.eventTypeListeners[t]; !ok {
-		u.eventTypeListeners[t] = make(map[uint64]event.TypeCallback)
+		u.eventTypeListeners[t] = make(map[token.Token]event.TypeCallback)
 	}
 
-	token := u.getAndUpdateTokenLocked()
+	token := u.tg.Next()
 
 	u.eventTypeListeners[t][token] = c
 
@@ -280,7 +283,7 @@ func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 }
 
 func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
-	token uint64) error {
+	token token.Token) error {
 	if token == 0 {
 		return fmt.Errorf("token cannot be 0")
 	}

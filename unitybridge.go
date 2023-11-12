@@ -3,6 +3,7 @@ package unitybridge
 import (
 	"github.com/brunoga/unitybridge/internal"
 	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
@@ -19,11 +20,12 @@ type UnityBridge interface {
 	// immediate is true, the callback will be called immediatelly with any
 	// cached value associated with the key. Returns a token that can be used
 	// to remove the listener later.
-	AddKeyListener(k *key.Key, c result.Callback, immediate bool) (uint64, error)
+	AddKeyListener(k *key.Key, c result.Callback,
+		immediate bool) (token.Token, error)
 
 	// RemoveKeyListener removes the listener associated with the given token
 	// for events on the given key.
-	RemoveKeyListener(key *key.Key, token uint64) error
+	RemoveKeyListener(key *key.Key, token token.Token) error
 
 	// GetKeyValue returns the Unity Bridge value associated with the given
 	// key.
@@ -61,11 +63,11 @@ type UnityBridge interface {
 	// AddEventTypeListener adds a listener for events of the given type. Returns
 	// a token that can be used to remove the listener later.
 	AddEventTypeListener(t event.Type,
-		c event.TypeCallback) (uint64, error)
+		c event.TypeCallback) (token.Token, error)
 
 	// RemoveEventTypeListener removes the listener associated with the given
 	// token for events of the given type.
-	RemoveEventTypeListener(t event.Type, token uint64) error
+	RemoveEventTypeListener(t event.Type, token token.Token) error
 
 	// Stop cleans up and stops the Unity Bridge.
 	Stop() error
