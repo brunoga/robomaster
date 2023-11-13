@@ -26,7 +26,6 @@ type UnityBridgeImpl struct {
 	keyListeners       map[*key.Key]map[token.Token]result.Callback
 	eventTypeListeners map[event.Type]map[token.Token]event.TypeCallback
 	callbackListener   map[token.Token]result.Callback
-	currentToken       uint64
 }
 
 func NewUnityBridgeImpl(uw wrapper.UnityBridge,
@@ -332,8 +331,6 @@ func (u *UnityBridgeImpl) Stop() error {
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
-	u.l.Debug("Handling owned event", "event", e, "data", string(data), "tag", tag)
-
 	u.m.Lock()
 	defer u.m.Unlock()
 

@@ -95,7 +95,8 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 
 	if data != nil {
 		// Write total data len.
-		err = binary.Write(localWritePipe, binary.BigEndian, uint16(data.Len()))
+
+		err = writeSize(localWritePipe, uint32(data.Len()))
 		if err != nil {
 			return nil, err
 		}
@@ -105,14 +106,14 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 			return nil, err
 		}
 	} else {
-		err = binary.Write(localWritePipe, binary.BigEndian, uint16(0))
+		err = writeSize(localWritePipe, 0)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// Read response header.
-	headerBuf := make([]byte, 1+2)
+	headerBuf := make([]byte, 1+4)
 	_, err = io.ReadFull(localReadPipe, headerBuf)
 	if err != nil {
 		return nil, err
@@ -125,7 +126,7 @@ func sendRequest(function byte, data *bytes.Buffer) ([]byte, error) {
 	}
 
 	// Read response length.
-	length := binary.BigEndian.Uint16(headerBuf[1:3])
+	length := binary.BigEndian.Uint32(headerBuf[1:5])
 
 	if length > 0 {
 		// Read response data.
@@ -151,10 +152,10 @@ func (u *wineUnityBridgeImpl) Create(name string, debuggable bool,
 		b.WriteByte(0)
 	}
 
-	binary.Write(&b, binary.BigEndian, uint16(len(name)))
+	writeSize(&b, uint32(len(name)))
 	b.WriteString(name)
 
-	binary.Write(&b, binary.BigEndian, uint16(len(logPath)))
+	writeSize(&b, uint32(len(logPath)))
 	b.WriteString(logPath)
 
 	_, err := sendRequest(0x00, &b)
@@ -190,11 +191,9 @@ func (u *wineUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
 	var b bytes.Buffer
 
-	outputLen := uint16(len(output))
-
 	binary.Write(&b, binary.BigEndian, eventCode)
 	binary.Write(&b, binary.BigEndian, tag)
-	binary.Write(&b, binary.BigEndian, outputLen)
+	writeSize(&b, uint32(len(output)))
 
 	res, err := sendRequest(0x04, &b)
 	if err != nil {
@@ -210,7 +209,7 @@ func (u *wineUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
 
 	binary.Write(&b, binary.BigEndian, eventCode)
 	binary.Write(&b, binary.BigEndian, tag)
-	binary.Write(&b, binary.BigEndian, uint16(len(data)))
+	writeSize(&b, uint32(len(data)))
 	b.WriteString(data)
 
 	_, err := sendRequest(0x05, &b)
@@ -359,7 +358,7 @@ func getFd(file *os.File) uintptr {
 }
 
 func loop(m *internal_callback.Manager) {
-	headerBuf := make([]byte, 18)
+	headerBuf := make([]byte, 20)
 	for {
 		if _, err := io.ReadFull(localEventPipe, headerBuf); err != nil {
 			panic(fmt.Sprintf("Error reading data: %s", err))
@@ -367,7 +366,7 @@ func loop(m *internal_callback.Manager) {
 
 		eventCode := binary.BigEndian.Uint64(headerBuf[0:8])
 		tag := binary.BigEndian.Uint64(headerBuf[8:16])
-		length := binary.BigEndian.Uint16(headerBuf[16:18])
+		length := binary.BigEndian.Uint32(headerBuf[16:20])
 
 		data := make([]byte, length)
 		if _, err := io.ReadFull(localEventPipe, data); err != nil {
@@ -376,4 +375,8 @@ func loop(m *internal_callback.Manager) {
 
 		m.Run(eventCode, data, tag)
 	}
+}
+
+func writeSize(w io.Writer, size uint32) error {
+	return binary.Write(w, binary.BigEndian, size)
 }

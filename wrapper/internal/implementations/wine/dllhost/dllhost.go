@@ -99,7 +99,7 @@ func fdToFile(proc *syscall.Proc, fd uintptr, flags uintptr,
 }
 
 func loop(readFile, writeFile *os.File) error {
-	headerBuf := make([]byte, 3)
+	headerBuf := make([]byte, 1+4)
 
 	for {
 		if _, err := io.ReadFull(readFile, headerBuf); err != nil {
@@ -112,7 +112,7 @@ func loop(readFile, writeFile *os.File) error {
 
 		function := headerBuf[0]
 
-		length := binary.BigEndian.Uint16(headerBuf[1:3])
+		length := binary.BigEndian.Uint32(headerBuf[1:5])
 
 		var data []byte
 		if length != 0 {
@@ -164,31 +164,31 @@ func process(writeFile *os.File, function byte, data []byte) {
 
 func runCreateUnityBridge(data []byte, b *bytes.Buffer) {
 	debuggable := data[0] != 0
-	nameLength := binary.BigEndian.Uint16(data[1:3])
-	name := string(data[3 : 3+nameLength])
+	nameLength := binary.BigEndian.Uint32(data[1:5])
+	name := string(data[5 : 5+nameLength])
 
 	// No need to parse the logPath size because it will be whatever is left of
 	// the buffer. So we just make sure we skip the size.
-	logPath := string(data[3+nameLength+2:])
+	logPath := string(data[5+nameLength+4:])
 
 	ub.Create(name, debuggable, logPath)
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runDestroyUnityBridge(data []byte, b *bytes.Buffer) {
 	ub.Destroy()
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runInitializeUnityBridge(data []byte, b *bytes.Buffer) {
 	res := ub.Initialize()
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(1))
+	writeSize(b, 1)
 
 	if res {
 		b.WriteByte(0x01)
@@ -201,20 +201,20 @@ func runUnitializeUnityBridge(data []byte, b *bytes.Buffer) {
 	ub.Uninitialize()
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runUnitySendEvent(data []byte, b *bytes.Buffer) {
 	eventCode := binary.BigEndian.Uint64(data[0:8])
 	tag := binary.BigEndian.Uint64(data[8:16])
-	outputLen := binary.BigEndian.Uint16(data[16:18])
+	outputLen := binary.BigEndian.Uint32(data[16:20])
 
 	output := make([]byte, outputLen)
 
 	ub.SendEvent(eventCode, output, tag)
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(outputLen))
+	writeSize(b, outputLen)
 
 	b.Write(output)
 }
@@ -222,13 +222,13 @@ func runUnitySendEvent(data []byte, b *bytes.Buffer) {
 func runUnitySendEventWithString(data []byte, b *bytes.Buffer) {
 	eventCode := binary.BigEndian.Uint64(data[0:8])
 	tag := binary.BigEndian.Uint64(data[8:16])
-	length := binary.BigEndian.Uint16(data[16:18])
-	data2 := string(data[18 : 18+length])
+	length := binary.BigEndian.Uint32(data[16:20])
+	data2 := string(data[20 : 20+length])
 
 	ub.SendEventWithString(eventCode, data2, tag)
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runUnitySendEventWithNumber(data []byte, b *bytes.Buffer) {
@@ -239,7 +239,7 @@ func runUnitySendEventWithNumber(data []byte, b *bytes.Buffer) {
 	ub.SendEventWithNumber(eventCode, data2, tag)
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runUnitySetEventCallback(data []byte, b *bytes.Buffer) {
@@ -253,7 +253,7 @@ func runUnitySetEventCallback(data []byte, b *bytes.Buffer) {
 	}
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(0))
+	writeSize(b, 0)
 }
 
 func runGetSecurityKeyByKeyChainIndex(data []byte, b *bytes.Buffer) {
@@ -262,7 +262,11 @@ func runGetSecurityKeyByKeyChainIndex(data []byte, b *bytes.Buffer) {
 	key := ub.GetSecurityKeyByKeyChainIndex(int(index))
 
 	// Write data size.
-	binary.Write(b, binary.BigEndian, uint16(len(key)))
+	writeSize(b, uint32(len(key)))
 
 	b.WriteString(key)
+}
+
+func writeSize(w io.Writer, size uint32) error {
+	return binary.Write(w, binary.BigEndian, size)
 }
