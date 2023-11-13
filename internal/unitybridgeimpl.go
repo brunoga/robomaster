@@ -332,6 +332,8 @@ func (u *UnityBridgeImpl) Stop() error {
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
+	u.l.Debug("Handling owned event", "event", e, "data", data, "tag", tag)
+
 	u.m.Lock()
 	defer u.m.Unlock()
 
