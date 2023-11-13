@@ -381,7 +381,7 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 			c(data, dataType)
 		}
 	} else {
-		u.l.Warn("No listeners registered for event type", "eventType", e.Type())
+		u.l.Warn("No listeners registered for event type", "eventType", e.Type(), "event", e, "data", data)
 	}
 }
 
@@ -391,7 +391,7 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 			c(result.NewFromJSON(data))
 		}
 	} else {
-		u.l.Warn("No listeners registered for key", "key", k)
+		u.l.Warn("No listeners registered for key", "key", k, "data", data)
 	}
 }
 
