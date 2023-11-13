@@ -332,7 +332,7 @@ func (u *UnityBridgeImpl) Stop() error {
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
-	u.l.Debug("Handling owned event", "event", e, "data", data, "tag", tag)
+	u.l.Debug("Handling owned event", "event", e, "data", string(data), "tag", tag)
 
 	u.m.Lock()
 	defer u.m.Unlock()
@@ -381,7 +381,7 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 			c(data, dataType)
 		}
 	} else {
-		u.l.Warn("No listeners registered for event type", "eventType", e.Type(), "event", e, "data", data)
+		u.l.Warn("No listeners registered for event type", "eventType", e.Type(), "event", e, "data", string(data))
 	}
 }
 
@@ -391,7 +391,7 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 			c(result.NewFromJSON(data))
 		}
 	} else {
-		u.l.Warn("No listeners registered for key", "key", k, "data", data)
+		u.l.Warn("No listeners registered for key", "key", k, "data", string(data))
 	}
 }
 
