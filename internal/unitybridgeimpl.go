@@ -330,36 +330,46 @@ func (u *UnityBridgeImpl) Stop() error {
 	return nil
 }
 
+func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
+	tag uint64, dataType event.DataType) error {
+	u.m.Lock()
+	defer u.m.Unlock()
+
+	switch e.Type() {
+	case event.TypeSetValue, event.TypePerformAction, event.TypeGetValue:
+		u.notifyCallbacks(data, tag)
+	case event.TypeStartListening:
+		k, err := key.FromSubType(e.SubType())
+		if err != nil {
+			return err
+		}
+		u.notifyKeyListeners(k, data)
+	}
+
+	return nil
+}
+
 func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint64) {
 	e := event.NewFromCode(eventCode)
 
-	var dataType event.DataType
-	dataType, tag = event.DataTypeFromTag(tag)
+	dataType, tag := event.DataTypeFromTag(tag)
+
+	if e.Type() == event.TypeGetValue || e.Type() == event.TypeSetValue ||
+		e.Type() == event.TypePerformAction || e.Type() == event.TypeStartListening {
+		if err := u.handleOwnedEvents(e, data, tag, dataType); err != nil {
+			u.l.Error("Error handling owned event", "event", e, "err", err)
+		}
+
+		// TODO(bga): We might want to not return here to allow other listeners
+		// to also get notified for the event we own.
+		return
+	}
 
 	u.m.Lock()
 	defer u.m.Unlock()
 
 	// Call all registered event type listeners.
 	u.notifyEventTypeListeners(e, data, dataType)
-
-	if tag != 0 {
-		// This should be associated with a callback. Call it.
-		u.notifyCallbacks(data, tag)
-	}
-
-	if e.SubType() == 0 {
-		// This is not a key event.
-		return
-	}
-
-	k, err := key.FromEvent(e)
-	if err != nil {
-		// TODO(bga): This is actually expected. Consider removing this
-		//            eventually.
-		u.l.Warn("Error creating key from event", "event", e, "err", err)
-	} else {
-		u.notifyKeyListeners(k, data)
-	}
 }
 
 func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
