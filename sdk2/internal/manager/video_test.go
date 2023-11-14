@@ -43,7 +43,17 @@ func TestVideo(t *testing.T) {
 	}
 	defer vm.Stop()
 
-	vm.SetVideoResolution(1)
+	time.Sleep(2 * time.Second)
+
+	err = vm.StartRecordingToSDCard()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	time.Sleep(10 * time.Second)
+
+	err = vm.StopRecordingToSDCard()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

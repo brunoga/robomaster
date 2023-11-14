@@ -53,7 +53,7 @@ func (v *Video) Start() error {
 		return err
 	}
 
-	// Ask for video texture information,
+	// Ask for video texture information.
 	err = v.ub.SendEvent(event.NewFromType(event.TypeGetNativeTexture))
 	if err != nil {
 		return err
@@ -65,8 +65,8 @@ func (v *Video) Start() error {
 // SetVideoResolution sets the video resolution.
 //
 // TODO(bga): Other then  actually limiting the available resolutions, it looks
-// like changing resolutions does not work with Wine. It might be because the
-// unity bridge can not find any video acceleration support in this case.
+// like changing resolutions is not working. Need to investigate further as
+// there might be some setup that is needed and is not being done.
 func (v *Video) SetVideoResolution(resolutionID uint64) error {
 	var err error
 
@@ -81,6 +81,62 @@ func (v *Video) SetVideoResolution(resolutionID uint64) error {
 	})
 
 	wg.Wait()
+
+	return err
+}
+
+func (v *Video) StartRecordingToSDCard() error {
+	var err error
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	v.ub.GetKeyValue(key.KeyCameraMode, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error getting camera mode: %s", r.ErrorDesc())
+		} else {
+			if uint64(r.Value().(float64)) != 1 {
+				wg.Add(1)
+				v.ub.SetKeyValue(key.KeyCameraMode, uint64(1), func(r *result.Result) {
+					if r.ErrorCode() != 0 {
+						err = fmt.Errorf("error setting camera mode to video: %s", r.ErrorDesc())
+					}
+					wg.Done()
+				})
+			}
+		}
+
+		wg.Done()
+	})
+
+	wg.Wait()
+
+	wg.Add(1)
+	err = v.ub.PerformActionForKey(key.KeyCameraStartRecordVideo, nil, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error starting video recording: %s", r.ErrorDesc())
+		}
+		wg.Done()
+	})
+
+	wg.Wait()
+
+	return err
+}
+
+func (v *Video) StopRecordingToSDCard() error {
+	var err error
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	err = v.ub.PerformActionForKey(key.KeyCameraStopRecordVideo, nil, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error stopping video recording: %s", r.ErrorDesc())
+		}
+
+		wg.Done()
+	})
 
 	return err
 }
