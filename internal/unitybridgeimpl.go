@@ -21,7 +21,7 @@ type UnityBridgeImpl struct {
 	l                *logger.Logger
 	tg               *token.Generator
 
-	m                  sync.Mutex
+	m                  sync.RWMutex
 	started            bool
 	keyListeners       map[*key.Key]map[token.Token]result.Callback
 	eventTypeListeners map[event.Type]map[token.Token]event.TypeCallback
@@ -48,11 +48,15 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 
 func (u *UnityBridgeImpl) Start() error {
 	u.m.Lock()
-	defer u.m.Unlock()
 
 	if u.started {
+		u.m.Unlock()
 		return fmt.Errorf("unity bridge already started")
 	}
+
+	u.started = true
+
+	u.m.Unlock()
 
 	var logPath string
 	if u.unityBridgeDebug {
@@ -70,8 +74,6 @@ func (u *UnityBridgeImpl) Start() error {
 		u.uw.SetEventCallback(eventTypeCode, u.eventCallback)
 	}
 
-	u.started = true
-
 	return nil
 }
 
@@ -85,8 +87,9 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 		return 0, fmt.Errorf("callback cannot be nil")
 	}
 
+	t := u.tg.Next()
+
 	u.m.Lock()
-	defer u.m.Unlock()
 
 	if _, ok := u.keyListeners[k]; !ok {
 		u.keyListeners[k] = make(map[token.Token]result.Callback)
@@ -97,23 +100,23 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 		u.uw.SendEvent(ev.Code(), nil, 0)
 	}
 
-	token := u.tg.Next()
+	u.keyListeners[k][t] = c
 
-	u.keyListeners[k][token] = c
+	u.m.Unlock()
 
 	if !immediate {
-		return token, nil
+		return t, nil
 	}
 
-	output, err := u.GetCachedKeyValue(k)
+	r, err := u.GetCachedKeyValue(k)
 	if err != nil {
 		// Basically ignore the error and return the token anyway.
-		return token, nil
+		return t, nil
 	}
 
-	c(result.NewFromJSON(output))
+	c(r)
 
-	return token, nil
+	return t, nil
 }
 
 func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token token.Token) error {
@@ -151,19 +154,20 @@ func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 
 	ev := event.NewFromTypeAndSubType(event.TypeGetValue, k.SubType())
 
-	u.m.Lock()
-	defer u.m.Unlock()
-
 	tag := u.tg.Next()
 
+	u.m.Lock()
+
 	u.callbackListener[tag] = c
+
+	u.m.Unlock()
 
 	u.uw.SendEvent(ev.Code(), nil, uint64(tag))
 
 	return nil
 }
 
-func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) ([]byte, error) {
+func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) (*result.Result, error) {
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return nil, fmt.Errorf("key %s is not readable", k)
 	}
@@ -179,7 +183,7 @@ func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) ([]byte, error) {
 		output = output[:n]
 	}
 
-	return output, nil
+	return result.NewFromJSON(output), nil
 }
 
 func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
@@ -188,19 +192,25 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 		return fmt.Errorf("key %s is not writable", k)
 	}
 
-	data, err := json.Marshal(value)
+	v := struct {
+		Value interface{} `json:"value"`
+	}{
+		value,
+	}
+	data, err := json.Marshal(&v)
 	if err != nil {
 		return err
 	}
 
 	ev := event.NewFromTypeAndSubType(event.TypeSetValue, k.SubType())
 
-	u.m.Lock()
-	defer u.m.Unlock()
-
 	tag := u.tg.Next()
 
+	u.m.Lock()
+
 	u.callbackListener[tag] = c
+
+	u.m.Unlock()
 
 	u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
 
@@ -222,7 +232,11 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 
 	tag := u.tg.Next()
 
+	u.m.Lock()
+
 	u.callbackListener[tag] = c
+
+	u.m.Unlock()
 
 	u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
 
@@ -267,23 +281,24 @@ func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 		return 0, fmt.Errorf("callback cannot be nil")
 	}
 
+	tk := u.tg.Next()
+
 	u.m.Lock()
-	defer u.m.Unlock()
 
 	if _, ok := u.eventTypeListeners[t]; !ok {
 		u.eventTypeListeners[t] = make(map[token.Token]event.TypeCallback)
 	}
 
-	token := u.tg.Next()
+	u.eventTypeListeners[t][tk] = c
 
-	u.eventTypeListeners[t][token] = c
+	u.m.Unlock()
 
-	return token, nil
+	return tk, nil
 }
 
 func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
-	token token.Token) error {
-	if token == 0 {
+	tk token.Token) error {
+	if tk == 0 {
 		return fmt.Errorf("token cannot be 0")
 	}
 
@@ -294,12 +309,12 @@ func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 		return fmt.Errorf("no listeners registered for event type %s", t)
 	}
 
-	if _, ok := u.eventTypeListeners[t][token]; !ok {
+	if _, ok := u.eventTypeListeners[t][tk]; !ok {
 		return fmt.Errorf("no listener registered with token %d for event type %s",
-			token, t)
+			tk, t)
 	}
 
-	delete(u.eventTypeListeners[t], token)
+	delete(u.eventTypeListeners[t], tk)
 
 	if len(u.eventTypeListeners[t]) == 0 {
 		delete(u.eventTypeListeners, t)
@@ -310,11 +325,15 @@ func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 
 func (u *UnityBridgeImpl) Stop() error {
 	u.m.Lock()
-	defer u.m.Unlock()
 
 	if !u.started {
+		u.m.Unlock()
 		return fmt.Errorf("unity bridge not started")
 	}
+
+	u.started = false
+
+	u.m.Unlock()
 
 	for _, eventType := range event.AllTypes() {
 		eventTypeCode := event.NewFromType(eventType).Code()
@@ -324,16 +343,11 @@ func (u *UnityBridgeImpl) Stop() error {
 	u.uw.Uninitialize()
 	u.uw.Destroy()
 
-	u.started = false
-
 	return nil
 }
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
-	u.m.Lock()
-	defer u.m.Unlock()
-
 	switch e.Type() {
 	case event.TypeSetValue, event.TypePerformAction, event.TypeGetValue:
 		u.notifyCallbacks(data, tag)
@@ -353,6 +367,9 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 	dataType, tag := event.DataTypeFromTag(tag)
 
+	dataCopy := make([]byte, len(data))
+	copy(dataCopy, data)
+
 	if e.Type() == event.TypeGetValue || e.Type() == event.TypeSetValue ||
 		e.Type() == event.TypePerformAction || e.Type() == event.TypeStartListening {
 		if err := u.handleOwnedEvents(e, data, tag, dataType); err != nil {
@@ -364,39 +381,47 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 		return
 	}
 
-	u.m.Lock()
-	defer u.m.Unlock()
-
 	// Call all registered event type listeners.
 	u.notifyEventTypeListeners(e, data, dataType)
 }
 
 func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 	data []byte, dataType event.DataType) {
+	u.m.RLock()
+
 	if _, ok := u.eventTypeListeners[e.Type()]; ok {
 		for _, c := range u.eventTypeListeners[e.Type()] {
-			c(data, dataType)
+			go c(data, dataType)
 		}
 	} else {
 		u.l.Warn("No listeners registered for event type", "eventType", e.Type(), "event", e, "data", string(data))
 	}
+
+	u.m.RUnlock()
 }
 
 func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
+	u.m.RLock()
+
 	if _, ok := u.keyListeners[k]; ok {
 		for _, c := range u.keyListeners[k] {
-			c(result.NewFromJSON(data))
+			go c(result.NewFromJSON(data))
 		}
 	} else {
 		u.l.Warn("No listeners registered for key", "key", k, "data", string(data))
 	}
+
+	u.m.RUnlock()
 }
 
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
+	u.m.Lock()
 	if c, ok := u.callbackListener[token.Token(tag)]; ok {
-		c(result.NewFromJSON(data))
+		go c(result.NewFromJSON(data))
 		delete(u.callbackListener, token.Token(tag))
 	} else {
 		u.l.Error("No callback registered for tag", "tag", tag)
 	}
+
+	u.m.Unlock()
 }

@@ -33,7 +33,7 @@ type UnityBridge interface {
 
 	// GetCachedKeyValue returns the Unity Bridge cached value associated
 	// with the given key.
-	GetCachedKeyValue(k *key.Key) ([]byte, error)
+	GetCachedKeyValue(k *key.Key) (*result.Result, error)
 
 	// SetKeyValue sets the Unity Bridge value associated with the given key.
 	SetKeyValue(k *key.Key, value any, c result.Callback) error
