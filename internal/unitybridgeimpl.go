@@ -109,7 +109,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	}
 
 	r, err := u.GetCachedKeyValue(k)
-	if err != nil {
+	if err != nil || r.ErrorCode() != 0 {
 		// Basically ignore the error and return the token anyway.
 		return t, nil
 	}
@@ -394,7 +394,8 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 			go c(data, dataType)
 		}
 	} else {
-		u.l.Warn("No listeners registered for event type", "eventType", e.Type(), "event", e, "data", string(data))
+		u.l.Warn("No listeners registered for event type", "eventType",
+			e.Type(), "event", e, "len(data)", len(data))
 	}
 
 	u.m.RUnlock()
