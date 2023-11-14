@@ -82,9 +82,23 @@ func (m *Manager) Run(eventCode uint64, data []byte, tag uint64) error {
 		return fmt.Errorf("no handlers for event type code %d", eventTypeCode)
 	}
 
-	// TODO(bga): Maybe do this in a goroutine? If we do, we must copy data as
-	// it is backed by a C array that is freed after Run() returns.
-	c(eventCode, data, tag)
+	// Make a copy of the data so we can:
+	//
+	// 1. Move the data out of the C side of things into the Go realm (so we)
+	//    can benefit of our garbage collector.
+	// 2. Allow us doing things in goroutines (data will not disappear under
+	//	  us).
+	// 3. We can also return faster to the C side of things which unblocks the
+	//    Unity Bridge code and might also help speeding thing up.
+	//
+	// Note that for the Wine version, we end up doing 2 copies (one here and
+	// another one when sending the data down the pipe from Wine to the Linux
+	// side). Considering even for video frames there is not much data to copy
+	// (only 6Mb or so in the worst case scenario), this is not a big deal.
+	dataCopy := make([]byte, len(data))
+	copy(dataCopy, data)
+
+	go c(eventCode, dataCopy, tag)
 
 	return nil
 }
