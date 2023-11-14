@@ -85,33 +85,62 @@ func (v *Video) SetVideoResolution(resolutionID uint64) error {
 	return err
 }
 
-func (v *Video) StartRecordingToSDCard() error {
-	var err error
-
+func (v *Video) GetMode() (uint64, error) {
 	var wg sync.WaitGroup
-	wg.Add(1)
+	var err error
+	var value uint64
 
+	wg.Add(1)
 	v.ub.GetKeyValue(key.KeyCameraMode, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
 			err = fmt.Errorf("error getting camera mode: %s", r.ErrorDesc())
 		} else {
-			if uint64(r.Value().(float64)) != 1 {
-				wg.Add(1)
-				v.ub.SetKeyValue(key.KeyCameraMode, uint64(1), func(r *result.Result) {
-					if r.ErrorCode() != 0 {
-						err = fmt.Errorf("error setting camera mode to video: %s", r.ErrorDesc())
-					}
-					wg.Done()
-				})
-			}
+			value = uint64(r.Value().(float64))
 		}
-
 		wg.Done()
 	})
 
 	wg.Wait()
 
+	return value, err
+}
+
+func (v *Video) SetMode(mode int) error {
+	var err error
+
+	var wg sync.WaitGroup
 	wg.Add(1)
+
+	v.ub.SetKeyValue(key.KeyCameraMode, uint64(mode), func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error setting camera mode: %s", r.ErrorDesc())
+		}
+		wg.Done()
+	})
+
+	wg.Wait()
+
+	return err
+}
+
+func (v *Video) StartRecordingToSDCard() error {
+	var err error
+
+	currentMode, err := v.GetMode()
+	if err != nil {
+		return err
+	}
+
+	if currentMode != 1 {
+		err = v.SetMode(1)
+		if err != nil {
+			return err
+		}
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	err = v.ub.PerformActionForKey(key.KeyCameraStartRecordVideo, nil, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
 			err = fmt.Errorf("error starting video recording: %s", r.ErrorDesc())
