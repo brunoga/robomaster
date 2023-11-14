@@ -223,9 +223,14 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 		return fmt.Errorf("key %s is not an action", k)
 	}
 
-	data, err := json.Marshal(value)
-	if err != nil {
-		return err
+	var data []byte
+	var err error
+
+	if value != nil {
+		data, err = json.Marshal(value)
+		if err != nil {
+			return err
+		}
 	}
 
 	ev := event.NewFromTypeAndSubType(event.TypePerformAction, k.SubType())
@@ -238,7 +243,11 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 
 	u.m.Unlock()
 
-	u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
+	if value != nil {
+		u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
+	} else {
+		u.uw.SendEvent(ev.Code(), nil, uint64(tag))
+	}
 
 	return nil
 }
