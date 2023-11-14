@@ -25,7 +25,7 @@ type jsonResult struct {
 	Key   uint32
 	Tag   uint64
 	Error int32
-	Value jsonResultValue
+	Value any
 }
 
 // NewFromJSON creates a new Result from the given JSON data. Any errors are
@@ -63,8 +63,21 @@ func NewFromJSON(jsonData []byte) *Result {
 		errorDesc = fmt.Sprintf("error %d", jr.Error)
 	}
 
-	// TODO(bga): Make sure all values actually have a "value" field.
-	value := jr.Value.Value
+	var value any
+	var ok bool
+	switch jr.Value.(type) {
+	case map[string]interface{}:
+		outerValue := jr.Value.(map[string]interface{})
+		value, ok = outerValue["value"]
+		if !ok {
+			r.errorCode = -1
+			r.errorDesc = fmt.Sprintf("value field not found: %v",
+				outerValue)
+			return r
+		}
+	default:
+		value = jr.Value
+	}
 
 	r.key = key
 	r.tag = jr.Tag
