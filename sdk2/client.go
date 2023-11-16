@@ -6,6 +6,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
+	"github.com/brunoga/robomaster/sdk2/module/controller"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper"
@@ -18,6 +19,7 @@ type Client struct {
 
 	cn *connection.Connection
 	cm *camera.Camera
+	ct *controller.Controller
 
 	m       sync.RWMutex
 	started bool
@@ -37,11 +39,17 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
+	ct, err := controller.New(ub, l)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		ub: ub,
 		l:  l,
 		cn: cn,
 		cm: cm,
+		ct: ct,
 	}, nil
 }
 
@@ -73,6 +81,12 @@ func (c *Client) Start() error {
 		return err
 	}
 
+	// Controller.
+	err = c.ct.Start()
+	if err != nil {
+		return err
+	}
+
 	c.started = true
 
 	return nil
@@ -88,6 +102,12 @@ func (c *Client) Camera() *camera.Camera {
 	return c.cm
 }
 
+// Controller returns the Controller module.
+func (c *Client) Controller() *controller.Controller {
+	return c.ct
+}
+
+// Stop stops the client and all associated modules.
 func (c *Client) Stop() error {
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -98,8 +118,14 @@ func (c *Client) Stop() error {
 
 	// Stop modules.
 
+	// Controller.
+	err := c.ct.Stop()
+	if err != nil {
+		return err
+	}
+
 	// Camera.
-	err := c.cm.Stop()
+	err = c.cm.Stop()
 	if err != nil {
 		return err
 	}
