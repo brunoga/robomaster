@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
@@ -167,6 +168,49 @@ func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 	return nil
 }
 
+func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key, useCache bool,
+	output any) error {
+	var err error
+
+	if useCache {
+		r, err := u.GetCachedKeyValue(k)
+		if err != nil {
+			return err
+		}
+
+		if r.ErrorCode() != 0 {
+			return fmt.Errorf("error getting cached value for key %s: %s", k, r)
+		}
+
+		output = r.Value()
+
+		return nil
+	}
+
+	done := make(chan struct{})
+
+	err = u.GetKeyValue(k, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error getting value for key %s: %s", k, r)
+		} else {
+			output = r.Value()
+		}
+
+		close(done)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("timeout getting value for key %s", k)
+	}
+}
+
 func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) (*result.Result, error) {
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return nil, fmt.Errorf("key %s is not readable", k)
@@ -217,6 +261,31 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 	return nil
 }
 
+func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
+	var err error
+
+	done := make(chan struct{})
+
+	err = u.SetKeyValue(k, value, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error setting value for key %s: %s", k, r)
+		}
+
+		close(done)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("timeout setting value for key %s", k)
+	}
+}
+
 func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 	c result.Callback) error {
 	if k.AccessType()&key.AccessTypeAction == 0 {
@@ -250,6 +319,31 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 	}
 
 	return nil
+}
+
+func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key, value any) error {
+	var err error
+
+	done := make(chan struct{})
+
+	err = u.PerformActionForKey(k, value, func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			err = fmt.Errorf("error performing action for key %s: %s", k, r)
+		}
+
+		close(done)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	select {
+	case <-done:
+		return nil
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("timeout performing action for key %s", k)
+	}
 }
 
 func (u *UnityBridgeImpl) DirectSendKeyValue(k *key.Key,

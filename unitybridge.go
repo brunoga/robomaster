@@ -31,6 +31,11 @@ type UnityBridge interface {
 	// key.
 	GetKeyValue(k *key.Key, c result.Callback) error
 
+	// GetKeyValueSync returns the Unity Bridge value associated with the given
+	// key. This is a synchronous version of GetKeyValue and the result is
+	// returned in the output parameter (which should be of a suitable type).
+	GetKeyValueSync(k *key.Key, useCache bool, output any) error
+
 	// GetCachedKeyValue returns the Unity Bridge cached value associated
 	// with the given key.
 	GetCachedKeyValue(k *key.Key) (*result.Result, error)
@@ -38,9 +43,18 @@ type UnityBridge interface {
 	// SetKeyValue sets the Unity Bridge value associated with the given key.
 	SetKeyValue(k *key.Key, value any, c result.Callback) error
 
+	// SetKeyValueSync sets the Unity Bridge value associated with the given
+	// key. This is a synchronous version of SetKeyValue.
+	SetKeyValueSync(k *key.Key, value any) error
+
 	// PerformActionForKey performs the Unity Bridge action associated with the
 	// given key with the given value as parameter.
 	PerformActionForKey(k *key.Key, value any, c result.Callback) error
+
+	// PerformActionForKeySync performs the Unity Bridge action associated with
+	// the given key with the given value as parameter. This is a synchronous
+	// version of PerformActionForKey.
+	PerformActionForKeySync(k *key.Key, value any) error
 
 	// DirectSendKeyValue sends the given value to the Unity Bridge for the
 	// given key. This is a low level function that should be used with care.
