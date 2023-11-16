@@ -1,9 +1,10 @@
-package manager
+package connection
 
 import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/finder"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -20,6 +21,7 @@ const (
 	subTypeConnectionSetPort
 )
 
+// Connection provides support for managing the connection to the robot.
 type Connection struct {
 	ub    unitybridge.UnityBridge
 	l     *logger.Logger
@@ -33,7 +35,11 @@ type Connection struct {
 	connected bool
 }
 
-func NewConnection(ub unitybridge.UnityBridge,
+var _ module.Module = (*Connection)(nil)
+
+// New creates a new Connection instance with the given UnityBridge instance and
+// logger.
+func New(ub unitybridge.UnityBridge,
 	l *logger.Logger, appID uint64) (*Connection, error) {
 
 	cm := &Connection{
@@ -48,6 +54,8 @@ func NewConnection(ub unitybridge.UnityBridge,
 	return cm, nil
 }
 
+// Start starts the connection module. It will try to find a robot broadcasting
+// in the network and connect to it.
 func (cm *Connection) Start() error {
 	cm.m.Lock()
 
@@ -99,6 +107,7 @@ func (cm *Connection) Start() error {
 	return nil
 }
 
+// Stop stops the connection module.
 func (cm *Connection) Stop() error {
 	e := event.NewFromType(event.TypeConnection)
 
@@ -119,11 +128,17 @@ func (cm *Connection) Stop() error {
 	return nil
 }
 
+// Connected returns true if the connection to the robot is established.
 func (cm *Connection) Connected() bool {
 	cm.m.Lock()
 	defer cm.m.Unlock()
 
 	return cm.connected
+}
+
+// String returns a string representation of the Connection module.
+func (cm *Connection) String() string {
+	return "Connection"
 }
 
 func (cm *Connection) waitForConnectionStatusChange() {
