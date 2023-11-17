@@ -2,22 +2,22 @@ package systems
 
 import (
 	"image"
-	"sync"
 	"unsafe"
 
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
-	"github.com/brunoga/robomaster/legacy/app/example/entities"
-	"github.com/brunoga/robomaster/legacy/app/video"
+	"github.com/brunoga/robomaster/sdk2"
+	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/entities"
+	"github.com/brunoga/robomaster/sdk2/module/camera"
+	"github.com/brunoga/unitybridge/support/token"
 )
 
 type Video struct {
 	videoEntity      *entities.Video
-	elapsed          float32
 	frameCh          chan *image.NRGBA
-	dataHandlerIndex int
-	wg               *sync.WaitGroup
+	dataHandlerToken token.Token
+	c                *sdk2.Client
 }
 
 func (v *Video) New(w *ecs.World) {
@@ -48,19 +48,14 @@ func (v *Video) New(w *ecs.World) {
 
 	v.frameCh = make(chan *image.NRGBA, 30)
 
-	appVideo, err := video.New()
+	camera := v.c.Camera()
+
+	index, err := camera.AddVideoCallback(v.DataHandler)
 	if err != nil {
 		panic(err)
 	}
 
-	index, err := appVideo.AddDataHandler(v.DataHandler)
-	if err != nil {
-		panic(err)
-	}
-
-	v.dataHandlerIndex = index
-
-	appVideo.StartVideo()
+	v.dataHandlerToken = index
 }
 
 func (v *Video) Add() {}
@@ -79,19 +74,11 @@ func (v *Video) Update(dt float32) {
 	}
 }
 
-func (v *Video) DataHandler(data []byte, wg *sync.WaitGroup) {
+func (v *Video) DataHandler(frame *camera.RGB) {
 	// Create an image out of the data byte slice.
-	img := image.NewNRGBA(
-		image.Rectangle{
-			image.Point{0, 0},
-			image.Point{1280, 720},
-		},
-	)
-	img.Pix = NRGBA(data)
+	img := common.ImageToNRGBA(frame, 1280, 720)
 
 	v.frameCh <- img
-
-	wg.Done()
 }
 
 func NRGBA(rgbData []byte) []byte {
