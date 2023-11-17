@@ -6,6 +6,8 @@ require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
 	github.com/brunoga/robomaster/legacy v0.0.0-20231116222046-f618f2c6e2a2
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20231117130000-5ebb133cdac9
+	github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf
 )
 
 require (
@@ -21,8 +23,11 @@ require (
 	github.com/hajimehoshi/oto v0.7.1 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.3 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
+	github.com/lmittmann/tint v1.0.3 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-pointer v0.0.1 // indirect
-	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e // indirect
 	github.com/srwiley/oksvg v0.0.0-20210519022825-9fc0c575d5fe // indirect
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
