@@ -38,6 +38,9 @@ func (r *Robomaster) Setup(u engo.Updater) {
 
 	controllerComponent, err := components.NewController(
 		robomasterComponent)
+	if err != nil {
+		panic(err)
+	}
 
 	basicEntity := ecs.NewBasic()
 
@@ -52,7 +55,9 @@ func (r *Robomaster) Setup(u engo.Updater) {
 	w, _ := u.(*ecs.World)
 
 	w.AddSystem(&common.RenderSystem{})
-	w.AddSystem(&systems.Video{})
+	w.AddSystem(&systems.Video{
+		C: robomasterComponent.Client(),
+	})
 	w.AddSystem(&systems.Controller{})
 	w.AddSystem(&common.FPSSystem{
 		Display: true,

@@ -324,7 +324,7 @@ func (c *Camera) onVideoTransferSpeed(data []byte, dataType event.DataType) {
 }
 
 func (c *Camera) onVideoDataRecv(data []byte, dataType event.DataType) {
-	c.l.Debug("onVideoDataRecv", "len(data)", len(data), "dataType", dataType)
+	//c.l.Debug("onVideoDataRecv", "len(data)", len(data), "dataType", dataType)
 
 	c.m.RLock()
 

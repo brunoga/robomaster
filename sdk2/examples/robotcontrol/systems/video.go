@@ -17,7 +17,7 @@ type Video struct {
 	videoEntity      *entities.Video
 	frameCh          chan *image.NRGBA
 	dataHandlerToken token.Token
-	c                *sdk2.Client
+	C                *sdk2.Client
 }
 
 func (v *Video) New(w *ecs.World) {
@@ -48,7 +48,7 @@ func (v *Video) New(w *ecs.World) {
 
 	v.frameCh = make(chan *image.NRGBA, 30)
 
-	camera := v.c.Camera()
+	camera := v.C.Camera()
 
 	index, err := camera.AddVideoCallback(v.DataHandler)
 	if err != nil {
