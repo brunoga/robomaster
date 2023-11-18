@@ -115,7 +115,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 		return t, nil
 	}
 
-	c(r)
+	go c(r)
 
 	return t, nil
 }
