@@ -48,10 +48,7 @@ func (c *Controller) Start() error {
 		return err
 	}
 
-	//err = c.ub.SetKeyValueSync(key.KeyMainControllerVirtualStickEnabled, true)
-	//if err != nil {
-	//	c.ub.RemoveKeyListener(key.KeyMainControllerConnection, c.mccToken)
-	//}
+	// TODO(bga): Enable movement control.
 
 	return err
 }
