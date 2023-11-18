@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -20,7 +21,7 @@ type ResultListener struct {
 	t token.Token
 
 	m sync.RWMutex
-	r *result.Result
+	r result.Result
 	c chan struct{}
 }
 
@@ -38,7 +39,7 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 	}
 }
 
-func (ls *ResultListener) Start() error {
+func (ls *ResultListener) Start(cb result.Callback) error {
 	ls.m.Lock()
 	defer ls.m.Unlock()
 
@@ -47,15 +48,18 @@ func (ls *ResultListener) Start() error {
 	}
 
 	ls.c = make(chan struct{})
-	ls.r = nil
+	ls.r = result.Result{}
 
 	var err error
 
 	ls.t, err = ls.ub.AddKeyListener(ls.k, func(r *result.Result) {
 		ls.m.Lock()
-		ls.r = r
+		ls.r = *r
 		close(ls.c)
 		ls.c = make(chan struct{})
+		if cb != nil {
+			go cb(r)
+		}
 		ls.m.Unlock()
 	}, true)
 
@@ -65,7 +69,7 @@ func (ls *ResultListener) Start() error {
 // WaitForNewResult blocks until a new result is available, a timeout happens
 // or the listener is stopped. Callers should inspect the result error code
 // and description to check if the result is valid.
-func (ls *ResultListener) WaitForNewResult() *result.Result {
+func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result {
 	ls.m.RLock()
 	if ls.c == nil {
 		ls.m.RUnlock()
@@ -76,19 +80,33 @@ func (ls *ResultListener) WaitForNewResult() *result.Result {
 	}
 	ls.m.RUnlock()
 
+	if timeout != 0 {
+		select {
+		case <-ls.c:
+			ls.m.RLock()
+			defer ls.m.RUnlock()
+			return &ls.r
+		case <-time.After(timeout):
+			r := &result.Result{}
+			r.SetErrorCode(-1)
+			r.SetErrorDesc("listener timeout")
+			return r
+		}
+	}
+
 	<-ls.c
 
 	ls.m.RLock()
 	defer ls.m.RUnlock()
 
-	return ls.r
+	return &ls.r
 }
 
 func (ls *ResultListener) Result() *result.Result {
 	ls.m.RLock()
 	defer ls.m.RUnlock()
 
-	return ls.r
+	return &ls.r
 }
 
 func (ls *ResultListener) Stop() error {
@@ -106,10 +124,6 @@ func (ls *ResultListener) Stop() error {
 
 	// Set an error in the current result and make sure waiters
 	// will be notified.
-	if ls.r == nil {
-		ls.r = &result.Result{}
-		ls.r.SetKey(ls.k)
-	}
 	ls.r.SetErrorCode(-1)
 	ls.r.SetErrorDesc("listener stopped")
 	ls.r.SetValue(nil)

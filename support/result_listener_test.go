@@ -41,7 +41,7 @@ func TestResultListenerStart_AddListenerError(t *testing.T) {
 	rl := NewResultListener(ub, nil, key.KeyCameraVideoTransRate)
 	assert.NotNil(t, rl)
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.Error(t, err)
 
 	uw.AssertExpectations(t)
@@ -64,7 +64,7 @@ func TestResultListenerStart_Success(t *testing.T) {
 	uw.On("SendEvent", ev.Code(), output, uint64(0)).
 		Return([]byte("invalid"))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
 	uw.AssertExpectations(t)
@@ -88,7 +88,7 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 		Return(resultToData(result.New(
 			key.KeyAirLinkConnection, 0, 0, "", false)))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
 	<-rl.c
@@ -121,10 +121,10 @@ func TestResultListenerStart_AlreadyStarted(t *testing.T) {
 	uw.On("SendEvent", ev.Code(), output, uint64(0)).
 		Return([]byte("invalid"))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
-	err = rl.Start()
+	err = rl.Start(nil)
 	assert.Error(t, err)
 
 	uw.AssertExpectations(t)
@@ -160,7 +160,7 @@ func TestResultListenerStop_Success(t *testing.T) {
 	uw.On("SendEvent", ev.Code(), output, uint64(0)).
 		Return([]byte("invalid"))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
 	ev = event.NewFromTypeAndSubType(event.TypeStopListening,
@@ -180,7 +180,7 @@ func TestWaitForNewResult_NotStarted(t *testing.T) {
 	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection)
 	assert.NotNil(t, rl)
 
-	r := rl.WaitForNewResult()
+	r := rl.WaitForNewResult(0)
 	assert.NotNil(t, r)
 	assert.Equal(t, int32(-1), r.ErrorCode())
 	assert.Equal(t, "listener not started", r.ErrorDesc())
@@ -206,10 +206,10 @@ func TestWaitForNewResult_Success(t *testing.T) {
 		Return(resultToData(result.New(
 			key.KeyAirLinkConnection, 0, 0, "", false)))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
-	r := rl.WaitForNewResult()
+	r := rl.WaitForNewResult(0)
 	assert.NotNil(t, r)
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
@@ -237,7 +237,7 @@ func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
 	uw.On("SendEvent", ev2.Code(), output, uint64(0)).
 		Return([]byte("invalid"))
 
-	err := rl.Start()
+	err := rl.Start(nil)
 	assert.NoError(t, err)
 
 	go func() {
@@ -245,7 +245,7 @@ func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
 			key.KeyAirLinkConnection, 0, 0, "", false)), uint64(0))
 	}()
 
-	r := rl.WaitForNewResult()
+	r := rl.WaitForNewResult(0)
 	assert.NotNil(t, r)
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
