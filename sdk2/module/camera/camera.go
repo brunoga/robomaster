@@ -8,6 +8,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/event"
@@ -29,9 +30,10 @@ type Camera struct {
 
 	tg token.Generator
 
+	connRL *support.ResultListener
+
 	m             sync.RWMutex
 	callbacks     map[token.Token]VideoCallback
-	connected     bool
 	recordingTime time.Duration
 }
 
@@ -45,12 +47,31 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Camera, error) {
 		l:         l,
 		tg:        *token.NewGenerator(),
 		callbacks: make(map[token.Token]VideoCallback),
+		connRL:    support.NewResultListener(ub, l, key.KeyCameraConnection),
 	}, nil
 }
 
 // Start starts the camera manager.
 func (c *Camera) Start() error {
 	var err error
+
+	err = c.connRL.Start(func(r *result.Result) {
+		if r.ErrorCode() != 0 {
+			return
+		}
+
+		if r.Value().(bool) {
+			// Ask for video texture information.
+			err = c.ub.SendEvent(event.NewFromType(event.TypeGetNativeTexture))
+			if err != nil {
+				return
+			}
+		}
+	})
+	if err != nil {
+		return err
+	}
+
 	c.gntToken, err = c.ub.AddEventTypeListener(event.TypeGetNativeTexture,
 		c.onGetNativeTexture)
 	if err != nil {
@@ -69,34 +90,27 @@ func (c *Camera) Start() error {
 		return err
 	}
 
-	c.ccToken, err = c.ub.AddKeyListener(key.KeyCameraConnection, func(r *result.Result) {
-		if r.ErrorCode() != 0 {
-			err = fmt.Errorf("error getting camera connection status: %s",
-				r.ErrorDesc())
-		}
+	return nil
+}
 
-		c.l.Debug("Camera connection status", "status", r.Value())
-		c.m.Lock()
-		c.connected = r.Value().(bool)
-		c.m.Unlock()
-	}, true)
-
-	// Ask for video texture information.
-	err = c.ub.SendEvent(event.NewFromType(event.TypeGetNativeTexture))
-	if err != nil {
-		return err
+func (c *Camera) WaitForConnection() bool {
+	connected, ok := c.connRL.Result().Value().(bool)
+	if ok && connected {
+		return true
 	}
 
-	return nil
+	return c.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
 }
 
 // Connected returns whether the camera is physically attached to the robot and
 // ready to use. Note this is based on information provided by the robot itself.
 func (c *Camera) Connected() bool {
-	c.m.RLock()
-	defer c.m.RUnlock()
+	ok, connected := c.connRL.Result().Value().(bool)
+	if !ok {
+		return false
+	}
 
-	return c.connected
+	return connected
 }
 
 // AddVideoCallback adds a callback function to be called when a new video frame
@@ -272,14 +286,12 @@ func (c *Camera) StopRecordingVideo() error {
 
 // Stop stops the camera manager.
 func (c *Camera) Stop() error {
-	var err error
-
 	c.m.Lock()
 
 	if len(c.callbacks) > 0 {
 		c.callbacks = make(map[token.Token]VideoCallback)
 
-		err = c.ub.SendEvent(event.NewFromType(event.TypeStopVideo))
+		err := c.ub.SendEvent(event.NewFromType(event.TypeStopVideo))
 		if err != nil {
 			c.m.Unlock()
 			return err
@@ -288,7 +300,7 @@ func (c *Camera) Stop() error {
 
 	c.m.Unlock()
 
-	err = c.ub.RemoveKeyListener(key.KeyCameraConnection, c.ccToken)
+	err := c.connRL.Stop()
 	if err != nil {
 		return err
 	}

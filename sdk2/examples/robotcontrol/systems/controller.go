@@ -62,23 +62,25 @@ func (c *Controller) Update(dt float32) {
 		//	continue
 		//}
 
-		chassisY :=
-			float64(((currentLeftRight * 0.3) + 1.0) / 2.0)
-		chassisX :=
-			float64((-(currentForwardBackward * 0.3) + 1.0) / 2.0)
+		//chassisY :=
+		//	float64(((currentLeftRight * 0.3) + 1.0) / 2.0)
+		//chassisX :=
+		//	float64((-(currentForwardBackward * 0.3) + 1.0) / 2.0)
 
-		gimbalY := ((float64(-mouseYDelta) / float64(100)) + 1.0) / 2.0
-		gimbalX := ((float64(mouseXDelta) / float64(100)) + 1.0) / 2.0
+		chassisStickPosition := &controller.StickPosition{
+			X: float64(currentLeftRight),
+			Y: float64(currentForwardBackward),
+		}
 
-		cec.Controller.Move(
-			&controller.StickPosition{
-				X: chassisX,
-				Y: chassisY,
-			},
-			&controller.StickPosition{
-				X: gimbalX,
-				Y: gimbalY,
-			},
+		//gimbalY := ((float64(-mouseYDelta) / float64(100)) + 1.0) / 2.0
+		//gimbalX := ((float64(mouseXDelta) / float64(100)) + 1.0) / 2.0
+
+		gimbalStickPosition := &controller.StickPosition{
+			X: float64(mouseXDelta) / float64(100),
+			Y: float64(mouseYDelta) / float64(100),
+		}
+
+		cec.Controller.Move(chassisStickPosition, gimbalStickPosition,
 			controller.ControlModeDefault)
 
 		cec.PreviousLeftRight = currentLeftRight

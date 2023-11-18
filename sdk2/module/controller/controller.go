@@ -2,10 +2,12 @@ package controller
 
 import (
 	"fmt"
-	"sync"
+	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
@@ -16,52 +18,63 @@ type Controller struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
 
+	rb *robot.Robot
+
 	mccToken token.Token
 
-	m         sync.RWMutex
-	connected bool
+	connRL *support.ResultListener
 }
 
 var _ module.Module = (*Controller)(nil)
 
-func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Controller, error) {
+func New(rb *robot.Robot, ub unitybridge.UnityBridge,
+	l *logger.Logger) (*Controller, error) {
 	return &Controller{
 		ub: ub,
 		l:  l,
+		rb: rb,
+		connRL: support.NewResultListener(ub, l,
+			key.KeyMainControllerConnection),
 	}, nil
 }
 
 func (c *Controller) Start() error {
-	var err error
-	c.mccToken, err = c.ub.AddKeyListener(key.KeyMainControllerConnection, func(r *result.Result) {
+	return c.connRL.Start(func(r *result.Result) {
 		if r.ErrorCode() != 0 {
-			c.l.Error("Error getting controller connection status", "error", r.ErrorDesc())
 			return
 		}
 
-		c.l.Debug("Controller connection status", "status", r.Value())
-		c.m.Lock()
-		c.connected = r.Value().(bool)
-		c.m.Unlock()
-	}, true)
-	if err != nil {
-		return err
-	}
+		if !r.Value().(bool) {
+			return
+		}
 
-	// TODO(bga): Enable movement control.
-
-	return err
+		c.rb.EnableFunction(robot.FunctionTypeMovementControl, true)
+	})
 }
 
 func (c *Controller) Stop() error {
-	return nil
+	return c.connRL.Stop()
 }
 
+// Connected returns true if the connection to the robot is established.
 func (c *Controller) Connected() bool {
-	c.m.RLock()
-	defer c.m.RUnlock()
+	ok, connected := c.connRL.Result().Value().(bool)
+	if !ok {
+		return false
+	}
 
-	return c.connected
+	return connected
+}
+
+// WaitForConnection waits for the connection to the controller to be
+// established.
+func (c *Controller) WaitForConnection() bool {
+	ok, connected := c.connRL.Result().Value().(bool)
+	if ok && connected {
+		return true
+	}
+
+	return c.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
 }
 
 func (c *Controller) Move(leftStick *StickPosition, rightStick *StickPosition,

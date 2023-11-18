@@ -48,9 +48,10 @@ func (v *Video) New(w *ecs.World) {
 
 	v.frameCh = make(chan *image.NRGBA, 30)
 
-	camera := v.C.Camera()
+	cam := v.C.Camera()
+	cam.SetVideoQuality(camera.VideoQualityBest)
 
-	index, err := camera.AddVideoCallback(v.DataHandler)
+	index, err := cam.AddVideoCallback(v.DataHandler)
 	if err != nil {
 		panic(err)
 	}

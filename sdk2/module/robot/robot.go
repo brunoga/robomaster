@@ -1,30 +1,40 @@
 package robot
 
 import (
-	"encoding/json"
+	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
 )
 
 type Robot struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
+
+	scToken token.Token
+
+	connRL *support.ResultListener
 }
 
 var _ module.Module = (*Robot)(nil)
 
 func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
-	return &Robot{
+	r := &Robot{
 		ub: ub,
 		l:  l,
-	}, nil
+		connRL: support.NewResultListener(ub, l,
+			key.KeyRobomasterSystemConnection),
+	}
+
+	return r, nil
 }
 
 func (r *Robot) Start() error {
-	return nil
+	return r.connRL.Start(nil)
 }
 
 type functionEnableInfo struct {
@@ -34,6 +44,24 @@ type functionEnableInfo struct {
 
 type functionEnableParamValue struct {
 	List []functionEnableInfo `json:"list"`
+}
+
+func (r *Robot) Connected() bool {
+	connected, ok := r.connRL.Result().Value().(bool)
+	if !ok {
+		return false
+	}
+
+	return connected
+}
+
+func (r *Robot) WaitForConnection() bool {
+	connected, ok := r.connRL.Result().Value().(bool)
+	if ok && connected {
+		return true
+	}
+
+	return r.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
 }
 
 func (r *Robot) EnableFunction(function FunctionType, enable bool) error {
@@ -46,12 +74,8 @@ func (r *Robot) EnableFunction(function FunctionType, enable bool) error {
 		List: []functionEnableInfo{info},
 	}
 
-	data, err := json.Marshal(param)
-	if err != nil {
-		return err
-	}
-
-	err = r.ub.PerformActionForKeySync(key.KeyRobomasterSystemFunctionEnable, data)
+	err := r.ub.PerformActionForKeySync(key.KeyRobomasterSystemFunctionEnable,
+		param)
 	if err != nil {
 		return err
 	}
@@ -60,7 +84,7 @@ func (r *Robot) EnableFunction(function FunctionType, enable bool) error {
 }
 
 func (r *Robot) Stop() error {
-	return nil
+	return r.connRL.Stop()
 }
 
 func (r *Robot) String() string {

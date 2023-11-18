@@ -7,5 +7,8 @@ type Module interface {
 	fmt.Stringer
 
 	Start() error
+
+	WaitForConnection() bool
+
 	Stop() error
 }

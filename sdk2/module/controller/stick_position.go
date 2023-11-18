@@ -12,21 +12,25 @@ type StickPosition struct {
 }
 
 func (s *StickPosition) InterpolatedX() uint64 {
+	var x float64 = 0.5
 	if s != nil {
-		return uint64(lerp(minBound, maxBound, float64(s.X+1)*0.5) +
-			offset)
+		x = s.X
 	}
 
-	return 0
+	return uint64(lerp(minBound, maxBound, (x+1)*0.5) +
+		offset)
 }
 
 func (s *StickPosition) InterpolatedY() uint64 {
+	var y float64 = 0.5
 	if s != nil {
-		return uint64(lerp(minBound, maxBound, float64(s.Y+1)*0.5) +
-			offset)
+		y = s.Y
 	}
 
-	return 0
+	y = -y
+
+	return uint64(lerp(minBound, maxBound, float64(y+1)*0.5) +
+		offset)
 }
 
 func lerp(a, b, t float64) float64 {

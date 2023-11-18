@@ -1,17 +1,16 @@
 package connection
 
 import (
-	"sync"
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/finder"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
-	"github.com/brunoga/unitybridge/unity/result"
 )
 
 const (
@@ -30,9 +29,7 @@ type Connection struct {
 	f                     *finder.Finder
 	connectionStatusToken token.Token
 
-	m         sync.Mutex
-	cond      *sync.Cond
-	connected bool
+	connRL *support.ResultListener
 }
 
 var _ module.Module = (*Connection)(nil)
@@ -43,13 +40,12 @@ func New(ub unitybridge.UnityBridge,
 	l *logger.Logger, appID uint64) (*Connection, error) {
 
 	cm := &Connection{
-		ub:    ub,
-		l:     l,
-		f:     finder.New(appID, l),
-		appID: appID,
+		ub:     ub,
+		l:      l,
+		f:      finder.New(appID, l),
+		appID:  appID,
+		connRL: support.NewResultListener(ub, l, key.KeyAirLinkConnection),
 	}
-
-	cm.cond = sync.NewCond(&cm.m)
 
 	return cm, nil
 }
@@ -57,17 +53,10 @@ func New(ub unitybridge.UnityBridge,
 // Start starts the connection module. It will try to find a robot broadcasting
 // in the network and connect to it.
 func (cm *Connection) Start() error {
-	cm.m.Lock()
-
-	token, err := cm.ub.AddKeyListener(key.KeyAirLinkConnection,
-		cm.connectionStatusChanged, false)
+	err := cm.connRL.Start(nil)
 	if err != nil {
-		cm.m.Unlock()
 		return err
 	}
-	cm.connectionStatusToken = token
-
-	cm.m.Unlock()
 
 	b, err := cm.f.Find(30 * time.Second)
 	if err != nil {
@@ -102,9 +91,16 @@ func (cm *Connection) Start() error {
 		return err
 	}
 
-	cm.waitForConnectionStatusChange()
-
 	return nil
+}
+
+func (cm *Connection) WaitForConnection() bool {
+	connected, ok := cm.connRL.Result().Value().(bool)
+	if ok && connected {
+		return true
+	}
+
+	return cm.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
 }
 
 // Stop stops the connection module.
@@ -117,55 +113,26 @@ func (cm *Connection) Stop() error {
 		return err
 	}
 
-	cm.waitForConnectionStatusChange()
-
 	err = cm.ub.RemoveKeyListener(key.KeyAirLinkConnection,
 		cm.connectionStatusToken)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return cm.connRL.Stop()
 }
 
 // Connected returns true if the connection to the robot is established.
 func (cm *Connection) Connected() bool {
-	cm.m.Lock()
-	defer cm.m.Unlock()
+	connected, ok := cm.connRL.Result().Value().(bool)
+	if !ok {
+		return false
+	}
 
-	return cm.connected
+	return connected
 }
 
 // String returns a string representation of the Connection module.
 func (cm *Connection) String() string {
 	return "Connection"
-}
-
-func (cm *Connection) waitForConnectionStatusChange() {
-	cm.m.Lock()
-	defer cm.m.Unlock()
-
-	current := cm.connected
-	for cm.connected == current {
-		cm.cond.Wait()
-	}
-}
-
-func (cm *Connection) connectionStatusChanged(r *result.Result) {
-	connected, ok := r.Value().(bool)
-	if !ok {
-		cm.l.Error("Unexpected connection status value", "value", r.Value())
-		return
-	} else if cm.connected != connected {
-		cm.l.Debug("Connection status changed", "connected", connected)
-
-		cm.m.Lock()
-
-		cm.connected = connected
-		cm.cond.Broadcast()
-
-		cm.m.Unlock()
-
-		return
-	}
 }

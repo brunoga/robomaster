@@ -7,6 +7,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/controller"
+	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/wrapper"
@@ -20,6 +21,7 @@ type Client struct {
 	cn *connection.Connection
 	cm *camera.Camera
 	ct *controller.Controller
+	rb *robot.Robot
 
 	m       sync.RWMutex
 	started bool
@@ -34,12 +36,17 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
+	rb, err := robot.New(ub, l)
+	if err != nil {
+		return nil, err
+	}
+
 	cm, err := camera.New(ub, l)
 	if err != nil {
 		return nil, err
 	}
 
-	ct, err := controller.New(ub, l)
+	ct, err := controller.New(rb, ub, l)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +55,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		ub: ub,
 		l:  l,
 		cn: cn,
+		rb: rb,
 		cm: cm,
 		ct: ct,
 	}, nil
@@ -75,16 +83,38 @@ func (c *Client) Start() error {
 		return err
 	}
 
+	if !c.cn.WaitForConnection() {
+		return fmt.Errorf("network connection unexpectedly not established")
+	}
+
+	// Robot.
+	err = c.rb.Start()
+	if err != nil {
+		return err
+	}
+
+	if !c.rb.WaitForConnection() {
+		return fmt.Errorf("robot connection unexpectedly not established")
+	}
+
 	// Camera.
 	err = c.cm.Start()
 	if err != nil {
 		return err
 	}
 
+	if !c.cm.WaitForConnection() {
+		return fmt.Errorf("camera connection unexpectedly not established")
+	}
+
 	// Controller.
 	err = c.ct.Start()
 	if err != nil {
 		return err
+	}
+
+	if !c.ct.WaitForConnection() {
+		return fmt.Errorf("controller connection unexpectedly not established")
 	}
 
 	c.started = true
@@ -107,6 +137,11 @@ func (c *Client) Controller() *controller.Controller {
 	return c.ct
 }
 
+// Robot returns the Robot module.
+func (c *Client) Robot() *robot.Robot {
+	return c.rb
+}
+
 // Stop stops the client and all associated modules.
 func (c *Client) Stop() error {
 	c.m.Lock()
@@ -126,6 +161,12 @@ func (c *Client) Stop() error {
 
 	// Camera.
 	err = c.cm.Stop()
+	if err != nil {
+		return err
+	}
+
+	// Robot.
+	err = c.rb.Stop()
 	if err != nil {
 		return err
 	}
