@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/finder"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/qrcode"
@@ -25,7 +24,7 @@ var (
 	ssid     = flag.String("ssid", "", "SSID of the network to connect to.")
 	password = flag.String("password", "", "Password of the network to connect "+
 		"to.")
-	appID = flag.Uint64("app_id", 0, "App ID to use. If 0, a random one will be "+
+	appID = flag.Uint64("appid", 0, "App ID to use. If 0, a random one will be "+
 		"generated.")
 )
 
@@ -41,15 +40,6 @@ func main() {
 		panic("SSID and password must be provided.")
 	}
 
-	// We are an app, so generate our app ID.
-	var err error
-	if *appID == 0 {
-		*appID, err = support.GenerateAppID()
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	l := logger.New(slog.LevelDebug)
 
 	l.Info("starting example application", "app_id", *appID)
@@ -57,24 +47,26 @@ func main() {
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
 	// Start unity bridge.
-	err = ub.Start()
+	err := ub.Start()
 	if err != nil {
 		panic(err)
 	}
 	defer ub.Stop()
 
-	// And generate a QRCode to pair a Robomaster.
-	qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
-	if err != nil {
-		panic(err)
-	}
+	if *appID != 0 {
+		// And generate a QRCode to pair a Robomaster.
+		qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
+		if err != nil {
+			panic(err)
+		}
 
-	// Print the QRCode.
-	text, err := qrCode.Text()
-	if err != nil {
-		panic(err)
+		// Print the QRCode.
+		text, err := qrCode.Text()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(text)
 	}
-	fmt.Println(text)
 
 	f := finder.New(*appID, l)
 	var robotIP net.IP
