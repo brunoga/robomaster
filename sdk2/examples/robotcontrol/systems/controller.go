@@ -51,29 +51,13 @@ func (c *Controller) Update(dt float32) {
 		mouseYDelta = -100
 	}
 
-	//keyPressed := currentLeftRight != 0.0 || currentForwardBackward != 0.0
-
 	for _, controllerEntity := range c.controllerEntityMap {
 		cec := controllerEntity.Controller
-
-		//previousKeyPressed := cec.PreviousLeftRight != 0 ||
-		//	cec.PreviousForwardBackward != 0
-		//if !previousKeyPressed && !keyPressed {
-		//	continue
-		//}
-
-		//chassisY :=
-		//	float64(((currentLeftRight * 0.3) + 1.0) / 2.0)
-		//chassisX :=
-		//	float64((-(currentForwardBackward * 0.3) + 1.0) / 2.0)
 
 		chassisStickPosition := &controller.StickPosition{
 			X: float64(currentLeftRight),
 			Y: float64(currentForwardBackward),
 		}
-
-		//gimbalY := ((float64(-mouseYDelta) / float64(100)) + 1.0) / 2.0
-		//gimbalX := ((float64(mouseXDelta) / float64(100)) + 1.0) / 2.0
 
 		gimbalStickPosition := &controller.StickPosition{
 			X: float64(mouseXDelta) / float64(100),
@@ -82,8 +66,5 @@ func (c *Controller) Update(dt float32) {
 
 		cec.Controller.Move(chassisStickPosition, gimbalStickPosition,
 			controller.ControlModeDefault)
-
-		cec.PreviousLeftRight = currentLeftRight
-		cec.PreviousForwardBackward = currentForwardBackward
 	}
 }
