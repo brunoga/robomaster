@@ -7,6 +7,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/components"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/entities"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/systems"
+	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 type Robomaster struct{}
@@ -50,7 +51,13 @@ func (r *Robomaster) Setup(u engo.Updater) {
 	}
 
 	// Disable cursor.
-	engo.SetCursorVisibility(false)
+	if engo.CurrentBackEnd == engo.BackEndGLFW ||
+		engo.CurrentBackEnd == engo.BackEndVulkan {
+		glfw.GetCurrentContext().SetInputMode(glfw.CursorMode,
+			glfw.CursorDisabled)
+	} else {
+		panic("Backend does not seem to support mouse capture.")
+	}
 
 	w, _ := u.(*ecs.World)
 
