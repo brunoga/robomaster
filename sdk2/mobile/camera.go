@@ -9,7 +9,10 @@ import (
 // VideoHandler is the interface that must be implemented by types that want
 // to handle video frames from the camera.
 type VideoHandler interface {
-	HandleVideo([]byte)
+	// HandleVideo is called when a new video frame is received from the camera.
+	// rgb32Data, as the name name implies, is the raw data for a RGB32 image and
+	// its dimensions are 1280x720.
+	HandleVideo(rgb32Data []byte)
 }
 
 // Camera allows controlling the robot camera.
