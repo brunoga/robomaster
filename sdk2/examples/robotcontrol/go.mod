@@ -7,7 +7,7 @@ require (
 	github.com/EngoEngine/engo v1.0.8
 	github.com/brunoga/robomaster/legacy v0.0.0-20231116222046-f618f2c6e2a2
 	github.com/brunoga/robomaster/sdk2 v0.0.0-20231117130000-5ebb133cdac9
-	github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf
+	github.com/brunoga/unitybridge v0.0.0-20231118195449-a2bb59b6d126
 )
 
 require (
@@ -15,6 +15,7 @@ require (
 	github.com/EngoEngine/math v1.0.4 // indirect
 	github.com/Noofbiz/sdlMojaveFix v0.0.1 // indirect
 	github.com/Noofbiz/tmx v0.2.0 // indirect
+	github.com/brunoga/robomaster v0.0.0-20231120132617-8b3ee72f77ef // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231102141658-eca20e8abded // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect

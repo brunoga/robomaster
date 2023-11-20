@@ -11,14 +11,19 @@ github.com/Noofbiz/sdlMojaveFix v0.0.1 h1:Vz4HSG7QQ5gkOWeZsSUFCGJAvMoRUHloTwF80l
 github.com/Noofbiz/sdlMojaveFix v0.0.1/go.mod h1:ZvRLF4Dk75OnTtHfCMClqgwrX0u531XWaai0lNGzKWE=
 github.com/Noofbiz/tmx v0.2.0 h1:5bVZn4FN+8HVhvl2XmAiI9RFlo9/6xauhco1KGcJ+38=
 github.com/Noofbiz/tmx v0.2.0/go.mod h1:gL6mQUTp1Vi9pq/gmCgyotzJ35lOQF2C2NKJrQtltAE=
+github.com/brunoga/robomaster v0.0.0-20231120132617-8b3ee72f77ef h1:ncbAuapqrbaF8hwIrb9KJZN/RSStHOgNPynniY58aYw=
+github.com/brunoga/robomaster v0.0.0-20231120132617-8b3ee72f77ef/go.mod h1:1tCDdjWjSol6LV8XoyX7sW/04mb2WrfQuwSn9TdT+P0=
 github.com/brunoga/robomaster/legacy v0.0.0-20231116222046-f618f2c6e2a2 h1:+Ioy4gWr5GEYiCeDAr4wtNNvsJaLztxedTDWUqbMMcg=
 github.com/brunoga/robomaster/legacy v0.0.0-20231116222046-f618f2c6e2a2/go.mod h1:7Qm8aieAK4amAs0K8Ah03YPPULIgjeMmL00290d7HMk=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231117130000-5ebb133cdac9 h1:Vl61SiQFQ47uqgnvVaCEYXYRmbZ+OIw6Xm6e+wtTfmQ=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231117130000-5ebb133cdac9/go.mod h1:7qbY1j7k4tlUqHr5Y+Vz8b1Wh4DwfU5qe0H3MIWsnhE=
 github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf h1:rf4tMNhgwImowCHTTIPVKVASPBfN/RQLyw/WgwGDf5k=
 github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf/go.mod h1:YaBi8IkFl1ICF+E6vZAUPFimxh4o9VhZ5C1ISzh1Vsc=
+github.com/brunoga/unitybridge v0.0.0-20231118195449-a2bb59b6d126 h1:vqvqp2tHO8iRQGDo621dydTib6eRr7UhPsdILW4f0Ng=
+github.com/brunoga/unitybridge v0.0.0-20231118195449-a2bb59b6d126/go.mod h1:pqyWNhtBNAPRnmnFNmL5HnVOrhGLb8Kb8YhIYe19oLQ=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 h1:5BVwOaUSBTlVZowGO6VZGw2H/zl9nrd3eCZfYV+NfQA=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
@@ -60,6 +65,7 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/veandco/go-sdl2 v0.4.35 h1:NohzsfageDWGtCd9nf7Pc3sokMK/MOK+UA2QMJARWzQ=
 github.com/veandco/go-sdl2 v0.4.35/go.mod h1:OROqMhHD43nT4/i9crJukyVecjPNYYuCofep6SNiAjY=
 github.com/vulkan-go/glfw v0.0.0-20210402172934-58379a80228d h1:ATkYUewjackCJzqJMjknP3Swp9aNj18A8P/eqSW19qQ=
@@ -118,3 +124,4 @@ golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8T
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=

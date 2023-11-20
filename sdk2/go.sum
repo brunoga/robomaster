@@ -8,6 +8,8 @@ github.com/brunoga/unitybridge v0.0.0-20231113200728-d9eb23f4da2d h1:l4g7bsttdCB
 github.com/brunoga/unitybridge v0.0.0-20231113200728-d9eb23f4da2d/go.mod h1:YaBi8IkFl1ICF+E6vZAUPFimxh4o9VhZ5C1ISzh1Vsc=
 github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf h1:rf4tMNhgwImowCHTTIPVKVASPBfN/RQLyw/WgwGDf5k=
 github.com/brunoga/unitybridge v0.0.0-20231116205252-1c6851093adf/go.mod h1:YaBi8IkFl1ICF+E6vZAUPFimxh4o9VhZ5C1ISzh1Vsc=
+github.com/brunoga/unitybridge v0.0.0-20231118195449-a2bb59b6d126 h1:vqvqp2tHO8iRQGDo621dydTib6eRr7UhPsdILW4f0Ng=
+github.com/brunoga/unitybridge v0.0.0-20231118195449-a2bb59b6d126/go.mod h1:pqyWNhtBNAPRnmnFNmL5HnVOrhGLb8Kb8YhIYe19oLQ=
 github.com/lmittmann/tint v1.0.3 h1:W5PHeA2D8bBJVvabNfQD/XW9HPLZK1XoPZH0cq8NouQ=
 github.com/lmittmann/tint v1.0.3/go.mod h1:HIS3gSy7qNwGCj+5oRjAutErFBl4BzdQP6cJZ0NfMwE=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
