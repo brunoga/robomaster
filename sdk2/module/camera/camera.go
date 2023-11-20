@@ -265,8 +265,8 @@ func (c *Camera) IsRecordingVideo() (bool, error) {
 	return value, c.ub.GetKeyValueSync(key.KeyCameraIsRecording, true, &value)
 }
 
-// RecordingTimeInSeconds returns the current recording time in seconds.
-func (c *Camera) RecordingTimeInSeconds() time.Duration {
+// RecordingTime returns the current recording time in seconds.
+func (c *Camera) RecordingTime() time.Duration {
 	c.m.RLock()
 	defer c.m.RUnlock()
 
