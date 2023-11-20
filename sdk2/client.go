@@ -29,7 +29,7 @@ type Client struct {
 
 // New creates a new Client instance with the given logger and appID.
 func New(l *logger.Logger, appID uint64) (*Client, error) {
-	ub := unitybridge.Get(wrapper.Get(l), true, l)
+	ub := unitybridge.Get(wrapper.Get(l), false, l)
 
 	cn, err := connection.New(ub, l, appID)
 	if err != nil {

@@ -1,11 +1,27 @@
 package main
 
 import (
+	"log/slog"
+
 	"github.com/EngoEngine/engo"
+	"github.com/brunoga/robomaster/sdk2"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/scenes"
+	"github.com/brunoga/unitybridge/support/logger"
 )
 
 func main() {
+	l := logger.New(slog.LevelError)
+
+	c, err := sdk2.New(l, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	err = c.Start()
+	if err != nil {
+		panic(err)
+	}
+
 	opts := engo.RunOptions{
 		Title:         "Robomaster",
 		Width:         1280,
@@ -15,5 +31,7 @@ func main() {
 		FPSLimit:      60,
 	}
 
-	engo.Run(opts, &scenes.Robomaster{})
+	engo.Run(opts, &scenes.Robomaster{
+		Client: c,
+	})
 }

@@ -34,6 +34,10 @@ func (c *Controller) Remove(basicEntity ecs.BasicEntity) {
 }
 
 func (c *Controller) Update(dt float32) {
+	if btn := engo.Input.Button("exit"); btn.JustPressed() {
+		engo.Exit()
+	}
+
 	currentLeftRight := engo.Input.Axis("Left/Right").Value()
 	currentForwardBackward := engo.Input.Axis("Forward/Backward").Value()
 

@@ -7,7 +7,6 @@ import (
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
-	"github.com/brunoga/robomaster/sdk2"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/entities"
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/unitybridge/support/token"
@@ -17,7 +16,7 @@ type Video struct {
 	videoEntity      *entities.Video
 	frameCh          chan *image.NRGBA
 	dataHandlerToken token.Token
-	C                *sdk2.Client
+	Camera           *camera.Camera
 }
 
 func (v *Video) New(w *ecs.World) {
@@ -48,10 +47,9 @@ func (v *Video) New(w *ecs.World) {
 
 	v.frameCh = make(chan *image.NRGBA, 30)
 
-	cam := v.C.Camera()
-	cam.SetVideoQuality(camera.VideoQualityBest)
+	v.Camera.SetVideoQuality(camera.VideoQualityBest)
 
-	index, err := cam.AddVideoCallback(v.DataHandler)
+	index, err := v.Camera.AddVideoCallback(v.DataHandler)
 	if err != nil {
 		panic(err)
 	}

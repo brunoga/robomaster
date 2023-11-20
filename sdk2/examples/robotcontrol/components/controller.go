@@ -7,9 +7,3 @@ import (
 type Controller struct {
 	Controller *controller.Controller
 }
-
-func NewController(r *Robomaster) (*Controller, error) {
-	return &Controller{
-		r.Client().Controller(),
-	}, nil
-}
