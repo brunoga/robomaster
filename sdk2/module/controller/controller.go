@@ -3,28 +3,27 @@ package controller
 import (
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
 )
 
+// Controller allows controlling the robot using a dual-stick like controller
+// method.
 type Controller struct {
-	ub unitybridge.UnityBridge
-	l  *logger.Logger
+	*internal.BaseModule
 
 	rb *robot.Robot
-
-	connRL *support.ResultListener
 }
 
 var _ module.Module = (*Controller)(nil)
 
+// New creates a new Controller instance.
 func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 	l *logger.Logger) (*Controller, error) {
 	if l == nil {
@@ -33,21 +32,20 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 
 	l = l.WithGroup("controller_module")
 
-	c := &Controller{
-		ub: ub,
-		l:  l,
-		rb: rb,
-	}
+	c := &Controller{}
 
-	c.connRL = support.NewResultListener(ub, l,
+	c.BaseModule = internal.NewBaseModule(ub, l, "Controller",
 		key.KeyMainControllerConnection, func(r *result.Result) {
-			if r.ErrorCode() != 0 {
+			if r == nil || r.ErrorCode() != 0 {
 				return
 			}
 
-			if !r.Value().(bool) {
+			if connected, ok := r.Value().(bool); !ok || !connected {
 				return
 			}
+
+			// TODO(bga): Maybe disable the function if we receive an actual
+			//            false here?
 
 			c.rb.EnableFunction(robot.FunctionTypeMovementControl, true)
 		})
@@ -55,35 +53,7 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 	return c, nil
 }
 
-func (c *Controller) Start() error {
-	return c.connRL.Start()
-}
-
-func (c *Controller) Stop() error {
-	return c.connRL.Stop()
-}
-
-// Connected returns true if the connection to the robot is established.
-func (c *Controller) Connected() bool {
-	connected, ok := c.connRL.Result().Value().(bool)
-	if !ok {
-		return false
-	}
-
-	return connected
-}
-
-// WaitForConnection waits for the connection to the controller to be
-// established.
-func (c *Controller) WaitForConnection(timeout time.Duration) bool {
-	connected, ok := c.connRL.Result().Value().(bool)
-	if ok && connected {
-		return true
-	}
-
-	return c.connRL.WaitForNewResult(timeout).Value().(bool)
-}
-
+// Move moves the robot using the given stick positions and control mode.
 func (c *Controller) Move(leftStick *StickPosition, rightStick *StickPosition,
 	m ControlMode) error {
 	if !m.Valid() {
@@ -108,9 +78,5 @@ func (c *Controller) Move(leftStick *StickPosition, rightStick *StickPosition,
 		rightStickEnabled<<45 |
 		uint64(m)<<46
 
-	return c.ub.DirectSendKeyValue(key.KeyMainControllerVirtualStick, v)
-}
-
-func (c *Controller) String() string {
-	return "Controller"
+	return c.UB().DirectSendKeyValue(key.KeyMainControllerVirtualStick, v)
 }
