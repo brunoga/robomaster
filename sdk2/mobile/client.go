@@ -44,6 +44,14 @@ func (c *Client) Controller() *Controller {
 	}
 }
 
+// GamePad returns the GamePad instance for the client. The GamePad is optional
+// and may be nil.
+func (c *Client) GamePad() *GamePad {
+	return &GamePad{
+		g: c.c.GamePad(),
+	}
+}
+
 // Stop stops the client.
 func (c *Client) Stop() error {
 	return c.c.Stop()

@@ -8,6 +8,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/controller"
+	"github.com/brunoga/robomaster/sdk2/module/gamepad"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -23,6 +24,7 @@ type Client struct {
 	cm *camera.Camera
 	ct *controller.Controller
 	rb *robot.Robot
+	gb *gamepad.GamePad
 
 	m       sync.RWMutex
 	started bool
@@ -52,6 +54,11 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
+	gb, err := gamepad.New(ub, l)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		ub: ub,
 		l:  l,
@@ -59,6 +66,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		rb: rb,
 		cm: cm,
 		ct: ct,
+		gb: gb,
 	}, nil
 }
 
@@ -84,7 +92,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cn.WaitForConnection(5 * time.Second) {
+	if !c.cn.WaitForConnection(10 * time.Second) {
 		return fmt.Errorf("network connection unexpectedly not established")
 	}
 
@@ -94,7 +102,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.rb.WaitForConnection(5 * time.Second) {
+	if !c.rb.WaitForConnection(2 * time.Second) {
 		return fmt.Errorf("robot connection unexpectedly not established")
 	}
 
@@ -104,7 +112,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cm.WaitForConnection(5 * time.Second) {
+	if !c.cm.WaitForConnection(2 * time.Second) {
 		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
@@ -114,8 +122,24 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.ct.WaitForConnection(5 * time.Second) {
+	if !c.ct.WaitForConnection(2 * time.Second) {
 		return fmt.Errorf("controller connection unexpectedly not established")
+	}
+
+	// GamePad.
+	err = c.gb.Start()
+	if err != nil {
+		return err
+	}
+
+	if !c.gb.WaitForConnection(2 * time.Second) {
+		// GamePad is optional.
+		c.l.Warn("Gamepad connection not stablished. Gamepad not available.")
+		err := c.gb.Stop()
+		if err != nil {
+			c.l.Warn("Error stopping Gamepad module", "error", err)
+		}
+		c.gb = nil
 	}
 
 	c.started = true
@@ -141,6 +165,11 @@ func (c *Client) Controller() *controller.Controller {
 // Robot returns the Robot module.
 func (c *Client) Robot() *robot.Robot {
 	return c.rb
+}
+
+// GamePad returns the GamePad module. The GamePad is optional and may be nil.
+func (c *Client) GamePad() *gamepad.GamePad {
+	return c.gb
 }
 
 // Stop stops the client and all associated modules.
