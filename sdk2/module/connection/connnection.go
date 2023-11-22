@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
@@ -8,7 +9,6 @@ import (
 	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/finder"
 	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 )
@@ -26,8 +26,7 @@ type Connection struct {
 	l     *logger.Logger
 	appID uint64
 
-	f                     *finder.Finder
-	connectionStatusToken token.Token
+	f *finder.Finder
 
 	connRL *support.ResultListener
 }
@@ -38,13 +37,22 @@ var _ module.Module = (*Connection)(nil)
 // logger.
 func New(ub unitybridge.UnityBridge,
 	l *logger.Logger, appID uint64) (*Connection, error) {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
+	l.WithGroup("connection_module").With(
+		slog.Uint64("app_id", appID))
+
+	l = l.WithGroup("connection_module").With(
+		slog.Uint64("app_id", appID))
 
 	cm := &Connection{
 		ub:     ub,
 		l:      l,
 		f:      finder.New(appID, l),
 		appID:  appID,
-		connRL: support.NewResultListener(ub, l, key.KeyAirLinkConnection),
+		connRL: support.NewResultListener(ub, l, key.KeyAirLinkConnection, nil),
 	}
 
 	return cm, nil
@@ -53,7 +61,7 @@ func New(ub unitybridge.UnityBridge,
 // Start starts the connection module. It will try to find a robot broadcasting
 // in the network and connect to it.
 func (cm *Connection) Start() error {
-	err := cm.connRL.Start(nil)
+	err := cm.connRL.Start()
 	if err != nil {
 		return err
 	}
@@ -94,13 +102,13 @@ func (cm *Connection) Start() error {
 	return nil
 }
 
-func (cm *Connection) WaitForConnection() bool {
+func (cm *Connection) WaitForConnection(timeout time.Duration) bool {
 	connected, ok := cm.connRL.Result().Value().(bool)
 	if ok && connected {
 		return true
 	}
 
-	return cm.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
+	return cm.connRL.WaitForNewResult(timeout).Value().(bool)
 }
 
 // Stop stops the connection module.
@@ -109,12 +117,6 @@ func (cm *Connection) Stop() error {
 
 	e.ResetSubType(subTypeConnectionClose)
 	err := cm.ub.SendEvent(e)
-	if err != nil {
-		return err
-	}
-
-	err = cm.ub.RemoveKeyListener(key.KeyAirLinkConnection,
-		cm.connectionStatusToken)
 	if err != nil {
 		return err
 	}

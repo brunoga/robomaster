@@ -3,6 +3,7 @@ package sdk2
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
@@ -83,7 +84,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cn.WaitForConnection() {
+	if !c.cn.WaitForConnection(5 * time.Second) {
 		return fmt.Errorf("network connection unexpectedly not established")
 	}
 
@@ -93,7 +94,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.rb.WaitForConnection() {
+	if !c.rb.WaitForConnection(5 * time.Second) {
 		return fmt.Errorf("robot connection unexpectedly not established")
 	}
 
@@ -103,7 +104,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cm.WaitForConnection() {
+	if !c.cm.WaitForConnection(5 * time.Second) {
 		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
@@ -113,7 +114,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.ct.WaitForConnection() {
+	if !c.ct.WaitForConnection(5 * time.Second) {
 		return fmt.Errorf("controller connection unexpectedly not established")
 	}
 

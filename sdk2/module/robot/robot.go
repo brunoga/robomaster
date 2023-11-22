@@ -1,13 +1,13 @@
 package robot
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
 )
 
@@ -15,26 +15,30 @@ type Robot struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
 
-	scToken token.Token
-
 	connRL *support.ResultListener
 }
 
 var _ module.Module = (*Robot)(nil)
 
 func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
+	l = l.WithGroup("robot_module")
+
 	r := &Robot{
 		ub: ub,
 		l:  l,
 		connRL: support.NewResultListener(ub, l,
-			key.KeyRobomasterSystemConnection),
+			key.KeyRobomasterSystemConnection, nil),
 	}
 
 	return r, nil
 }
 
 func (r *Robot) Start() error {
-	return r.connRL.Start(nil)
+	return r.connRL.Start()
 }
 
 type functionEnableInfo struct {
@@ -55,7 +59,7 @@ func (r *Robot) Connected() bool {
 	return connected
 }
 
-func (r *Robot) WaitForConnection() bool {
+func (r *Robot) WaitForConnection(timeout time.Duration) bool {
 	connected, ok := r.connRL.Result().Value().(bool)
 	if ok && connected {
 		return true

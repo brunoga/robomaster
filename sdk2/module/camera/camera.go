@@ -3,6 +3,7 @@ package camera
 import (
 	"fmt"
 	"image"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -42,32 +43,44 @@ var _ module.Module = (*Camera)(nil)
 // New creates a new Camera instance with the given UnityBridge instance and
 // logger.
 func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Camera, error) {
-	return &Camera{
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
+	l = l.WithGroup("camera_module")
+
+	c := &Camera{
 		ub:        ub,
 		l:         l,
 		tg:        *token.NewGenerator(),
 		callbacks: make(map[token.Token]VideoCallback),
-		connRL:    support.NewResultListener(ub, l, key.KeyCameraConnection),
-	}, nil
+	}
+
+	c.connRL = support.NewResultListener(ub, l, key.KeyCameraConnection,
+		func(r *result.Result) {
+			if r.ErrorCode() != 0 {
+				return
+			}
+
+			if r.Value().(bool) {
+				// Ask for video texture information.
+				if err := c.ub.SendEvent(event.NewFromType(
+					event.TypeGetNativeTexture)); err != nil {
+					c.l.Error("error sending event", "event",
+						event.TypeGetNativeTexture.String(), "error", err)
+					return
+				}
+			}
+		})
+
+	return c, nil
 }
 
 // Start starts the camera manager.
 func (c *Camera) Start() error {
 	var err error
 
-	err = c.connRL.Start(func(r *result.Result) {
-		if r.ErrorCode() != 0 {
-			return
-		}
-
-		if r.Value().(bool) {
-			// Ask for video texture information.
-			err = c.ub.SendEvent(event.NewFromType(event.TypeGetNativeTexture))
-			if err != nil {
-				return
-			}
-		}
-	})
+	err = c.connRL.Start()
 	if err != nil {
 		return err
 	}
@@ -93,19 +106,19 @@ func (c *Camera) Start() error {
 	return nil
 }
 
-func (c *Camera) WaitForConnection() bool {
+func (c *Camera) WaitForConnection(timeout time.Duration) bool {
 	connected, ok := c.connRL.Result().Value().(bool)
 	if ok && connected {
 		return true
 	}
 
-	return c.connRL.WaitForNewResult(5 * time.Second).Value().(bool)
+	return c.connRL.WaitForNewResult(timeout).Value().(bool)
 }
 
 // Connected returns whether the camera is physically attached to the robot and
 // ready to use. Note this is based on information provided by the robot itself.
 func (c *Camera) Connected() bool {
-	ok, connected := c.connRL.Result().Value().(bool)
+	connected, ok := c.connRL.Result().Value().(bool)
 	if !ok {
 		return false
 	}
