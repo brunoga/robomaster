@@ -8,7 +8,9 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
+	"github.com/brunoga/unitybridge/unity/result"
 )
 
 // Robot is the module that controls the robot. It provides methods to
@@ -16,7 +18,10 @@ import (
 type Robot struct {
 	*internal.BaseModule
 
+	wdToken token.Token
+
 	functions atomic.Pointer[map[FunctionType]bool]
+	wds       atomic.Pointer[[]DeviceType]
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -29,10 +34,18 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 
 	l = l.WithGroup("robot_module")
 
-	return &Robot{
+	r := &Robot{
 		BaseModule: internal.NewBaseModule(ub, l, "Robot",
 			key.KeyRobomasterSystemConnection, nil),
-	}, nil
+	}
+
+	functions := make(map[FunctionType]bool)
+	r.functions.Store(&functions)
+
+	wds := make([]DeviceType, 0)
+	r.wds.Store(&wds)
+
+	return r, nil
 }
 
 type functionEnableInfo struct {
@@ -42,6 +55,21 @@ type functionEnableInfo struct {
 
 type functionEnableParamValue struct {
 	List []functionEnableInfo `json:"list"`
+}
+
+func (r *Robot) Start() error {
+	err := r.BaseModule.Start()
+	if err != nil {
+		return err
+	}
+
+	r.wdToken, err = r.UB().AddKeyListener(key.KeyRobomasterSystemWorkingDevices,
+		r.onWorkingDevices, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // EnableFunction enables or disables the given function. This keeps track of
@@ -61,6 +89,7 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 	for {
 		oldFunctionsPtr := r.functions.Load()
 		oldFunctions := *oldFunctionsPtr
+
 		newFunctions := make(map[FunctionType]bool, len(oldFunctions)+1)
 		for k, v := range oldFunctions {
 			newFunctions[k] = v
@@ -86,4 +115,59 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 	}
 
 	return nil
+}
+
+// HasFunction returns true if the given device is connected to the robot and
+// is reported as working.
+func (r *Robot) HasDevice(device DeviceType) bool {
+	wds := r.wds.Load()
+	for _, wd := range *wds {
+		if wd == device {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Devices returns the list of working devices (i.e. devices connected to the
+// robot and that are reported as working).
+func (r *Robot) Devices() []DeviceType {
+	return *r.wds.Load()
+}
+
+func (r *Robot) onWorkingDevices(res *result.Result) {
+	if res == nil || !res.Succeeded() {
+		return
+	}
+
+	// 2 or more updates at the same time are *VERY* unlikely. If they happen,
+	// we just accept whatever ordering the Store bellow gives us.
+	newWds := wdsListToWds(res.Value().([]interface{}))
+	r.wds.Store(&newWds)
+	r.Logger().Debug("working devices updated", "working_devices", newWds)
+}
+
+func wdsListToWds(wdsList []interface{}) []DeviceType {
+	wds := make([]DeviceType, 0, len(wdsList)+1)
+	for _, wd := range wdsList {
+		wdStr, ok := wd.(float64)
+		if !ok {
+			continue
+		}
+		deviceType := DeviceType(wdStr)
+
+		wds = append(wds, deviceType)
+
+		if deviceType == DeviceTypeWaterGun {
+			// Apparently the water gun implies infrared gun. This is based on
+			// the fact that a robot with a working infrared gun is not
+			// reporting it back so we kinda cheat here.
+			//
+			// TODO(bga): Double check this.
+			wds = append(wds, DeviceTypeInfraredGun)
+		}
+	}
+
+	return wds
 }
