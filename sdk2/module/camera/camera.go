@@ -25,7 +25,6 @@ type Camera struct {
 	vtsToken token.Token
 	vdrToken token.Token
 
-	ccToken token.Token
 	crToken token.Token
 
 	tg *token.Generator
