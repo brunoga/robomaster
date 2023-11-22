@@ -36,3 +36,17 @@ func New(level slog.Level) *Logger {
 func (l *Logger) Level() slog.Level {
 	return l.levelVar.Level()
 }
+
+func (l *Logger) WithGroup(group string) *Logger {
+	return &Logger{
+		Logger:   l.Logger.WithGroup(group),
+		levelVar: l.levelVar,
+	}
+}
+
+func (l *Logger) With(args ...any) *Logger {
+	return &Logger{
+		Logger:   l.Logger.With(args...),
+		levelVar: l.levelVar,
+	}
+}
