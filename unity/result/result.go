@@ -82,10 +82,13 @@ func NewFromJSON(jsonData []byte) *Result {
 		outerValue := jr.Value.(map[string]interface{})
 		value, ok = outerValue["value"]
 		if !ok {
-			r.errorCode = -1
-			r.errorDesc = fmt.Sprintf("value field not found: %v",
-				outerValue)
-			return r
+			value, ok = outerValue["list"]
+			if !ok {
+				r.errorCode = -1
+				r.errorDesc = fmt.Sprintf("value or list field not found: %v",
+					outerValue)
+				return r
+			}
 		}
 	default:
 		value = jr.Value
