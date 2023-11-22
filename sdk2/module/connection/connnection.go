@@ -46,6 +46,7 @@ func New(ub unitybridge.UnityBridge,
 		BaseModule: internal.NewBaseModule(ub, l, "Connection",
 			key.KeyRobomasterSystemConnection, nil),
 		appID: appID,
+		f:     finder.New(appID, l),
 	}, nil
 }
 
