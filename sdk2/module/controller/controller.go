@@ -32,7 +32,9 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 
 	l = l.WithGroup("controller_module")
 
-	c := &Controller{}
+	c := &Controller{
+		rb: rb,
+	}
 
 	c.BaseModule = internal.NewBaseModule(ub, l, "Controller",
 		key.KeyMainControllerConnection, func(r *result.Result) {
