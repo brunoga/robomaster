@@ -1,15 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/brunoga/robomaster/sdk2"
 	"github.com/brunoga/unitybridge/support/logger"
 )
 
 func main() {
-	l := logger.New(slog.LevelDebug)
+	l := logger.New(slog.LevelWarn)
 
 	c, err := sdk2.New(l, 0)
 	if err != nil {
@@ -22,5 +22,5 @@ func main() {
 	}
 	defer c.Stop()
 
-	time.Sleep(10 * time.Second)
+	fmt.Println(c.Robot().Devices())
 }
