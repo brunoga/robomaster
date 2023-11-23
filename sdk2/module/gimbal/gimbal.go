@@ -34,14 +34,21 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Gimbal, error) {
 			}
 
 			connected, ok := r.Value().(bool)
-			if !ok || !connected {
+			if !ok {
+				g.Logger().Error("Unexpected value", "value", r.Value())
 				return
 			}
 
-			err := g.UB().PerformActionForKey(key.KeyGimbalOpenAttitudeUpdates, nil, nil)
-			if err != nil {
-				g.Logger().Error("Error opening attitude updates", "error", err)
-				return
+			if connected {
+				err := g.UB().PerformActionForKey(key.KeyGimbalOpenAttitudeUpdates, nil, nil)
+				if err != nil {
+					g.Logger().Error("Error opening attitude updates", "error", err)
+				}
+			} else {
+				err := g.UB().PerformActionForKey(key.KeyGimbalCloseAttitudeUpdates, nil, nil)
+				if err != nil {
+					g.Logger().Error("Error closing attitude updates", "error", err)
+				}
 			}
 		})
 
