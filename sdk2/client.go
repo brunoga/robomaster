@@ -92,7 +92,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cn.WaitForConnection(10 * time.Second) {
+	if !c.cn.WaitForConnection(20 * time.Second) {
 		return fmt.Errorf("network connection unexpectedly not established")
 	}
 
@@ -102,7 +102,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.rb.WaitForConnection(2 * time.Second) {
+	if !c.rb.WaitForConnection(10 * time.Second) {
 		return fmt.Errorf("robot connection unexpectedly not established")
 	}
 
@@ -112,7 +112,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cm.WaitForConnection(2 * time.Second) {
+	if !c.cm.WaitForConnection(10 * time.Second) {
 		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
@@ -122,25 +122,27 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.ct.WaitForConnection(2 * time.Second) {
+	if !c.ct.WaitForConnection(10 * time.Second) {
 		return fmt.Errorf("controller connection unexpectedly not established")
 	}
 
-	// GamePad.
+	// GamePad. (Optional)
 	err = c.gb.Start()
 	if err != nil {
 		return err
 	}
 
-	if !c.gb.WaitForConnection(2 * time.Second) {
-		// GamePad is optional.
-		c.l.Warn("Gamepad connection not stablished. Gamepad not available.")
-		err := c.gb.Stop()
-		if err != nil {
-			c.l.Warn("Error stopping Gamepad module", "error", err)
+	go func() {
+		if !c.gb.WaitForConnection(2 * time.Second) {
+			// GamePad is optional.
+			c.l.Warn("Gamepad connection not stablished. Gamepad not available.")
+			err := c.gb.Stop()
+			if err != nil {
+				c.l.Warn("Error stopping Gamepad module", "error", err)
+			}
+			c.gb = nil
 		}
-		c.gb = nil
-	}
+	}()
 
 	c.started = true
 
