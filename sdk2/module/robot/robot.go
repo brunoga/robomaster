@@ -2,6 +2,7 @@ package robot
 
 import (
 	"log/slog"
+	"sort"
 	"sync/atomic"
 
 	"github.com/brunoga/robomaster/sdk2/module"
@@ -21,7 +22,7 @@ type Robot struct {
 	wdToken token.Token
 
 	functions atomic.Pointer[map[FunctionType]bool]
-	wds       atomic.Pointer[[]DeviceType]
+	wds       atomic.Pointer[map[DeviceType]struct{}]
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -42,7 +43,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 	functions := make(map[FunctionType]bool)
 	r.functions.Store(&functions)
 
-	wds := make([]DeviceType, 0)
+	wds := make(map[DeviceType]struct{})
 	r.wds.Store(&wds)
 
 	return r, nil
@@ -121,19 +122,26 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 // is reported as working.
 func (r *Robot) HasDevice(device DeviceType) bool {
 	wds := r.wds.Load()
-	for _, wd := range *wds {
-		if wd == device {
-			return true
-		}
-	}
+	_, ok := (*wds)[device]
 
-	return false
+	return ok
 }
 
 // Devices returns the list of working devices (i.e. devices connected to the
 // robot and that are reported as working).
 func (r *Robot) Devices() []DeviceType {
-	return *r.wds.Load()
+	wds := *r.wds.Load()
+
+	ks := make([]DeviceType, 0, len(wds))
+	for k := range wds {
+		ks = append(ks, k)
+	}
+
+	sort.SliceStable(ks, func(i, j int) bool {
+		return ks[i] < ks[j]
+	})
+
+	return ks
 }
 
 func (r *Robot) onWorkingDevices(res *result.Result) {
@@ -143,13 +151,45 @@ func (r *Robot) onWorkingDevices(res *result.Result) {
 
 	// 2 or more updates at the same time are *VERY* unlikely. If they happen,
 	// we just accept whatever ordering the Store bellow gives us.
+	oldWds := *r.wds.Load()
 	newWds := wdsListToWds(res.Value().([]interface{}))
 	r.wds.Store(&newWds)
-	r.Logger().Debug("working devices updated", "working_devices", newWds)
+
+	removed, added := r.checkDiff(oldWds, newWds)
+
+	for device := range removed {
+		r.Logger().Warn("Device removed", "device", device)
+	}
+
+	for device := range added {
+		r.Logger().Warn("Device added", "device", device)
+	}
+
+	// TODO(bga): If we ever associate device types with modules, we might
+	// want to automatically enable/disable them here.
 }
 
-func wdsListToWds(wdsList []interface{}) []DeviceType {
-	wds := make([]DeviceType, 0, len(wdsList)+1)
+func (r *Robot) checkDiff(oldWds, newWds map[DeviceType]struct{}) (
+	map[DeviceType]struct{}, map[DeviceType]struct{}) {
+	removed := make(map[DeviceType]struct{})
+	for k := range oldWds {
+		if _, ok := newWds[k]; !ok {
+			removed[k] = struct{}{}
+		}
+	}
+
+	added := make(map[DeviceType]struct{})
+	for k := range newWds {
+		if _, ok := oldWds[k]; !ok {
+			added[k] = struct{}{}
+		}
+	}
+
+	return removed, added
+}
+
+func wdsListToWds(wdsList []interface{}) map[DeviceType]struct{} {
+	wds := make(map[DeviceType]struct{}, len(wdsList))
 	for _, wd := range wdsList {
 		wdStr, ok := wd.(float64)
 		if !ok {
@@ -157,16 +197,7 @@ func wdsListToWds(wdsList []interface{}) []DeviceType {
 		}
 		deviceType := DeviceType(wdStr)
 
-		wds = append(wds, deviceType)
-
-		if deviceType == DeviceTypeWaterGun {
-			// Apparently the water gun implies infrared gun. This is based on
-			// the fact that a robot with a working infrared gun is not
-			// reporting it back so we kinda cheat here.
-			//
-			// TODO(bga): Double check this.
-			wds = append(wds, DeviceTypeInfraredGun)
-		}
+		wds[deviceType] = struct{}{}
 	}
 
 	return wds
