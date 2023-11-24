@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	l := logger.New(slog.LevelError)
+	l := logger.New(slog.LevelDebug)
 
 	c, err := sdk2.New(l, 0)
 	if err != nil {
