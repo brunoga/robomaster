@@ -17,6 +17,7 @@ const (
 	DeviceTypeServo3            DeviceType = 794
 	DeviceTypeServo4            DeviceType = 795
 	DeviceTypeArm               DeviceType = 798
+	DeviceTypeGripper           DeviceType = 799 // TODO(bga): Verify.
 	DeviceTypeGimbal            DeviceType = 1024
 	DeviceTypeTOF1              DeviceType = 4609
 	DeviceTypeTOF2              DeviceType = 4610
@@ -66,6 +67,8 @@ func (d DeviceType) String() string {
 		return "Servo4"
 	case DeviceTypeArm:
 		return "Arm"
+	case DeviceTypeGripper:
+		return "Gripper"
 	case DeviceTypeGimbal:
 		return "Gimbal"
 	case DeviceTypeTOF1:
@@ -106,5 +109,43 @@ func (d DeviceType) String() string {
 		return "RightHeadArmor"
 	default:
 		return "Unknown"
+	}
+}
+
+func AllDeviceTypes() map[DeviceType]struct{} {
+	return map[DeviceType]struct{}{
+		DeviceTypeImageTransmission: {},
+		DeviceTypeCamera:            {},
+		DeviceTypeChassis:           {},
+		DeviceTypeBattery:           {},
+		DeviceTypeESC0:              {},
+		DeviceTypeESC1:              {},
+		DeviceTypeESC2:              {},
+		DeviceTypeESC3:              {},
+		DeviceTypeServo1:            {},
+		DeviceTypeServo2:            {},
+		DeviceTypeServo3:            {},
+		DeviceTypeServo4:            {},
+		DeviceTypeArm:               {},
+		DeviceTypeGripper:           {},
+		DeviceTypeGimbal:            {},
+		DeviceTypeTOF1:              {},
+		DeviceTypeTOF2:              {},
+		DeviceTypeTOF3:              {},
+		DeviceTypeTOF4:              {},
+		DeviceTypeSensorAdapter1:    {},
+		DeviceTypeSensorAdapter2:    {},
+		DeviceTypeSensorAdapter3:    {},
+		DeviceTypeSensorAdapter4:    {},
+		DeviceTypeSensorAdapter5:    {},
+		DeviceTypeSensorAdapter6:    {},
+		DeviceTypeWaterGun:          {},
+		DeviceTypeInfraredGun:       {},
+		DeviceTypeBackArmor:         {},
+		DeviceTypeFrontArmor:        {},
+		DeviceTypeLeftArmor:         {},
+		DeviceTypeRightArmor:        {},
+		DeviceTypeLeftHeadArmor:     {},
+		DeviceTypeRightHeadArmor:    {},
 	}
 }
