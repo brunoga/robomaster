@@ -5,9 +5,8 @@ go 1.21.4
 require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
-	github.com/brunoga/robomaster/legacy v0.0.0-20231116222046-f618f2c6e2a2
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20231122211806-ee45689560b1
-	github.com/brunoga/unitybridge v0.0.0-20231122211514-875f0203e455
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20231125151911-de0644f6ef22
+	github.com/brunoga/unitybridge v0.0.0-20231125123018-aa5caa867b2d
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231117230948-b8b00452e321
 )
 
@@ -16,10 +15,8 @@ require (
 	github.com/EngoEngine/math v1.0.4 // indirect
 	github.com/Noofbiz/sdlMojaveFix v0.0.1 // indirect
 	github.com/Noofbiz/tmx v0.2.0 // indirect
-	github.com/brunoga/robomaster v0.0.0-20231120132617-8b3ee72f77ef // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/uuid v1.1.1 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
 	github.com/hajimehoshi/oto v1.0.1 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
@@ -27,9 +24,6 @@ require (
 	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-pointer v0.0.1 // indirect
-	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
-	github.com/skratchdot/open-golang v0.0.0-20190402232053-79abb63cd66e // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/veandco/go-sdl2 v0.4.35 // indirect
