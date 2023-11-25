@@ -37,5 +37,5 @@ type Chassis struct {
 // the robot's gimbal and chassis rotation and the right stick controls the
 // robot's chassis (up/down/left/right).
 func (c *Chassis) Move(ls *StickPosition, rs *StickPosition) error {
-	return c.c.Move(ls.sp, rs.sp, controller.ControlModeDefault)
+	return c.c.Move(ls.sp, rs.sp, controller.ModeFPV)
 }

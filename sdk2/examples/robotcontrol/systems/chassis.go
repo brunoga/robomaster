@@ -69,6 +69,6 @@ func (c *Chassis) Update(dt float32) {
 		}
 
 		cec.Chassis.Move(chassisStickPosition, gimbalStickPosition,
-			controller.ControlModeDefault)
+			controller.ModeFPV)
 	}
 }

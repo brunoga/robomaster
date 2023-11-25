@@ -51,14 +51,81 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 			//            false here?
 
 			c.rb.EnableFunction(robot.FunctionTypeMovementControl, true)
+			c.SetControllerMode(controller.ModeFPV) // Seems to be the default mode.
 		})
 
 	return c, nil
 }
 
+// SetControllerMode sets the controller mode for the robot.
+func (c *Chassis) SetControllerMode(m controller.Mode) error {
+	if !m.Valid() {
+		return fmt.Errorf("invalid controller mode: %d", m)
+	}
+
+	return c.UB().SetKeyValueSync(key.KeyMainControllerChassisCarControlMode, uint64(m))
+}
+
+// SetMode sets the chassis mode for the robot.
+func (c *Chassis) SetMode(m Mode) error {
+	// TODO(bga): Figure out this value.
+	value := uint64(1) | uint64(140) | uint64(17920) | uint64(235929600)
+
+	return c.control(m, value)
+
+	// TODO(bga): Apparently we need to stop the chassis mode before returning.
+	//            Check if that is indeed the case.
+}
+
+// StopMovement stops the chassis movement.
+func (c *Chassis) StopMovement(m Mode) error {
+	// TODO(bga): Figure out this value.
+	value := uint64(0) | uint64(140) | uint64(17920) | uint64(235929600)
+
+	return c.control(m, value)
+}
+
+// SetSpeed sets the chassis speed.
+func (c *Chassis) SetSpeed(m Mode, x, y, z float64) error {
+	value := uint64(1) |
+		uint64(x*10.0) + 35<<2 |
+		uint64(y*10.0) + 35<<9 |
+		uint64(z*10.0) + 3600<<16
+
+	return c.control(m, value)
+}
+
+type chassisPosition struct {
+	TaskID      uint8   `json:"taskId"`
+	IsCancel    uint8   `json:"isCancel"`
+	ControlMode uint8   `json:"controlMode"`
+	X           float32 `json:"positionX"`
+	Y           float32 `json:"positionY"`
+	Z           float32 `json:"positionYaw"`
+}
+
+// SetPosition sets the chassis position.
+func (c *Chassis) SetPosition(m Mode, x, y, z float64) error {
+	// TODO(bga): We need to implement task id handling for this.
+
+	var controlMode uint8
+	if m == ModeYawFollow {
+		controlMode = 1
+	}
+
+	return c.UB().PerformActionForKey(key.KeyMainControllerChassisPosition, chassisPosition{
+		TaskID:      1,
+		IsCancel:    0,
+		ControlMode: controlMode,
+		X:           float32(x),
+		Y:           float32(y),
+		Z:           float32(z),
+	}, nil)
+}
+
 // Move moves the robot using the given stick positions and control mode.
 func (c *Chassis) Move(leftStick *controller.StickPosition,
-	rightStick *controller.StickPosition, m controller.ControlMode) error {
+	rightStick *controller.StickPosition, m controller.Mode) error {
 	if !m.Valid() {
 		return fmt.Errorf("invalid control mode: %d", m)
 	}
@@ -82,4 +149,19 @@ func (c *Chassis) Move(leftStick *controller.StickPosition,
 		uint64(m)<<46
 
 	return c.UB().DirectSendKeyValue(key.KeyMainControllerVirtualStick, v)
+}
+
+func (c *Chassis) control(m Mode, value uint64) error {
+	if !m.Valid() {
+		return fmt.Errorf("invalid mode: %d", m)
+	}
+
+	var k *key.Key
+	if m == ModeYawFollow {
+		k = key.KeyMainControllerChassisFollowMode
+	} else {
+		k = key.KeyMainControllerChassisSpeedMode
+	}
+
+	return c.UB().DirectSendKeyValue(k, value)
 }
