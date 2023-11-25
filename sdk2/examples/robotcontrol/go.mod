@@ -6,8 +6,8 @@ require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
 	github.com/brunoga/robomaster/sdk2 v0.0.0-20231125151911-de0644f6ef22
-	github.com/brunoga/unitybridge v0.0.0-20231125123018-aa5caa867b2d
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231117230948-b8b00452e321
+	github.com/brunoga/unitybridge v0.0.0-20231125184016-a729c72d0748
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231124074035-2de0cf0c80af
 )
 
 require (
@@ -26,7 +26,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
-	github.com/veandco/go-sdl2 v0.4.35 // indirect
+	github.com/veandco/go-sdl2 v0.4.36 // indirect
 	github.com/vulkan-go/glfw v0.0.0-20210402172934-58379a80228d // indirect
 	github.com/vulkan-go/vulkan v0.0.0-20221209234627-c0a353ae26c8 // indirect
 	golang.org/x/exp/shiny v0.0.0-20231110203233-9a3e6036ecaa // indirect
