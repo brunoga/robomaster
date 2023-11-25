@@ -32,15 +32,26 @@ func (r *Robomaster) Setup(u engo.Updater) {
 
 	engo.Input.RegisterButton("exit", engo.KeyEscape)
 
-	controllerComponent := &components.Chassis{
+	chassis := &components.Chassis{
 		Chassis: r.Client.Chassis(),
 	}
 
-	basicEntity := ecs.NewBasic()
+	chassisBasicEntity := ecs.NewBasic()
 
-	controllerEntity := entities.Controller{
-		BasicEntity: &basicEntity,
-		Chassis:     controllerComponent,
+	chassisEntity := entities.Chassis{
+		BasicEntity: &chassisBasicEntity,
+		Chassis:     chassis,
+	}
+
+	gunComponent := &components.Gun{
+		Gun: r.Client.Gun(),
+	}
+
+	gunBasicEntity := ecs.NewBasic()
+
+	gunEntity := entities.Gun{
+		BasicEntity: &gunBasicEntity,
+		Gun:         gunComponent,
 	}
 
 	// Disable cursor.
@@ -58,8 +69,8 @@ func (r *Robomaster) Setup(u engo.Updater) {
 	w.AddSystem(&systems.Video{
 		Camera: r.Client.Camera(),
 	})
-
 	w.AddSystem(&systems.Chassis{})
+	w.AddSystem(&systems.Gun{})
 	w.AddSystem(&common.FPSSystem{
 		Display: true,
 	})
@@ -67,8 +78,10 @@ func (r *Robomaster) Setup(u engo.Updater) {
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
 		case *systems.Chassis:
-			sys.Add(controllerEntity.BasicEntity,
-				controllerComponent)
+			sys.Add(chassisEntity.BasicEntity,
+				chassis)
+		case *systems.Gun:
+			sys.Add(gunEntity.BasicEntity, gunComponent)
 		}
 	}
 }

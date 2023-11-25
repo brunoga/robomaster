@@ -5,7 +5,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/components"
 )
 
-type Chassis struct {
+type Gun struct {
 	*ecs.BasicEntity
-	*components.Chassis
+	*components.Gun
 }

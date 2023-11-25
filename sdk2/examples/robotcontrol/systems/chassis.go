@@ -9,11 +9,11 @@ import (
 )
 
 type Chassis struct {
-	controllerEntityMap map[uint64]*entities.Controller
+	controllerEntityMap map[uint64]*entities.Chassis
 }
 
 func (c *Chassis) New(w *ecs.World) {
-	c.controllerEntityMap = make(map[uint64]*entities.Controller)
+	c.controllerEntityMap = make(map[uint64]*entities.Chassis)
 }
 
 func (c *Chassis) Add(basicEntity *ecs.BasicEntity,
@@ -23,7 +23,7 @@ func (c *Chassis) Add(basicEntity *ecs.BasicEntity,
 		return
 	}
 
-	c.controllerEntityMap[basicEntity.ID()] = &entities.Controller{
+	c.controllerEntityMap[basicEntity.ID()] = &entities.Chassis{
 		BasicEntity: basicEntity,
 		Chassis:     controllerComponent,
 	}
