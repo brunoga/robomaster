@@ -9,6 +9,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/chassis"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/gamepad"
+	"github.com/brunoga/robomaster/sdk2/module/gun"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -24,6 +25,7 @@ type Client struct {
 	cm *camera.Camera
 	ch *chassis.Chassis
 	rb *robot.Robot
+	gn *gun.Gun
 	gb *gamepad.GamePad
 
 	m       sync.RWMutex
@@ -32,7 +34,7 @@ type Client struct {
 
 // New creates a new Client instance with the given logger and appID.
 func New(l *logger.Logger, appID uint64) (*Client, error) {
-	ub := unitybridge.Get(wrapper.Get(l), false, l)
+	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
 	cn, err := connection.New(ub, l, appID)
 	if err != nil {
@@ -54,6 +56,11 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
+	gn, err := gun.New(ub, l)
+	if err != nil {
+		return nil, err
+	}
+
 	gb, err := gamepad.New(ub, l)
 	if err != nil {
 		return nil, err
@@ -66,6 +73,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		rb: rb,
 		cm: cm,
 		ch: ch,
+		gn: gn,
 		gb: gb,
 	}, nil
 }
@@ -124,6 +132,16 @@ func (c *Client) Start() error {
 
 	if !c.ch.WaitForConnection(10 * time.Second) {
 		return fmt.Errorf("chassis connection unexpectedly not established")
+	}
+
+	// Gun.
+	err = c.gn.Start()
+	if err != nil {
+		return err
+	}
+
+	if !c.gn.WaitForConnection(10 * time.Second) {
+		return fmt.Errorf("gun connection unexpectedly not established")
 	}
 
 	// GamePad. (Optional)
