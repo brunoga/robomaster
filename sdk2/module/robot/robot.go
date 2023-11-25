@@ -77,21 +77,12 @@ func (r *Robot) Start() error {
 // previoudly enabled/didabled functions and always sends the full list with
 // the current status of all functions to the Unity Bridge.
 func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
-	info := functionEnableInfo{
-		ID:     ft,
-		Enable: enable,
-	}
-
-	param := functionEnableParamValue{
-		List: []functionEnableInfo{info},
-	}
-
 	var newFunctions map[FunctionType]bool
 	for {
 		oldFunctionsPtr := r.functions.Load()
 		oldFunctions := *oldFunctionsPtr
 
-		newFunctions := make(map[FunctionType]bool, len(oldFunctions)+1)
+		newFunctions = make(map[FunctionType]bool, len(oldFunctions)+1)
 		for k, v := range oldFunctions {
 			newFunctions[k] = v
 		}
@@ -100,6 +91,10 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 		if r.functions.CompareAndSwap(oldFunctionsPtr, &newFunctions) {
 			break
 		}
+	}
+
+	param := functionEnableParamValue{
+		List: []functionEnableInfo{},
 	}
 
 	for ft, enabled := range newFunctions {
