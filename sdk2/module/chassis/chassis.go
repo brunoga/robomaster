@@ -19,14 +19,14 @@ import (
 type Chassis struct {
 	*internal.BaseModule
 
-	rb *robot.Robot
+	r *robot.Robot
 }
 
 var _ module.Module = (*Chassis)(nil)
 
 // New creates a new Chassis instance.
-func New(rb *robot.Robot, ub unitybridge.UnityBridge,
-	l *logger.Logger) (*Chassis, error) {
+func New(ub unitybridge.UnityBridge, l *logger.Logger,
+	r *robot.Robot) (*Chassis, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -34,7 +34,7 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 	l = l.WithGroup("chassis_module")
 
 	c := &Chassis{
-		rb: rb,
+		r: r,
 	}
 
 	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis",
@@ -50,7 +50,7 @@ func New(rb *robot.Robot, ub unitybridge.UnityBridge,
 			// TODO(bga): Maybe disable the function if we receive an actual
 			//            false here?
 
-			c.rb.EnableFunction(robot.FunctionTypeMovementControl, true)
+			c.r.EnableFunction(robot.FunctionTypeMovementControl, true)
 			c.SetControllerMode(controller.ModeFPV) // Seems to be the default mode.
 		})
 
