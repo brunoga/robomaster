@@ -521,7 +521,9 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
 	u.m.Lock()
 	if c, ok := u.callbackListener[token.Token(tag)]; ok {
-		go c(result.NewFromJSON(data))
+		if c != nil {
+			go c(result.NewFromJSON(data))
+		}
 		delete(u.callbackListener, token.Token(tag))
 	} else {
 		u.l.Error("No callback registered for tag", "tag", tag)
