@@ -51,12 +51,12 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
-	ch, err := chassis.New(rb, ub, l)
+	ch, err := chassis.New(ub, l, rb)
 	if err != nil {
 		return nil, err
 	}
 
-	gn, err := gun.New(ub, l)
+	gn, err := gun.New(ub, l, rb)
 	if err != nil {
 		return nil, err
 	}
@@ -185,6 +185,11 @@ func (c *Client) Chassis() *chassis.Chassis {
 // Robot returns the Robot module.
 func (c *Client) Robot() *robot.Robot {
 	return c.rb
+}
+
+// Gun returns the Gun module.
+func (c *Client) Gun() *gun.Gun {
+	return c.gn
 }
 
 // GamePad returns the GamePad module. The GamePad is optional and may be nil.
