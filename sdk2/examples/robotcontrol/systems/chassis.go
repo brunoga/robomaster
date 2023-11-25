@@ -5,19 +5,19 @@ import (
 	"github.com/EngoEngine/engo"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/components"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/entities"
-	"github.com/brunoga/robomaster/sdk2/module/controller"
+	"github.com/brunoga/robomaster/sdk2/module/chassis/controller"
 )
 
-type Controller struct {
+type Chassis struct {
 	controllerEntityMap map[uint64]*entities.Controller
 }
 
-func (c *Controller) New(w *ecs.World) {
+func (c *Chassis) New(w *ecs.World) {
 	c.controllerEntityMap = make(map[uint64]*entities.Controller)
 }
 
-func (c *Controller) Add(basicEntity *ecs.BasicEntity,
-	controllerComponent *components.Controller) {
+func (c *Chassis) Add(basicEntity *ecs.BasicEntity,
+	controllerComponent *components.Chassis) {
 	_, ok := c.controllerEntityMap[basicEntity.ID()]
 	if ok {
 		return
@@ -25,15 +25,15 @@ func (c *Controller) Add(basicEntity *ecs.BasicEntity,
 
 	c.controllerEntityMap[basicEntity.ID()] = &entities.Controller{
 		BasicEntity: basicEntity,
-		Controller:  controllerComponent,
+		Chassis:     controllerComponent,
 	}
 }
 
-func (c *Controller) Remove(basicEntity ecs.BasicEntity) {
+func (c *Chassis) Remove(basicEntity ecs.BasicEntity) {
 	delete(c.controllerEntityMap, basicEntity.ID())
 }
 
-func (c *Controller) Update(dt float32) {
+func (c *Chassis) Update(dt float32) {
 	if btn := engo.Input.Button("exit"); btn.JustPressed() {
 		engo.Exit()
 	}
@@ -56,7 +56,7 @@ func (c *Controller) Update(dt float32) {
 	}
 
 	for _, controllerEntity := range c.controllerEntityMap {
-		cec := controllerEntity.Controller
+		cec := controllerEntity.Chassis
 
 		chassisStickPosition := &controller.StickPosition{
 			X: float64(currentLeftRight),
@@ -68,7 +68,7 @@ func (c *Controller) Update(dt float32) {
 			Y: float64(mouseYDelta) / float64(100),
 		}
 
-		cec.Controller.Move(chassisStickPosition, gimbalStickPosition,
+		cec.Chassis.Move(chassisStickPosition, gimbalStickPosition,
 			controller.ControlModeDefault)
 	}
 }

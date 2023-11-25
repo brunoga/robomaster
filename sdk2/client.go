@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module/camera"
+	"github.com/brunoga/robomaster/sdk2/module/chassis"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
-	"github.com/brunoga/robomaster/sdk2/module/controller"
 	"github.com/brunoga/robomaster/sdk2/module/gamepad"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
@@ -22,7 +22,7 @@ type Client struct {
 
 	cn *connection.Connection
 	cm *camera.Camera
-	ct *controller.Controller
+	ch *chassis.Chassis
 	rb *robot.Robot
 	gb *gamepad.GamePad
 
@@ -49,7 +49,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
-	ct, err := controller.New(rb, ub, l)
+	ch, err := chassis.New(rb, ub, l)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		cn: cn,
 		rb: rb,
 		cm: cm,
-		ct: ct,
+		ch: ch,
 		gb: gb,
 	}, nil
 }
@@ -116,14 +116,14 @@ func (c *Client) Start() error {
 		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
-	// Controller.
-	err = c.ct.Start()
+	// Chassis.
+	err = c.ch.Start()
 	if err != nil {
 		return err
 	}
 
-	if !c.ct.WaitForConnection(10 * time.Second) {
-		return fmt.Errorf("controller connection unexpectedly not established")
+	if !c.ch.WaitForConnection(10 * time.Second) {
+		return fmt.Errorf("chassis connection unexpectedly not established")
 	}
 
 	// GamePad. (Optional)
@@ -159,9 +159,9 @@ func (c *Client) Camera() *camera.Camera {
 	return c.cm
 }
 
-// Controller returns the Controller module.
-func (c *Client) Controller() *controller.Controller {
-	return c.ct
+// Chassis returns the Chassis module.
+func (c *Client) Chassis() *chassis.Chassis {
+	return c.ch
 }
 
 // Robot returns the Robot module.
@@ -185,8 +185,8 @@ func (c *Client) Stop() error {
 
 	// Stop modules.
 
-	// Controller.
-	err := c.ct.Stop()
+	// Chassis.
+	err := c.ch.Stop()
 	if err != nil {
 		return err
 	}

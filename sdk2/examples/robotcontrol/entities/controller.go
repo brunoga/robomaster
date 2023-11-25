@@ -7,5 +7,5 @@ import (
 
 type Controller struct {
 	*ecs.BasicEntity
-	*components.Controller
+	*components.Chassis
 }

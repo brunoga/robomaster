@@ -1,9 +1,7 @@
 package components
 
-import (
-	"github.com/brunoga/robomaster/sdk2/module/controller"
-)
+import "github.com/brunoga/robomaster/sdk2/module/chassis"
 
-type Controller struct {
-	Controller *controller.Controller
+type Chassis struct {
+	Chassis *chassis.Chassis
 }

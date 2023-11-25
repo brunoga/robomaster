@@ -1,6 +1,9 @@
 package mobile
 
-import "github.com/brunoga/robomaster/sdk2/module/controller"
+import (
+	"github.com/brunoga/robomaster/sdk2/module/chassis"
+	"github.com/brunoga/robomaster/sdk2/module/chassis/controller"
+)
 
 // StickPosition represents the position of a stick controller.
 type StickPosition struct {
@@ -24,14 +27,15 @@ func (s *StickPosition) InterpolatedY() int64 {
 	return int64(s.sp.InterpolatedY())
 }
 
-// Controller allows controlling the robot movement by using a method similar
-// to a game controller with dual sticks.
-type Controller struct {
-	c *controller.Controller
+// Chassis allows controlling the robot chassis. It also works as the robot main
+// controller interface.
+type Chassis struct {
+	c *chassis.Chassis
 }
 
 // Move moves the robot using the given stick positions. The left stick controls
-// the robot's gimbal and the right stick controls the robot's chassis.
-func (c *Controller) Move(ls *StickPosition, rs *StickPosition) error {
+// the robot's gimbal and chassis rotation and the right stick controls the
+// robot's chassis (up/down/left/right).
+func (c *Chassis) Move(ls *StickPosition, rs *StickPosition) error {
 	return c.c.Move(ls.sp, rs.sp, controller.ControlModeDefault)
 }

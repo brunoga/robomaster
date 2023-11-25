@@ -32,15 +32,15 @@ func (r *Robomaster) Setup(u engo.Updater) {
 
 	engo.Input.RegisterButton("exit", engo.KeyEscape)
 
-	controllerComponent := &components.Controller{
-		Controller: r.Client.Controller(),
+	controllerComponent := &components.Chassis{
+		Chassis: r.Client.Chassis(),
 	}
 
 	basicEntity := ecs.NewBasic()
 
 	controllerEntity := entities.Controller{
 		BasicEntity: &basicEntity,
-		Controller:  controllerComponent,
+		Chassis:     controllerComponent,
 	}
 
 	// Disable cursor.
@@ -59,14 +59,14 @@ func (r *Robomaster) Setup(u engo.Updater) {
 		Camera: r.Client.Camera(),
 	})
 
-	w.AddSystem(&systems.Controller{})
+	w.AddSystem(&systems.Chassis{})
 	w.AddSystem(&common.FPSSystem{
 		Display: true,
 	})
 
 	for _, system := range w.Systems() {
 		switch sys := system.(type) {
-		case *systems.Controller:
+		case *systems.Chassis:
 			sys.Add(controllerEntity.BasicEntity,
 				controllerComponent)
 		}

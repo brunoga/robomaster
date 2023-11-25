@@ -38,9 +38,9 @@ func (c *Client) Camera() *Camera {
 }
 
 // Controller returns the Controller instance for the client.
-func (c *Client) Controller() *Controller {
-	return &Controller{
-		c: c.c.Controller(),
+func (c *Client) Chassis() *Chassis {
+	return &Chassis{
+		c: c.c.Chassis(),
 	}
 }
 
