@@ -55,6 +55,7 @@ import (
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
+	"github.com/brunoga/unitybridge/wrapper/internal/implementations/support"
 )
 
 var (
@@ -75,7 +76,12 @@ func init() {
 			"library", runtime.GOOS, runtime.GOARCH))
 	}
 
-	cLibPath := C.CString(libPath)
+	path, err := support.FindFile(libPath)
+	if err != nil {
+		panic(err)
+	}
+
+	cLibPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cLibPath))
 
 	UnityBridgeImpl.handle = C.dlopen(cLibPath, C.RTLD_NOW)

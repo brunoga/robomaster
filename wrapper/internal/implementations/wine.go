@@ -18,6 +18,7 @@ import (
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
+	"github.com/brunoga/unitybridge/wrapper/internal/implementations/support"
 )
 
 const (
@@ -265,13 +266,9 @@ func getWinePath() (string, error) {
 }
 
 func getDLLHostPath() (string, error) {
-	dllHostPath, err := exec.LookPath(dllHostExe)
+	dllHostPath, err := support.FindFile(dllHostExe)
 	if err != nil {
-		// Try current directory.
-		dllHostPath, err = exec.LookPath("./" + dllHostExe)
-		if err != nil {
-			return "", err
-		}
+		panic(err)
 	}
 
 	peFile, err := pe.Open(dllHostPath)

@@ -18,6 +18,7 @@ import (
 	"github.com/brunoga/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
+	"github.com/brunoga/unitybridge/wrapper/internal/implementations/support"
 )
 
 var (
@@ -30,10 +31,15 @@ var (
 func init() {
 	var err error
 
-	UnityBridgeImpl.handle, err = syscall.LoadDLL(libPath)
+	path, err := support.FindFile(libPath)
+	if err != nil {
+		panic(err)
+	}
+
+	UnityBridgeImpl.handle, err = syscall.LoadDLL(path)
 	if err != nil {
 		panic(fmt.Sprintf("Could not load Unity Bridge library at \"%s\": %s",
-			libPath, err))
+			path, err))
 	}
 
 	UnityBridgeImpl.createUnityBridge =
