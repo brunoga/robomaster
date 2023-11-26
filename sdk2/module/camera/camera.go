@@ -168,17 +168,6 @@ func (c *Camera) SetVideoFormat(format VideoFormat) error {
 	return c.UB().SetKeyValueSync(key.KeyCameraVideoFormat, format)
 }
 
-// VideoQuality returns the currently set video quality.
-func (c *Camera) VideoQuality() (VideoQuality, error) {
-	r, err := c.UB().GetKeyValueSync(key.KeyCameraVideoTransRate,
-		true)
-	if err != nil {
-		return 0, err
-	}
-
-	return VideoQuality(r.Value().(float64)), nil
-}
-
 // SetVideoQuality sets the video quality.
 func (c *Camera) SetVideoQuality(quality VideoQuality) error {
 	return c.UB().SetKeyValueSync(key.KeyCameraVideoTransRate, quality)
