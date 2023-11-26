@@ -32,9 +32,8 @@ type UnityBridge interface {
 	GetKeyValue(k *key.Key, c result.Callback) error
 
 	// GetKeyValueSync returns the Unity Bridge value associated with the given
-	// key. This is a synchronous version of GetKeyValue and the result is
-	// returned in the output parameter (which should be of a suitable type).
-	GetKeyValueSync(k *key.Key, useCache bool, output any) error
+	// key. This is a synchronous version of GetKeyValue..
+	GetKeyValueSync(k *key.Key, useCache bool) (*result.Result, error)
 
 	// GetCachedKeyValue returns the Unity Bridge cached value associated
 	// with the given key.

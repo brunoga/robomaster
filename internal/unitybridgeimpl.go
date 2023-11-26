@@ -168,23 +168,17 @@ func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 	return nil
 }
 
-func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key, useCache bool,
-	output any) error {
+func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key,
+	useCache bool) (*result.Result, error) {
 	var err error
+	var res *result.Result
 
 	if useCache {
-		r, err := u.GetCachedKeyValue(k)
-		if err != nil {
-			return err
+		res, err = u.GetCachedKeyValue(k)
+		if err == nil && res != nil && res.Succeeded() {
+			// Have a valid cached result.
+			return res, err
 		}
-
-		if r.ErrorCode() != 0 {
-			return fmt.Errorf("error getting cached value for key %s: %s", k, r)
-		}
-
-		output = r.Value()
-
-		return nil
 	}
 
 	done := make(chan struct{})
@@ -193,21 +187,21 @@ func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key, useCache bool,
 		if r.ErrorCode() != 0 {
 			err = fmt.Errorf("error getting value for key %s: %s", k, r)
 		} else {
-			output = r.Value()
+			res = r
 		}
 
 		close(done)
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	select {
 	case <-done:
-		return nil
+		return res, nil
 	case <-time.After(5 * time.Second):
-		return fmt.Errorf("timeout getting value for key %s", k)
+		return nil, fmt.Errorf("timeout getting value for key %s", k)
 	}
 }
 
