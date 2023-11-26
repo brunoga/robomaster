@@ -12,7 +12,8 @@ import (
 	"github.com/brunoga/unitybridge/unity/key"
 )
 
-// Gun is the module that controls turret firing.
+// Gun is the module that controls turret firing. It supports both infrared and
+// beads firing.
 type Gun struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
@@ -48,9 +49,12 @@ func (g *Gun) Connected() bool {
 }
 
 // WaitForConnection waits for the Gun module to connect and returns the
-// connected status. The timeout parameter is ignored as it always returns
-// immediately.
+// connected status.
 func (g *Gun) WaitForConnection(timeout time.Duration) bool {
+	if !g.r.WaitForDevices(timeout) {
+		return false
+	}
+
 	return g.r.HasDevice(robot.DeviceTypeWaterGun)
 }
 
