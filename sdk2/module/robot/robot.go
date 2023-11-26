@@ -118,6 +118,10 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 // true if an actual result was obtained and false otherwise (i.e. timeout).
 func (r *Robot) WaitForDevices(timeout time.Duration) bool {
 	// Just wait for a result to be available.
+	if r.drl.Result() != nil {
+		return true
+	}
+
 	return r.drl.WaitForNewResult(timeout) != nil
 }
 
