@@ -110,7 +110,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	}
 
 	r, err := u.GetCachedKeyValue(k)
-	if err != nil || r.ErrorCode() != 0 {
+	if err != nil || !r.Succeeded() {
 		// Basically ignore the error and return the token anyway.
 		return t, nil
 	}
