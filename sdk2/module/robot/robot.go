@@ -4,12 +4,13 @@ import (
 	"log/slog"
 	"sort"
 	"sync/atomic"
+	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/unitybridge"
+	"github.com/brunoga/unitybridge/support"
 	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
 )
@@ -19,10 +20,10 @@ import (
 type Robot struct {
 	*internal.BaseModule
 
-	wdToken token.Token
-
 	functions atomic.Pointer[map[FunctionType]bool]
 	wds       atomic.Pointer[map[DeviceType]struct{}]
+
+	drl *support.ResultListener
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -46,6 +47,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 	wds := make(map[DeviceType]struct{})
 	r.wds.Store(&wds)
 
+	r.drl = support.NewResultListener(ub, l,
+		key.KeyRobomasterSystemWorkingDevices, func(res *result.Result) {
+			r.onWorkingDevices(res)
+		})
+
 	return r, nil
 }
 
@@ -58,19 +64,14 @@ type functionEnableParamValue struct {
 	List []functionEnableInfo `json:"list"`
 }
 
+// Start starts the Robot module.
 func (r *Robot) Start() error {
 	err := r.BaseModule.Start()
 	if err != nil {
 		return err
 	}
 
-	r.wdToken, err = r.UB().AddKeyListener(key.KeyRobomasterSystemWorkingDevices,
-		r.onWorkingDevices, false)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.drl.Start()
 }
 
 // EnableFunction enables or disables the given function. This keeps track of
@@ -113,6 +114,13 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 	return nil
 }
 
+// WaitForDevices waits for the robot to report devices as working. Returns
+// true if an actual result was obtained and false otherwise (i.e. timeout).
+func (r *Robot) WaitForDevices(timeout time.Duration) bool {
+	// Just wait for a result to be available.
+	return r.drl.WaitForNewResult(timeout) != nil
+}
+
 // HasFunction returns true if the given device is connected to the robot and
 // is reported as working.
 func (r *Robot) HasDevice(device DeviceType) bool {
@@ -137,6 +145,16 @@ func (r *Robot) Devices() []DeviceType {
 	})
 
 	return ks
+}
+
+// STop stops the Robot module.
+func (r *Robot) Stop() error {
+	err := r.drl.Stop()
+	if err != nil {
+		return err
+	}
+
+	return r.BaseModule.Stop()
 }
 
 func (r *Robot) onWorkingDevices(res *result.Result) {
