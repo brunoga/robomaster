@@ -70,11 +70,15 @@ func (ls *ResultListener) Start() error {
 	ls.t, err = ls.ub.AddKeyListener(ls.k, func(r *result.Result) {
 		ls.r.Store(r)
 
+		// If we have a callback, run it first to give it a chance to update
+		// information that will be read by the waiters.
+		if ls.cb != nil {
+			ls.cb(r)
+		}
+
+		// And notify waiters we have something new for them.
 		ls.notifyWaiters()
 
-		if ls.cb != nil {
-			go ls.cb(r)
-		}
 	}, true)
 
 	ls.started.Store(true)
