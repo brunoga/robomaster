@@ -208,8 +208,22 @@ func (c *Client) Stop() error {
 
 	// Stop modules.
 
+	// Gamepad.
+	if c.gb != nil {
+		err := c.gb.Stop()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Gun.
+	err := c.gn.Stop()
+	if err != nil {
+		return err
+	}
+
 	// Chassis.
-	err := c.ch.Stop()
+	err = c.ch.Stop()
 	if err != nil {
 		return err
 	}
