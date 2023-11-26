@@ -151,7 +151,23 @@ func (r *Robot) Devices() []DeviceType {
 	return ks
 }
 
-// STop stops the Robot module.
+// SpeakerVolume returns the current speaker volume.
+func (r *Robot) SpeakerVolume() (uint8, error) {
+	res, err := r.UB().GetKeyValueSync(key.KeyRobomasterSystemSpeakerVolumn, true)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint8(res.Value().(float64)), nil
+}
+
+// SetSpeakerVolume sets the speaker volume.
+func (r *Robot) SetSpeakerVolume(volume uint8) error {
+	return r.UB().SetKeyValueSync(key.KeyRobomasterSystemSpeakerVolumn,
+		volume)
+}
+
+// Stop stops the Robot module.
 func (r *Robot) Stop() error {
 	err := r.drl.Stop()
 	if err != nil {
