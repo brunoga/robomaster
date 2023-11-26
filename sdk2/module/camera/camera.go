@@ -149,9 +149,12 @@ func (c *Camera) RemoveVideoCallback(t token.Token) error {
 
 // VideoFormat returns the currently set video format.
 func (c *Camera) VideoFormat() (VideoFormat, error) {
-	var value VideoFormat
+	r, err := c.UB().GetKeyValueSync(key.KeyCameraVideoFormat, true)
+	if err != nil {
+		return 0, err
+	}
 
-	return value, c.UB().GetKeyValueSync(key.KeyCameraVideoFormat, true, &value)
+	return VideoFormat(r.Value().(float64)), nil
 }
 
 // SetVideoFormat sets the video resolution.
@@ -167,10 +170,13 @@ func (c *Camera) SetVideoFormat(format VideoFormat) error {
 
 // VideoQuality returns the currently set video quality.
 func (c *Camera) VideoQuality() (VideoQuality, error) {
-	var value VideoQuality
+	r, err := c.UB().GetKeyValueSync(key.KeyCameraVideoTransRate,
+		true)
+	if err != nil {
+		return 0, err
+	}
 
-	return value, c.UB().GetKeyValueSync(key.KeyCameraVideoTransRate,
-		true, &value)
+	return VideoQuality(r.Value().(float64)), nil
 }
 
 // SetVideoQuality sets the video quality.
@@ -180,9 +186,12 @@ func (c *Camera) SetVideoQuality(quality VideoQuality) error {
 
 // Mode returns the current camera mode.
 func (c *Camera) Mode() (Mode, error) {
-	var value Mode
+	r, err := c.UB().GetKeyValueSync(key.KeyCameraMode, true)
+	if err != nil {
+		return 0, err
+	}
 
-	return value, c.UB().GetKeyValueSync(key.KeyCameraMode, true, &value)
+	return Mode(r.Value().(float64)), nil
 }
 
 // SetMode sets the camera mode.
@@ -192,10 +201,13 @@ func (c *Camera) SetMode(mode Mode) error {
 
 // ExposureMode returns the current digital zoom factor.
 func (c *Camera) DigitalZoomFactor() (uint64, error) {
-	var value uint64
+	r, err := c.UB().GetKeyValueSync(key.KeyCameraDigitalZoomFactor,
+		true)
+	if err != nil {
+		return 0, err
+	}
 
-	return value, c.UB().GetKeyValueSync(key.KeyCameraDigitalZoomFactor,
-		true, &value)
+	return uint64(r.Value().(float64)), nil
 }
 
 // SetDigitalZoomFactor sets the digital zoom factor.
@@ -243,9 +255,12 @@ func (c *Camera) StartRecordingVideo() error {
 // IsRecordingVideo returns whether the robot is currently recording video to
 // its internal storage.
 func (c *Camera) IsRecordingVideo() (bool, error) {
-	var value bool
+	r, err := c.UB().GetKeyValueSync(key.KeyCameraIsRecording, true)
+	if err != nil {
+		return false, err
+	}
 
-	return value, c.UB().GetKeyValueSync(key.KeyCameraIsRecording, true, &value)
+	return r.Value().(bool), nil
 }
 
 // RecordingTime returns the current recording time in seconds.
