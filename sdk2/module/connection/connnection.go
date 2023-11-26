@@ -2,6 +2,7 @@ package connection
 
 import (
 	"log/slog"
+	"sync/atomic"
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
@@ -11,6 +12,7 @@ import (
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
+	"github.com/brunoga/unitybridge/unity/result"
 )
 
 const (
@@ -27,6 +29,8 @@ type Connection struct {
 	appID uint64
 
 	f *finder.Finder
+
+	signalQuality atomic.Uint64
 }
 
 var _ module.Module = (*Connection)(nil)
@@ -44,7 +48,7 @@ func New(ub unitybridge.UnityBridge,
 
 	return &Connection{
 		BaseModule: internal.NewBaseModule(ub, l, "Connection",
-			key.KeyRobomasterSystemConnection, nil),
+			key.KeyAirLinkConnection, nil),
 		appID: appID,
 		f:     finder.New(appID, l),
 	}, nil
@@ -52,46 +56,74 @@ func New(ub unitybridge.UnityBridge,
 
 // Start starts the connection module. It will try to find a robot broadcasting
 // in the network and connect to it.
-func (cm *Connection) Start() error {
-	err := cm.BaseModule.Start()
+func (c *Connection) Start() error {
+	err := c.BaseModule.Start()
 	if err != nil {
 		return err
 	}
 
-	b, err := cm.f.Find(30 * time.Second)
+	b, err := c.f.Find(30 * time.Second)
 	if err != nil {
 		return err
 	}
 
-	cm.f.SendACK(b.SourceIp(), b.AppId())
+	c.f.SendACK(b.SourceIp(), b.AppId())
 
 	e := event.NewFromType(event.TypeConnection)
 
 	e.ResetSubType(subTypeConnectionClose)
-	err = cm.UB().SendEvent(e)
+	err = c.UB().SendEvent(e)
 	if err != nil {
 		return err
 	}
 
 	e.ResetSubType(subTypeConnectionSetIP)
-	err = cm.UB().SendEventWithString(e, b.SourceIp().String())
+	err = c.UB().SendEventWithString(e, b.SourceIp().String())
 	if err != nil {
 		return err
 	}
 
 	e.ResetSubType(subTypeConnectionSetPort)
-	err = cm.UB().SendEventWithUint64(e, 10607)
+	err = c.UB().SendEventWithUint64(e, 10607)
 	if err != nil {
 		return err
 	}
 
 	e.ResetSubType(subTypeConnectionOpen)
-	err = cm.UB().SendEvent(e)
+	err = c.UB().SendEvent(e)
 	if err != nil {
 		return err
 	}
 
+	c.UB().AddKeyListener(key.KeyAirLinkSignalQuality, func(r *result.Result) {
+		c.signalQuality.Store(uint64(r.Value().(float64)))
+	}, false)
+
 	return nil
+}
+
+// SignalQualityLevel returns the current signal quality level. 0 means no
+// signal whatsoever and 60 appears to be the strongest value.
+func (c *Connection) SignalQualityLevel() uint8 {
+	return uint8(c.signalQuality.Load())
+}
+
+// SignalQualityBars returns the current signal quality as a number of bars (1
+// to 4).
+func (c *Connection) SignalQualityBars() uint8 {
+	level := c.SignalQualityLevel()
+
+	if level < 10 {
+		return 1
+	}
+	if level < 25 {
+		return 2
+	}
+	if level < 45 {
+		return 3
+	}
+
+	return 4
 }
 
 // Stop stops the connection module.
