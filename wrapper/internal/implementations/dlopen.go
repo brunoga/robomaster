@@ -48,6 +48,7 @@ import "C"
 
 import (
 	"fmt"
+	"log/slog"
 	"runtime"
 	"unsafe"
 
@@ -130,6 +131,10 @@ type dlOpenUnityBridgeImpl struct {
 }
 
 func Get(l *logger.Logger) *dlOpenUnityBridgeImpl {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
 

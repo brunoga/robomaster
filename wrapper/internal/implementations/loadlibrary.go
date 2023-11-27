@@ -11,6 +11,7 @@ import "C"
 
 import (
 	"fmt"
+	"log/slog"
 	"syscall"
 	"unsafe"
 
@@ -80,6 +81,10 @@ type loadLibraryUnityBridgeImpl struct {
 }
 
 func Get(l *logger.Logger) *loadLibraryUnityBridgeImpl {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
 

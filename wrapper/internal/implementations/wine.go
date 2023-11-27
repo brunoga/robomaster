@@ -41,6 +41,10 @@ type wineUnityBridgeImpl struct {
 }
 
 func Get(l *logger.Logger) *wineUnityBridgeImpl {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	once.Do(func() {
 		// Check if wine is available.
 		winePath, err := getWinePath()

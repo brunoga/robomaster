@@ -21,6 +21,7 @@ extern void DestroyUnityBridge();
 import "C"
 
 import (
+	"log/slog"
 	"unsafe"
 
 	"github.com/brunoga/unitybridge/support/logger"
@@ -39,7 +40,11 @@ type linkUnityBridgeImpl struct {
 	m *internal_callback.Manager
 }
 
-func Get(l *logger.Logger) *wineUnityBridgeImpl {
+func Get(l *logger.Logger) *linkUnityBridgeImpl {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
