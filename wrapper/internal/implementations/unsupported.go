@@ -7,7 +7,6 @@ import (
 	"runtime"
 
 	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/wrapper/callback"
 )
 
@@ -36,15 +35,15 @@ func (u *unsupportedUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 	cb callback.Callback) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
+func (u *unsupportedUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEventWithString(e *event.Event,
+func (u *unsupportedUnityBridgeImpl) SendEventWithString(eventCode uint64,
 	data string, tag uint64) {
 }
 
-func (u *unsupportedUnityBridgeImpl) SendEventWithNumber(e *event.Event, data,
+func (u *unsupportedUnityBridgeImpl) SendEventWithNumber(eventCode, data,
 	tag uint64) {
 }
 
