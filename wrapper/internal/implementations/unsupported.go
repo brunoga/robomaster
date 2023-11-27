@@ -8,6 +8,7 @@ import (
 
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/event"
+	"github.com/brunoga/unitybridge/wrapper/callback"
 )
 
 func init() {
@@ -31,8 +32,8 @@ func (u *unsupportedUnityBridgeImpl) Create(name string, debuggable bool,
 
 func (u *unsupportedUnityBridgeImpl) Initialize() bool { return false }
 
-func (u *unsupportedUnityBridgeImpl) SetEventCallback(t event.Type,
-	callback event.Callback) {
+func (u *unsupportedUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
+	cb callback.Callback) {
 }
 
 func (u *unsupportedUnityBridgeImpl) SendEvent(e *event.Event, data uintptr,
