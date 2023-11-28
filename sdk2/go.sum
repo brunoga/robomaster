@@ -6,6 +6,8 @@ github.com/brunoga/unitybridge v0.0.0-20231126190236-6f1f829a07ff h1:CDWl19iyyPE
 github.com/brunoga/unitybridge v0.0.0-20231126190236-6f1f829a07ff/go.mod h1:BKTTlrpSnguIhRKPn3nG23HWNYxrcTZeouYec4MyAWE=
 github.com/brunoga/unitybridge v0.0.0-20231126191936-84eaf7081171 h1:mLJyRUeslJw+CZkO7rcXsJf0Ba+SPB3HjAXKe+H9X2s=
 github.com/brunoga/unitybridge v0.0.0-20231126191936-84eaf7081171/go.mod h1:BKTTlrpSnguIhRKPn3nG23HWNYxrcTZeouYec4MyAWE=
+github.com/brunoga/unitybridge v0.0.0-20231128133312-7b8db62c6898 h1:ULAM5RHbmAtPrVXPqbESsb7TJSwJnbI77OApL1NpmFo=
+github.com/brunoga/unitybridge v0.0.0-20231128133312-7b8db62c6898/go.mod h1:BKTTlrpSnguIhRKPn3nG23HWNYxrcTZeouYec4MyAWE=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/lmittmann/tint v1.0.3 h1:W5PHeA2D8bBJVvabNfQD/XW9HPLZK1XoPZH0cq8NouQ=
@@ -25,5 +27,7 @@ golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.14.0 h1:Vz7Qs629MkJkGyHxUlRHizWJRG2j8fbQKjELVSNhy7Q=
 golang.org/x/sys v0.14.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
+golang.org/x/sys v0.15.0 h1:h48lPFYpsTvQJZF4EKyI4aLHaev3CxivZmv7yZig9pc=
+golang.org/x/sys v0.15.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
