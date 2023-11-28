@@ -30,14 +30,13 @@ func main() {
 	}
 
 	opts := engo.RunOptions{
-		Title:               "Robomaster",
-		Width:               1280,
-		Height:              720,
-		VSync:               true,
-		ScaleOnResize:       true,
-		FPSLimit:            60,
-		OverrideCloseAction: true,
-		Fullscreen:          *fullscreen,
+		Title:         "Robomaster",
+		Width:         1280,
+		Height:        720,
+		VSync:         true,
+		ScaleOnResize: true,
+		FPSLimit:      60,
+		Fullscreen:    *fullscreen,
 	}
 
 	engo.Run(opts, &scenes.Robomaster{
