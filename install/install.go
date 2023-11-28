@@ -64,14 +64,24 @@ func installUnityBridgeLibrary(unityBridgeDir string) error {
 		return err
 	}
 
+	var extraPath string
+
 	goos := runtime.GOOS
+	goarch := runtime.GOARCH
 	if goos == "linux" {
 		// Linux will use the Windows DLL through Wine.
 		goos = "windows"
 	}
 
-	srcDir := filepath.Join(currDir, "wrapper", "lib", goos,
-		runtime.GOARCH)
+	if goos == "darwin" {
+		extraPath = filepath.Join("unitybridge.bundle", "Contents", "MacOS")
+		if goarch == "arm64" {
+			// MacOS arm64 will use the amd64 library through Rosetta.
+			goarch = "amd64"
+		}
+	}
+
+	srcDir := filepath.Join(currDir, "wrapper", "lib", goos, goarch, extraPath)
 	if _, err := os.Stat(srcDir); os.IsNotExist(err) {
 		return fmt.Errorf("unsupported platform %s/%s", runtime.GOOS,
 			runtime.GOARCH)
