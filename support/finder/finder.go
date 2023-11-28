@@ -59,17 +59,11 @@ func (f *Finder) StartFinding(ch chan<- *Broadcast) error {
 	f.quit = make(chan struct{})
 	f.broadcasts = make(map[string]*Broadcast)
 
-	udpAddr, err := net.ResolveUDPAddr("udp4", ipBroadcastAddrPort)
+	var err error
+	f.listeningConn, err = listener(ipBroadcastAddrPort)
 	if err != nil {
 		return err
 	}
-
-	conn, err := net.ListenUDP("udp4", udpAddr)
-	if err != nil {
-		return err
-	}
-
-	f.listeningConn = conn
 
 	go func() {
 		f.findLoop(ch)
