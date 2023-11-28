@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log/slog"
 
 	"github.com/EngoEngine/engo"
@@ -9,7 +10,13 @@ import (
 	"github.com/brunoga/unitybridge/support/logger"
 )
 
+var (
+	fullscreen = flag.Bool("fullscreen", false, "Run in fullscreen mode.")
+)
+
 func main() {
+	flag.Parse()
+
 	l := logger.New(slog.LevelDebug)
 
 	c, err := sdk2.New(l, 0)
@@ -23,12 +30,14 @@ func main() {
 	}
 
 	opts := engo.RunOptions{
-		Title:         "Robomaster",
-		Width:         1280,
-		Height:        720,
-		VSync:         true,
-		ScaleOnResize: true,
-		FPSLimit:      60,
+		Title:               "Robomaster",
+		Width:               1280,
+		Height:              720,
+		VSync:               true,
+		ScaleOnResize:       true,
+		FPSLimit:            60,
+		OverrideCloseAction: true,
+		Fullscreen:          *fullscreen,
 	}
 
 	engo.Run(opts, &scenes.Robomaster{

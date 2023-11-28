@@ -1,6 +1,8 @@
 package scenes
 
 import (
+	"fmt"
+
 	"github.com/EngoEngine/ecs"
 	"github.com/EngoEngine/engo"
 	"github.com/EngoEngine/engo/common"
@@ -88,4 +90,12 @@ func (r *Robomaster) Setup(u engo.Updater) {
 
 func (r *Robomaster) Type() string {
 	return "Robomaster"
+}
+
+func (r *Robomaster) Exit() {
+	fmt.Println("Exiting...")
+	err := r.Client.Stop()
+	if err != nil {
+		fmt.Println("Error stopping client:", err)
+	}
 }
