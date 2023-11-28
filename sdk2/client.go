@@ -114,6 +114,10 @@ func (c *Client) Start() error {
 		return fmt.Errorf("robot connection unexpectedly not established")
 	}
 
+	if !c.rb.WaitForDevices(10 * time.Second) {
+		return fmt.Errorf("robot working devices unexpectedly not established")
+	}
+
 	// Camera.
 	err = c.cm.Start()
 	if err != nil {
