@@ -9,6 +9,7 @@ import (
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 // BaseModule is a base implementation of the module.Module interface. It takes
@@ -89,7 +90,7 @@ func (g *BaseModule) isConnected(r *result.Result) bool {
 		return false
 	}
 
-	connected, ok := r.Value().(bool)
+	connected, ok := r.Value().(*value.Bool)
 
-	return ok && connected
+	return ok && connected.Value
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 const (
@@ -96,7 +97,7 @@ func (c *Connection) Start() error {
 	}
 
 	c.UB().AddKeyListener(key.KeyAirLinkSignalQuality, func(r *result.Result) {
-		c.signalQuality.Store(uint64(r.Value().(float64)))
+		c.signalQuality.Store(r.Value().(*value.Uint64).Value)
 	}, false)
 
 	return nil

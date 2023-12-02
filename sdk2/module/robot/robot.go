@@ -13,6 +13,7 @@ import (
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 // Robot is the module that controls the robot. It provides methods to
@@ -55,15 +56,6 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 	return r, nil
 }
 
-type functionEnableInfo struct {
-	ID     FunctionType `json:"id"`
-	Enable bool         `json:"enable"`
-}
-
-type functionEnableParamValue struct {
-	List []functionEnableInfo `json:"list"`
-}
-
 // Start starts the Robot module.
 func (r *Robot) Start() error {
 	err := r.BaseModule.Start()
@@ -94,19 +86,19 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 		}
 	}
 
-	param := functionEnableParamValue{
-		List: []functionEnableInfo{},
+	v := value.FunctionEnable{
+		List: []value.FunctionEnableInfo{},
 	}
 
 	for ft, enabled := range newFunctions {
-		param.List = append(param.List, functionEnableInfo{
-			ID:     ft,
+		v.List = append(v.List, value.FunctionEnableInfo{
+			ID:     uint8(ft),
 			Enable: enabled,
 		})
 	}
 
 	err := r.UB().PerformActionForKeySync(key.KeyRobomasterSystemFunctionEnable,
-		param)
+		v)
 	if err != nil {
 		return err
 	}
@@ -185,7 +177,7 @@ func (r *Robot) onWorkingDevices(res *result.Result) {
 	// 2 or more updates at the same time are *VERY* unlikely. If they happen,
 	// we just accept whatever ordering the Store bellow gives us.
 	oldWds := *r.wds.Load()
-	newWds := wdsListToWds(res.Value().([]interface{}))
+	newWds := wdsListToWds(res.Value().(*value.List[uint16]).List)
 	r.wds.Store(&newWds)
 
 	removed, added := r.checkDiff(oldWds, newWds)
@@ -221,16 +213,10 @@ func (r *Robot) checkDiff(oldWds, newWds map[DeviceType]struct{}) (
 	return removed, added
 }
 
-func wdsListToWds(wdsList []interface{}) map[DeviceType]struct{} {
+func wdsListToWds(wdsList []uint16) map[DeviceType]struct{} {
 	wds := make(map[DeviceType]struct{}, len(wdsList))
 	for _, wd := range wdsList {
-		wdStr, ok := wd.(float64)
-		if !ok {
-			continue
-		}
-		deviceType := DeviceType(wdStr)
-
-		wds[deviceType] = struct{}{}
+		wds[DeviceType(wd)] = struct{}{}
 	}
 
 	return wds

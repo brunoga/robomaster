@@ -15,6 +15,7 @@ import (
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 // Camera provides support for managing the camera attached to the robot.
@@ -170,7 +171,7 @@ func (c *Camera) SetVideoFormat(format VideoFormat) error {
 
 // SetVideoQuality sets the video quality.
 func (c *Camera) SetVideoQuality(quality VideoQuality) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraVideoTransRate, quality)
+	return c.UB().SetKeyValueSync(key.KeyCameraVideoTransRate, &value.Float64{Value: float64(quality)})
 }
 
 // Mode returns the current camera mode.

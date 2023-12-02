@@ -12,6 +12,7 @@ import (
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 // Chassis allows controlling the robot chassis. It also works as the robot main
@@ -43,7 +44,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 				return
 			}
 
-			if connected, ok := r.Value().(bool); !ok || !connected {
+			if res, ok := r.Value().(*value.Bool); !ok || !res.Value {
 				return
 			}
 
@@ -63,7 +64,8 @@ func (c *Chassis) SetControllerMode(m controller.Mode) error {
 		return fmt.Errorf("invalid controller mode: %d", m)
 	}
 
-	return c.UB().SetKeyValueSync(key.KeyMainControllerChassisCarControlMode, uint64(m))
+	return c.UB().SetKeyValueSync(key.KeyMainControllerChassisCarControlMode,
+		&value.Uint64{Value: uint64(m)})
 }
 
 // SetMode sets the chassis mode for the robot.
