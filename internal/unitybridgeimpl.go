@@ -230,12 +230,7 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 		return fmt.Errorf("key %s is not writable", k)
 	}
 
-	v := struct {
-		Value interface{} `json:"value"`
-	}{
-		value,
-	}
-	data, err := json.Marshal(&v)
+	data, err := json.Marshal(value)
 	if err != nil {
 		return err
 	}
@@ -259,6 +254,8 @@ func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
 	var err error
 
 	done := make(chan struct{})
+
+	fmt.Println(k, value)
 
 	err = u.SetKeyValue(k, value, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
