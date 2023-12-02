@@ -3,6 +3,7 @@ package result
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/brunoga/unitybridge/unity/key"
 )
@@ -27,6 +28,12 @@ type jsonResult struct {
 // New creates a new Result with the given parameters.
 func New(key *key.Key, tag uint64, errorCode int32, errorDesc string,
 	value any) *Result {
+	if reflect.TypeOf(key.ResultValue()) != reflect.TypeOf(value) {
+		panic(fmt.Sprintf("result value type (%s) does not match key %s value "+
+			"type (%s)", reflect.TypeOf(value), key, reflect.TypeOf(
+			key.ResultValue())))
+	}
+
 	return &Result{
 		key:       key,
 		tag:       tag,
@@ -129,6 +136,12 @@ func (r *Result) UnmarshalJSON(data []byte) error {
 }
 
 func (r *Result) MarshalJSON() ([]byte, error) {
+	if reflect.TypeOf(r.Key().ResultValue()) != reflect.TypeOf(r.value) {
+		return nil, fmt.Errorf("result value type (%s) does not match key %s "+
+			"value type (%s)", reflect.TypeOf(r.value), r.Key(),
+			reflect.TypeOf(r.Key().ResultValue()))
+	}
+
 	value, err := json.Marshal(r.value)
 	if err != nil {
 		return nil, err
