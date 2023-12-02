@@ -8,6 +8,8 @@ github.com/brunoga/unitybridge v0.0.0-20231126191936-84eaf7081171 h1:mLJyRUeslJw
 github.com/brunoga/unitybridge v0.0.0-20231126191936-84eaf7081171/go.mod h1:BKTTlrpSnguIhRKPn3nG23HWNYxrcTZeouYec4MyAWE=
 github.com/brunoga/unitybridge v0.0.0-20231128133312-7b8db62c6898 h1:ULAM5RHbmAtPrVXPqbESsb7TJSwJnbI77OApL1NpmFo=
 github.com/brunoga/unitybridge v0.0.0-20231128133312-7b8db62c6898/go.mod h1:BKTTlrpSnguIhRKPn3nG23HWNYxrcTZeouYec4MyAWE=
+github.com/brunoga/unitybridge v0.0.0-20231128140354-5e1a3e12bc61 h1:jkV027N/FMPBm2xH3n8MkOZ+CSyIgGTpa8uRUQtXwHE=
+github.com/brunoga/unitybridge v0.0.0-20231128140354-5e1a3e12bc61/go.mod h1:wq3X99nAWWkpRbVqNCCUV3t7uAvce0i20IGBOShIt9I=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/lmittmann/tint v1.0.3 h1:W5PHeA2D8bBJVvabNfQD/XW9HPLZK1XoPZH0cq8NouQ=
