@@ -86,7 +86,7 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 		}
 	}
 
-	v := value.FunctionEnable{
+	v := &value.FunctionEnable{
 		List: []value.FunctionEnableInfo{},
 	}
 
