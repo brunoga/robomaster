@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"reflect"
 	"sync"
 	"time"
 
@@ -230,6 +231,13 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 		return fmt.Errorf("key %s is not writable", k)
 	}
 
+	expectedKeyValue := k.ResultValue()
+
+	if reflect.TypeOf(value) != reflect.TypeOf(expectedKeyValue) {
+		return fmt.Errorf("value type %s does not match expected key %s type "+
+			"%s", reflect.TypeOf(value), k, reflect.TypeOf(expectedKeyValue))
+	}
+
 	data, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -281,6 +289,13 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 	c result.Callback) error {
 	if k.AccessType()&key.AccessTypeAction == 0 {
 		return fmt.Errorf("key %s is not an action", k)
+	}
+
+	expectedKeyValue := k.ResultValue()
+
+	if reflect.TypeOf(value) != reflect.TypeOf(expectedKeyValue) {
+		return fmt.Errorf("value type %s does not match expected key %s type "+
+			"%s", reflect.TypeOf(value), k, reflect.TypeOf(expectedKeyValue))
 	}
 
 	var data []byte
