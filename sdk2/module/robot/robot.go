@@ -21,10 +21,12 @@ import (
 type Robot struct {
 	*internal.BaseModule
 
-	functions atomic.Pointer[map[FunctionType]bool]
-	wds       atomic.Pointer[map[DeviceType]struct{}]
+	functions           atomic.Pointer[map[FunctionType]bool]
+	workingDevices      atomic.Pointer[map[DeviceType]struct{}]
+	batteryPowerPercent atomic.Pointer[uint8]
 
-	drl *support.ResultListener
+	workingDevicesRL      *support.ResultListener
+	batteryPowerPercentRL *support.ResultListener
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -46,11 +48,16 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 	r.functions.Store(&functions)
 
 	wds := make(map[DeviceType]struct{})
-	r.wds.Store(&wds)
+	r.workingDevices.Store(&wds)
 
-	r.drl = support.NewResultListener(ub, l,
+	r.workingDevicesRL = support.NewResultListener(ub, l,
 		key.KeyRobomasterSystemWorkingDevices, func(res *result.Result) {
 			r.onWorkingDevices(res)
+		})
+
+	r.batteryPowerPercentRL = support.NewResultListener(ub, l,
+		key.KeyRobomasterBatteryPowerPercent, func(res *result.Result) {
+			r.onBatteryPowerPercent(res)
 		})
 
 	return r, nil
@@ -63,7 +70,7 @@ func (r *Robot) Start() error {
 		return err
 	}
 
-	return r.drl.Start()
+	return r.workingDevicesRL.Start()
 }
 
 // EnableFunction enables or disables the given function. This keeps track of
@@ -110,17 +117,17 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 // true if an actual result was obtained and false otherwise (i.e. timeout).
 func (r *Robot) WaitForDevices(timeout time.Duration) bool {
 	// Just wait for a result to be available.
-	if r.drl.Result() != nil {
+	if r.workingDevicesRL.Result() != nil {
 		return true
 	}
 
-	return r.drl.WaitForNewResult(timeout) != nil
+	return r.workingDevicesRL.WaitForNewResult(timeout) != nil
 }
 
 // HasFunction returns true if the given device is connected to the robot and
 // is reported as working.
 func (r *Robot) HasDevice(device DeviceType) bool {
-	wds := r.wds.Load()
+	wds := r.workingDevices.Load()
 	_, ok := (*wds)[device]
 
 	return ok
@@ -129,7 +136,7 @@ func (r *Robot) HasDevice(device DeviceType) bool {
 // Devices returns the list of working devices (i.e. devices connected to the
 // robot and that are reported as working).
 func (r *Robot) Devices() []DeviceType {
-	wds := *r.wds.Load()
+	wds := *r.workingDevices.Load()
 
 	ks := make([]DeviceType, 0, len(wds))
 	for k := range wds {
@@ -159,9 +166,14 @@ func (r *Robot) SetSpeakerVolume(volume uint8) error {
 		volume)
 }
 
+// BatteryPowerPercent returns the current battery power percent.
+func (r *Robot) BatteryPowerPercent() uint8 {
+	return *r.batteryPowerPercent.Load()
+}
+
 // Stop stops the Robot module.
 func (r *Robot) Stop() error {
-	err := r.drl.Stop()
+	err := r.workingDevicesRL.Stop()
 	if err != nil {
 		return err
 	}
@@ -176,9 +188,9 @@ func (r *Robot) onWorkingDevices(res *result.Result) {
 
 	// 2 or more updates at the same time are *VERY* unlikely. If they happen,
 	// we just accept whatever ordering the Store bellow gives us.
-	oldWds := *r.wds.Load()
+	oldWds := *r.workingDevices.Load()
 	newWds := wdsListToWds(res.Value().(*value.List[uint16]).List)
-	r.wds.Store(&newWds)
+	r.workingDevices.Store(&newWds)
 
 	removed, added := r.checkDiff(oldWds, newWds)
 
@@ -192,6 +204,16 @@ func (r *Robot) onWorkingDevices(res *result.Result) {
 
 	// TODO(bga): If we ever associate device types with modules, we might
 	// want to automatically enable/disable them here.
+}
+
+func (r *Robot) onBatteryPowerPercent(res *result.Result) {
+	if res == nil || !res.Succeeded() {
+		return
+	}
+
+	v := uint8(res.Value().(*value.Uint64).Value)
+
+	r.batteryPowerPercent.Store(&v)
 }
 
 func (r *Robot) checkDiff(oldWds, newWds map[DeviceType]struct{}) (

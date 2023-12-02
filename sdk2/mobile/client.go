@@ -52,6 +52,13 @@ func (c *Client) GamePad() *GamePad {
 	}
 }
 
+// Robot returns the Robot instance for the client.
+func (c *Client) Robot() *Robot {
+	return &Robot{
+		r: c.c.Robot(),
+	}
+}
+
 // Stop stops the client.
 func (c *Client) Stop() error {
 	return c.c.Stop()
