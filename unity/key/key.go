@@ -36,7 +36,7 @@ var (
 	KeyProductTest = newKey("KeyProductTest", 1, AccessTypeWrite, nil)
 	KeyProductType = newKey("KeyProductType", 2, AccessTypeRead, nil)
 
-	KeyCameraConnection                            = newKey("KeyCameraConnection", 16777217, AccessTypeRead, nil)
+	KeyCameraConnection                            = newKey("KeyCameraConnection", 16777217, AccessTypeRead, &value.Bool{})
 	KeyCameraFirmwareVersion                       = newKey("KeyCameraFirmwareVersion", 16777218, AccessTypeRead, nil)
 	KeyCameraStartShootPhoto                       = newKey("KeyCameraStartShootPhoto", 16777219, AccessTypeAction, nil)
 	KeyCameraIsShootingPhoto                       = newKey("KeyCameraIsShootingPhoto", 16777220, AccessTypeRead, nil)
@@ -68,7 +68,7 @@ var (
 	KeyCameraRequestIFrame                         = newKey("KeyCameraRequestIFrame", 16777246, AccessTypeAction, nil)
 	KeyCameraAntiLarsenAlgorithmEnable             = newKey("KeyCameraAntiLarsenAlgorithmEnable", 16777247, AccessTypeWrite, nil)
 
-	KeyMainControllerConnection             = newKey("KeyMainControllerConnection", 33554433, AccessTypeRead, nil)
+	KeyMainControllerConnection             = newKey("KeyMainControllerConnection", 33554433, AccessTypeRead, &value.Bool{})
 	KeyMainControllerFirmwareVersion        = newKey("KeyMainControllerFirmwareVersion", 33554434, AccessTypeRead, nil)
 	KeyMainControllerLoaderVersion          = newKey("KeyMainControllerLoaderVersion", 33554435, AccessTypeRead, nil)
 	KeyMainControllerVirtualStick           = newKey("KeyMainControllerVirtualStick", 33554436, AccessTypeAction, nil)
@@ -118,7 +118,7 @@ var (
 	KeyRobomasterOpenChassisSpeedUpdates  = newKey("KeyRobomasterOpenChassisSpeedUpdates", 33554474, AccessTypeAction, nil)
 	KeyRobomasterCloseChassisSpeedUpdates = newKey("KeyRobomasterCloseChassisSpeedUpdates", 33554475, AccessTypeAction, nil)
 
-	KeyRobomasterSystemConnection                       = newKey("KeyRobomasterSystemConnection", 83886081, AccessTypeRead, nil)
+	KeyRobomasterSystemConnection                       = newKey("KeyRobomasterSystemConnection", 83886081, AccessTypeRead, &value.Bool{})
 	KeyRobomasterSystemFirmwareVersion                  = newKey("KeyRobomasterSystemFirmwareVersion", 83886082, AccessTypeRead, nil)
 	KeyRobomasterSystemCANFirmwareVersion               = newKey("KeyRobomasterSystemCANFirmwareVersion", 83886083, AccessTypeRead, nil)
 	KeyRobomasterSystemScratchFirmwareVersion           = newKey("KeyRobomasterSystemScratchFirmwareVersion", 83886084, AccessTypeRead, nil)
@@ -216,7 +216,7 @@ var (
 	KeyRobomasterWaterGunShootSpeed            = newKey("KeyRobomasterWaterGunShootSpeed", 167772164, AccessTypeRead, nil)
 	KeyRobomasterWaterGunShootFrequency        = newKey("KeyRobomasterWaterGunShootFrequency", 167772165, AccessTypeRead, nil)
 
-	KeyRobomasterInfraredGunConnection      = newKey("KeyRobomasterInfraredGunConnection", 301989889, AccessTypeRead, nil)
+	KeyRobomasterInfraredGunConnection      = newKey("KeyRobomasterInfraredGunConnection", 301989889, AccessTypeRead, &value.Bool{})
 	KeyRobomasterInfraredGunFirmwareVersion = newKey("KeyRobomasterInfraredGunFirmwareVersion", 301989890, AccessTypeRead, nil)
 	KeyRobomasterInfraredGunInfraredGunFire = newKey("KeyRobomasterInfraredGunInfraredGunFire", 301989891, AccessTypeAction, nil)
 	KeyRobomasterInfraredGunShootFrequency  = newKey("KeyRobomasterInfraredGunShootFrequency", 301989892, AccessTypeRead, nil)
@@ -229,7 +229,7 @@ var (
 	KeyRobomasterBatteryShutdown        = newKey("KeyRobomasterBatteryShutdown", 218103814, AccessTypeAction, nil)
 	KeyRobomasterBatteryReboot          = newKey("KeyRobomasterBatteryReboot", 218103815, AccessTypeAction, nil)
 
-	KeyRobomasterGamePadConnection                   = newKey("KeyRobomasterGamePadConnection", 234881025, AccessTypeRead, nil)
+	KeyRobomasterGamePadConnection                   = newKey("KeyRobomasterGamePadConnection", 234881025, AccessTypeRead, &value.Bool{})
 	KeyRobomasterGamePadFirmwareVersion              = newKey("KeyRobomasterGamePadFirmwareVersion", 234881026, AccessTypeRead, nil)
 	KeyRobomasterGamePadHasMouse                     = newKey("KeyRobomasterGamePadHasMouse", 234881027, AccessTypeRead, nil)
 	KeyRobomasterGamePadHasKeyboard                  = newKey("KeyRobomasterGamePadHasKeyboard", 234881028, AccessTypeRead, nil)
@@ -254,14 +254,14 @@ var (
 	KeyRobomasterGamePadActivationSettings           = newKey("KeyRobomasterGamePadActivationSettings", 234881047, AccessTypeRead|AccessTypeWrite, nil)
 	KeyRobomasterGamePadControlEnabled               = newKey("KeyRobomasterGamePadControlEnabled", 234881048, AccessTypeWrite, nil)
 
-	KeyRobomasterClawConnection          = newKey("KeyRobomasterClawConnection", 251658241, AccessTypeRead, nil)
+	KeyRobomasterClawConnection          = newKey("KeyRobomasterClawConnection", 251658241, AccessTypeRead, &value.Bool{})
 	KeyRobomasterClawFirmwareVersion     = newKey("KeyRobomasterClawFirmwareVersion", 251658242, AccessTypeRead, nil)
 	KeyRobomasterClawCtrl                = newKey("KeyRobomasterClawCtrl", 251658243, AccessTypeAction, nil)
 	KeyRobomasterClawStatus              = newKey("KeyRobomasterClawStatus", 251658244, AccessTypeRead, nil)
 	KeyRobomasterClawInfoSubscribe       = newKey("KeyRobomasterClawInfoSubscribe", 251658245, AccessTypeRead, nil)
 	KeyRobomasterEnableClawInfoSubscribe = newKey("KeyRobomasterEnableClawInfoSubscribe", 251658246, AccessTypeAction, nil)
 
-	KeyRobomasterArmConnection          = newKey("KeyRobomasterArmConnection", 285212673, AccessTypeRead, nil)
+	KeyRobomasterArmConnection          = newKey("KeyRobomasterArmConnection", 285212673, AccessTypeRead, &value.Bool{})
 	KeyRobomasterArmCtrl                = newKey("KeyRobomasterArmCtrl", 285212674, AccessTypeAction, nil)
 	KeyRobomasterArmCtrlMode            = newKey("KeyRobomasterArmCtrlMode", 285212675, AccessTypeAction, nil)
 	KeyRobomasterArmCalibration         = newKey("KeyRobomasterArmCalibration", 285212676, AccessTypeAction, nil)
@@ -272,7 +272,7 @@ var (
 	KeyRobomasterEnableArmInfoSubscribe = newKey("KeyRobomasterEnableArmInfoSubscribe", 285212681, AccessTypeAction, nil)
 	KeyRobomasterArmControlMode         = newKey("KeyRobomasterArmControlMode", 285212682, AccessTypeRead|AccessTypeWrite, nil)
 
-	KeyRobomasterTOFConnection          = newKey("KeyRobomasterTOFConnection", 318767105, AccessTypeRead, nil)
+	KeyRobomasterTOFConnection          = newKey("KeyRobomasterTOFConnection", 318767105, AccessTypeRead, &value.Bool{})
 	KeyRobomasterTOFLEDColor            = newKey("KeyRobomasterTOFLEDColor", 318767106, AccessTypeWrite, nil)
 	KeyRobomasterTOFOnlineModules       = newKey("KeyRobomasterTOFOnlineModules", 318767107, AccessTypeRead, nil)
 	KeyRobomasterTOFInfoSubscribe       = newKey("KeyRobomasterTOFInfoSubscribe", 318767108, AccessTypeRead, nil)
@@ -282,7 +282,7 @@ var (
 	KeyRobomasterTOFFirmwareVersion3    = newKey("KeyRobomasterTOFFirmwareVersion3", 318767112, AccessTypeRead, nil)
 	KeyRobomasterTOFFirmwareVersion4    = newKey("KeyRobomasterTOFFirmwareVersion4", 318767113, AccessTypeRead, nil)
 
-	KeyRobomasterServoConnection          = newKey("KeyRobomasterServoConnection", 335544321, AccessTypeRead, nil)
+	KeyRobomasterServoConnection          = newKey("KeyRobomasterServoConnection", 335544321, AccessTypeRead, &value.Bool{})
 	KeyRobomasterServoLEDColor            = newKey("KeyRobomasterServoLEDColor", 335544322, AccessTypeWrite, nil)
 	KeyRobomasterServoSpeed               = newKey("KeyRobomasterServoSpeed", 335544323, AccessTypeWrite, nil)
 	KeyRobomasterServoOnlineModules       = newKey("KeyRobomasterServoOnlineModules", 335544324, AccessTypeRead, nil)
@@ -293,7 +293,7 @@ var (
 	KeyRobomasterServoFirmwareVersion3    = newKey("KeyRobomasterServoFirmwareVersion3", 335544329, AccessTypeRead, nil)
 	KeyRobomasterServoFirmwareVersion4    = newKey("KeyRobomasterServoFirmwareVersion4", 335544330, AccessTypeRead, nil)
 
-	KeyRobomasterSensorAdapterConnection          = newKey("KeyRobomasterSensorAdapterConnection", 352321537, AccessTypeRead, nil)
+	KeyRobomasterSensorAdapterConnection          = newKey("KeyRobomasterSensorAdapterConnection", 352321537, AccessTypeRead, &value.Bool{})
 	KeyRobomasterSensorAdapterOnlineModules       = newKey("KeyRobomasterSensorAdapterOnlineModules", 352321538, AccessTypeRead, nil)
 	KeyRobomasterSensorAdapterInfoSubscribe       = newKey("KeyRobomasterSensorAdapterInfoSubscribe", 352321539, AccessTypeRead, nil)
 	KeyRobomasterEnableSensorAdapterInfoSubscribe = newKey("KeyRobomasterEnableSensorAdapterInfoSubscribe", 352321540, AccessTypeAction, nil)
@@ -305,9 +305,9 @@ var (
 	KeyRobomasterSensorAdapterFirmwareVersion6    = newKey("KeyRobomasterSensorAdapterFirmwareVersion6", 352321546, AccessTypeRead, nil)
 	KeyRobomasterSensorAdapterLEDColor            = newKey("KeyRobomasterSensorAdapterLEDColor", 352321547, AccessTypeWrite, nil)
 
-	KeyRemoteControllerConnection = newKey("KeyRemoteControllerConnection", 50331649, AccessTypeRead, nil)
+	KeyRemoteControllerConnection = newKey("KeyRemoteControllerConnection", 50331649, AccessTypeRead, &value.Bool{})
 
-	KeyGimbalConnection              = newKey("KeyGimbalConnection", 67108865, AccessTypeRead, nil)
+	KeyGimbalConnection              = newKey("KeyGimbalConnection", 67108865, AccessTypeRead, &value.Bool{})
 	KeyGimbalESCFirmwareVersion      = newKey("KeyGimbalESCFirmwareVersion", 67108866, AccessTypeRead, nil)
 	KeyGimbalFirmwareVersion         = newKey("KeyGimbalFirmwareVersion", 67108867, AccessTypeRead, nil)
 	KeyGimbalWorkMode                = newKey("KeyGimbalWorkMode", 67108868, AccessTypeRead|AccessTypeWrite, nil)
