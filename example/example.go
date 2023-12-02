@@ -17,6 +17,7 @@ import (
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 	"github.com/brunoga/unitybridge/wrapper"
 )
 
@@ -108,8 +109,8 @@ func main() {
 			fmt.Println("Result error:", r.ErrorDesc())
 		} else {
 			// Expected value is a bool.
-			value := r.Value().(bool)
-			if value {
+			value := r.Value().(*value.Bool)
+			if value.Value {
 				fmt.Println("Connected to robot.")
 			} else {
 				fmt.Println("Disconnected from robot.")

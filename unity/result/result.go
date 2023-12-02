@@ -17,17 +17,14 @@ type Result struct {
 	value     any
 }
 
-type jsonResultValue struct {
-	Value any `json:"value"`
-}
-
 type jsonResult struct {
 	Key   uint32
 	Tag   uint64
 	Error int32
-	Value any
+	Value json.RawMessage // defer decoding value until we know the type
 }
 
+// New creates a new Result with the given parameters.
 func New(key *key.Key, tag uint64, errorCode int32, errorDesc string,
 	value any) *Result {
 	return &Result{
@@ -51,9 +48,7 @@ func NewFromJSON(jsonData []byte) *Result {
 		return r
 	}
 
-	jr := jsonResult{}
-
-	err := json.Unmarshal(jsonData, &jr)
+	err := json.Unmarshal(jsonData, &r)
 	if err != nil {
 		r.errorCode = -1
 		r.errorDesc = fmt.Sprintf("error unmarshalling json data: %s",
@@ -61,56 +56,12 @@ func NewFromJSON(jsonData []byte) *Result {
 		return r
 	}
 
-	key, err := key.FromSubType(jr.Key)
-	if err != nil {
-		fmt.Printf("error creating key from sub type %d: %s\n", jr.Key, err.Error())
-		r.errorCode = -1
-		r.errorDesc = fmt.Sprintf("error creating key from sub type %d: %s",
-			jr.Key, err.Error())
-		return r
-	}
-
-	errorDesc := ""
-	if jr.Error != 0 {
-		errorDesc = fmt.Sprintf("error %d", jr.Error)
-	}
-
-	var value any
-	var ok bool
-	switch jr.Value.(type) {
-	case map[string]interface{}:
-		outerValue := jr.Value.(map[string]interface{})
-		value, ok = outerValue["value"]
-		if !ok {
-			value, ok = outerValue["list"]
-			if !ok {
-				r.errorCode = -1
-				r.errorDesc = fmt.Sprintf("value or list field not found: %v",
-					outerValue)
-				return r
-			}
-		}
-	default:
-		value = jr.Value
-	}
-
-	r.key = key
-	r.tag = jr.Tag
-	r.errorCode = jr.Error
-	r.errorDesc = errorDesc
-	r.value = value
-
 	return r
 }
 
 // Key returns the key associated with this result.
 func (r *Result) Key() *key.Key {
 	return r.key
-}
-
-// SetKey sets the key associated with this result.
-func (r *Result) SetKey(key *key.Key) {
-	r.key = key
 }
 
 // Tag returns the tag associated with this result.
@@ -123,29 +74,14 @@ func (r *Result) ErrorCode() int32 {
 	return r.errorCode
 }
 
-// SetErrorCode sets the error code associated with this result.
-func (r *Result) SetErrorCode(errorCode int32) {
-	r.errorCode = errorCode
-}
-
 // ErrorDesc returns the error description associated with this result.
 func (r *Result) ErrorDesc() string {
 	return r.errorDesc
 }
 
-// SetErrorDesc sets the error description associated with this result.
-func (r *Result) SetErrorDesc(errorDesc string) {
-	r.errorDesc = errorDesc
-}
-
 // Value returns the value associated with this result.
 func (r *Result) Value() any {
 	return r.value
-}
-
-// SetValue sets the value associated with this result.
-func (r *Result) SetValue(value any) {
-	r.value = value
 }
 
 // Succeeded returns true if this result represents a successful operation.
@@ -159,12 +95,50 @@ func (r *Result) String() string {
 		"%s, Value: %v}", r.key, r.tag, r.errorCode, r.errorDesc, r.value)
 }
 
+func (r *Result) UnmarshalJSON(data []byte) error {
+	jr := jsonResult{}
+
+	err := json.Unmarshal(data, &jr)
+	if err != nil {
+		return err
+	}
+
+	key, err := key.FromSubType(jr.Key)
+	if err != nil {
+		return err
+	}
+
+	value := key.ResultValue()
+	err = json.Unmarshal(jr.Value, &value)
+	if err != nil {
+		return err
+	}
+
+	errorDesc := ""
+	if jr.Error != 0 {
+		errorDesc = fmt.Sprintf("error %d", jr.Error)
+	}
+
+	r.key = key
+	r.tag = jr.Tag
+	r.errorCode = jr.Error
+	r.errorDesc = errorDesc
+	r.value = value
+
+	return nil
+}
+
 func (r *Result) MarshalJSON() ([]byte, error) {
+	value, err := json.Marshal(r.value)
+	if err != nil {
+		return nil, err
+	}
+
 	jr := jsonResult{
 		Key:   r.key.SubType(),
 		Tag:   r.tag,
 		Error: r.errorCode,
-		Value: jsonResultValue{r.value},
+		Value: json.RawMessage(value),
 	}
 
 	return json.Marshal(jr)

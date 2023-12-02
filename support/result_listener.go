@@ -125,7 +125,7 @@ func (ls *ResultListener) Stop() error {
 func (ls *ResultListener) notifyWaiters() {
 	oldCPtr := ls.c.Load()
 	if oldCPtr == nil {
-		ls.l.Warn("Old channel pointer is unexpectedly nil")
+		ls.l.Error("Old channel pointer is unexpectedly nil")
 		// This should never happen but lets be safe.
 		return
 	}

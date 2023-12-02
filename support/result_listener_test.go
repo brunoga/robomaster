@@ -12,6 +12,7 @@ import (
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -89,7 +90,7 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 	output := make([]byte, 2048)
 	uw.On("SendEvent", ev.Code(), output, uint64(0)).
 		Return(resultToData(result.New(
-			key.KeyAirLinkConnection, 0, 0, "", false)))
+			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{})))
 
 	err := rl.Start()
 	assert.NoError(t, err)
@@ -104,7 +105,7 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 	assert.Equal(t, uint64(0), r.Tag())
 	assert.Equal(t, int32(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
-	assert.Equal(t, false, r.Value())
+	assert.Equal(t, &value.Bool{}, r.Value())
 
 	uw.AssertExpectations(t)
 }
@@ -207,7 +208,7 @@ func TestWaitForNewResult_Success(t *testing.T) {
 	output := make([]byte, 2048)
 	uw.On("SendEvent", ev.Code(), output, uint64(0)).
 		Return(resultToData(result.New(
-			key.KeyAirLinkConnection, 0, 0, "", false)))
+			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{})))
 
 	err := rl.Start()
 	assert.NoError(t, err)
@@ -219,7 +220,7 @@ func TestWaitForNewResult_Success(t *testing.T) {
 	assert.Equal(t, uint64(0), r.Tag())
 	assert.Equal(t, int32(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
-	assert.Equal(t, false, r.Value())
+	assert.Equal(t, &value.Bool{}, r.Value())
 
 	uw.AssertExpectations(t)
 }
@@ -228,9 +229,7 @@ func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	l := logger.New(slog.LevelDebug)
-
-	rl := NewResultListener(ub, l, key.KeyAirLinkConnection, nil)
+	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev1 := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -248,16 +247,17 @@ func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
 
 	go func() {
 		uw.GenerateEvent(ev1.Code(), resultToData(result.New(
-			key.KeyAirLinkConnection, 0, 0, "", false)), uint64(0))
+			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{})), uint64(0))
 	}()
 
 	r := rl.WaitForNewResult(1 * time.Millisecond)
 	assert.NotNil(t, r)
+
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
 	assert.Equal(t, int32(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
-	assert.Equal(t, false, r.Value())
+	assert.Equal(t, &value.Bool{}, r.Value())
 
 	uw.AssertExpectations(t)
 }
