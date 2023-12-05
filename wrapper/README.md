@@ -11,6 +11,6 @@ Supported platforms:
 |MacOS (AMD64, ARM64)|Native for AMD64 and through Rosetta for ARM64   |Tested      |
 |Linux (AMD64)       |Through a Wine bridge that hosts the Windows DLL |Tested      |
 |iOS (ARM64)         |Native                                           |Tested (*)  |
-|Android (ARM, ARM64)|Native                                           |Not Tested  |
+|Android (ARM, ARM64)|Native                                           |Tested      |
 
 (*) Not throughly tested though.
