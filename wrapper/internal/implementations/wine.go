@@ -270,10 +270,7 @@ func getWinePath() (string, error) {
 }
 
 func getDLLHostPath() (string, error) {
-	dllHostPath, err := support.FindFile(dllHostExe)
-	if err != nil {
-		panic(err)
-	}
+	dllHostPath := support.FindFile(dllHostExe)
 
 	peFile, err := pe.Open(dllHostPath)
 	if err != nil {

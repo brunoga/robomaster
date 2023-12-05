@@ -32,10 +32,7 @@ var (
 func init() {
 	var err error
 
-	path, err := support.FindFile(libPath)
-	if err != nil {
-		panic(err)
-	}
+	path := support.FindFile(libPath)
 
 	UnityBridgeImpl.handle, err = syscall.LoadDLL(path)
 	if err != nil {

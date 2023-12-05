@@ -77,10 +77,7 @@ func init() {
 			"library", runtime.GOOS, runtime.GOARCH))
 	}
 
-	path, err := support.FindFile(libPath)
-	if err != nil {
-		panic(err)
-	}
+	path := support.FindFile(libPath)
 
 	cLibPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cLibPath))

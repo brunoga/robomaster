@@ -12,22 +12,24 @@ import (
 // 1. Only the file name in the install directory.
 // 2. Only the file name In the current directory.
 // 3. The full path in the current directory.
-func FindFile(expectedPath string) (string, error) {
+func FindFile(expectedPath string) string {
 	fileName := filepath.Base(expectedPath)
 
 	if path, err := findInInstallDir(fileName); err == nil {
-		return path, nil
+		return path
 	}
 
 	if path, err := findInCurrentDir(fileName); err == nil {
-		return path, nil
+		return path
 	}
 
 	if path, err := findInCurrentDir(expectedPath); err == nil {
-		return path, nil
+		return path
 	}
 
-	return "", fmt.Errorf("could not find file %s", fileName)
+	// Return filename in case the OS supports searching for libraries in
+	// specific paths.
+	return fileName
 }
 
 func findInInstallDir(fileName string) (string, error) {
