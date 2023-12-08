@@ -44,6 +44,12 @@ func (c *Client) Chassis() *Chassis {
 	}
 }
 
+func (c *Client) Connection() *Connection {
+	return &Connection{
+		c: c.c.Connection(),
+	}
+}
+
 // GamePad returns the GamePad instance for the client. The GamePad is optional
 // and may be nil.
 func (c *Client) GamePad() *GamePad {
