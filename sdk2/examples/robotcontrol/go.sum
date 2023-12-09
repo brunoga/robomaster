@@ -17,6 +17,8 @@ github.com/brunoga/robomaster/sdk2 v0.0.0-20231205113556-d2b4f241315e h1:GgVuaO0
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231205113556-d2b4f241315e/go.mod h1:4EsKrW/azUKk4voEZFTfLrB9sSKVzh0miMrqE6AVntU=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231209131400-9237307a5e25 h1:R5XQBu1qiFrBHToAL2AZW9oLrpYM7Mg/h726KUtC+mU=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231209131400-9237307a5e25/go.mod h1:4EsKrW/azUKk4voEZFTfLrB9sSKVzh0miMrqE6AVntU=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231209200207-6c2be178b986 h1:GO3KYsEM+InOsDfJKPuOjeERrblBVgnPArugPMOs4ec=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231209200207-6c2be178b986/go.mod h1:kGO2VFRDyQWB9O9fj5/wie1JjzdulR6bbKGaSIZd5Yc=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3 h1:PKhT360UHMwwv/5usxwRoQKTloA2mpRUq2dGP9B5CIM=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3/go.mod h1:wq3X99nAWWkpRbVqNCCUV3t7uAvce0i20IGBOShIt9I=
 github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523 h1:rAprHyup0V25m5v5XHxMJ3K0NZV2qRlTA9Y5U5RHjB4=
