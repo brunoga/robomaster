@@ -44,6 +44,7 @@ func (c *Client) Chassis() *Chassis {
 	}
 }
 
+// Connnection returns the Connection instance for the client.
 func (c *Client) Connection() *Connection {
 	return &Connection{
 		c: c.c.Connection(),
