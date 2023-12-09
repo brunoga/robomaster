@@ -5,8 +5,8 @@ go 1.21.4
 require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20231205113556-d2b4f241315e
-	github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20231209131400-9237307a5e25
+	github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231124074035-2de0cf0c80af
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/veandco/go-sdl2 v0.4.36 // indirect
 	github.com/vulkan-go/glfw v0.0.0-20210402172934-58379a80228d // indirect
 	github.com/vulkan-go/vulkan v0.0.0-20221209234627-c0a353ae26c8 // indirect
-	golang.org/x/exp/shiny v0.0.0-20231127185646-65229373498e // indirect
+	golang.org/x/exp/shiny v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect
 	golang.org/x/net v0.19.0 // indirect
