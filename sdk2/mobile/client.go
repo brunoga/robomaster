@@ -12,10 +12,13 @@ type Client struct {
 	c *sdk2.Client
 }
 
-// NewClient creates a new Client instance.
-func NewClient() (*Client, error) {
+// NewClient creates a new Client instance. If appID is 0, the client will try
+// to connect to the first available Robomaster robot. If it is non-zero, it
+// will only connect to a robot that is broadcasting the given appID. The appID
+// can be configured in the robot through a qrcode.
+func NewClient(appID int64) (*Client, error) {
 	l := logger.New(slog.LevelError)
-	c, err := sdk2.New(l, 0)
+	c, err := sdk2.New(l, uint64(appID))
 	if err != nil {
 		return nil, err
 	}
