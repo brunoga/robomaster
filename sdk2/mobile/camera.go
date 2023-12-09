@@ -10,9 +10,9 @@ import (
 // to handle video frames from the camera.
 type VideoHandler interface {
 	// HandleVideo is called when a new video frame is received from the camera.
-	// rgb32Data, as the name name implies, is the raw data for a RGB32 image and
+	// rgb24Data, as the name name implies, is the raw data for a RGB24 image and
 	// its dimensions are 1280x720.
-	HandleVideo(rgb32Data []byte)
+	HandleVideo(rgb24Data []byte)
 }
 
 // Camera allows controlling the robot camera.
