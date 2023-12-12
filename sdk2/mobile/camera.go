@@ -6,6 +6,13 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 )
 
+const (
+	CameraHorizontalResolutionPoints = camera.HorizontalResolutionPoints
+	CameraVerticalResolutionPoints   = camera.VerticalResolutionPoints
+	CameraHorizontalFOVDegrees       = camera.HorizontalFOVDegrees
+	CameraVerticalFOVDegrees         = camera.VerticalFOVDegrees
+)
+
 // VideoHandler is the interface that must be implemented by types that want
 // to handle video frames from the camera.
 type VideoHandler interface {
