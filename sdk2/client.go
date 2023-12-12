@@ -9,6 +9,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/chassis"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/gamepad"
+	"github.com/brunoga/robomaster/sdk2/module/gimbal"
 	"github.com/brunoga/robomaster/sdk2/module/gun"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
@@ -24,6 +25,7 @@ type Client struct {
 	cn *connection.Connection
 	cm *camera.Camera
 	ch *chassis.Chassis
+	gm *gimbal.Gimbal
 	rb *robot.Robot
 	gn *gun.Gun
 	gb *gamepad.GamePad
@@ -62,6 +64,11 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
+	gm, err := gimbal.New(ub, l)
+	if err != nil {
+		return nil, err
+	}
+
 	gn, err := gun.New(ub, l, rb)
 	if err != nil {
 		return nil, err
@@ -78,6 +85,7 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		cn: cn,
 		rb: rb,
 		cm: cm,
+		gm: gm,
 		ch: ch,
 		gn: gn,
 		gb: gb,
@@ -144,6 +152,16 @@ func (c *Client) Start() error {
 		return fmt.Errorf("chassis connection unexpectedly not established")
 	}
 
+	// Gimbal.
+	err = c.gm.Start()
+	if err != nil {
+		return err
+	}
+
+	if !c.gm.WaitForConnection(10 * time.Second) {
+		return fmt.Errorf("gimbal connection unexpectedly not established")
+	}
+
 	// Gun.
 	err = c.gn.Start()
 	if err != nil {
@@ -190,6 +208,11 @@ func (c *Client) Camera() *camera.Camera {
 // Chassis returns the Chassis module.
 func (c *Client) Chassis() *chassis.Chassis {
 	return c.ch
+}
+
+// Gimbal returns the Gimbal module.
+func (c *Client) Gimbal() *gimbal.Gimbal {
+	return c.gm
 }
 
 // Robot returns the Robot module.
