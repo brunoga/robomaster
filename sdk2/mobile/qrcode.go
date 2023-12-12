@@ -36,7 +36,7 @@ func (q *QRCode) Image(size int) ([]byte, error) {
 
 	rgb := camera.NewRGB(img.Bounds())
 
-	draw.Draw(rgb, img.Bounds(), img, img.Bounds().Bounds().Min, draw.Src)
+	draw.Draw(rgb, img.Bounds(), img, img.Bounds().Min, draw.Src)
 
 	return rgb.Pix, nil
 }
