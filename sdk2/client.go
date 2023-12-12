@@ -32,7 +32,13 @@ type Client struct {
 	started bool
 }
 
-// New creates a new Client instance with the given logger and appID.
+// New creates a new Client instance with the given logger and appID. The appID
+// parameter is used to determine which robot to connect to (i.e. it will only
+// connect to robots broadcasting the given appID). If appID is 0, the client
+// will connect to the first robot it finds.
+//
+// To get a robot to broadcast a given appID, use a QRCode to configure it (see
+// https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
