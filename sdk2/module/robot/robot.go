@@ -27,6 +27,7 @@ type Robot struct {
 
 	workingDevicesRL      *support.ResultListener
 	batteryPowerPercentRL *support.ResultListener
+	actionStatusRL        *support.ResultListener
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -60,6 +61,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Robot, error) {
 			r.onBatteryPowerPercent(res)
 		})
 
+	r.actionStatusRL = support.NewResultListener(ub, l,
+		key.KeyRobomasterSystemTaskStatus, func(res *result.Result) {
+			r.onActionStatus(res)
+		})
+
 	return r, nil
 }
 
@@ -70,7 +76,17 @@ func (r *Robot) Start() error {
 		return err
 	}
 
-	return r.workingDevicesRL.Start()
+	err = r.workingDevicesRL.Start()
+	if err != nil {
+		return err
+	}
+
+	err = r.batteryPowerPercentRL.Start()
+	if err != nil {
+		return err
+	}
+
+	return r.actionStatusRL.Start()
 }
 
 // EnableFunction enables or disables the given function. This keeps track of
@@ -173,7 +189,17 @@ func (r *Robot) BatteryPowerPercent() uint8 {
 
 // Stop stops the Robot module.
 func (r *Robot) Stop() error {
-	err := r.workingDevicesRL.Stop()
+	err := r.actionStatusRL.Stop()
+	if err != nil {
+		return err
+	}
+
+	err = r.batteryPowerPercentRL.Stop()
+	if err != nil {
+		return err
+	}
+
+	err = r.workingDevicesRL.Stop()
 	if err != nil {
 		return err
 	}
@@ -214,6 +240,13 @@ func (r *Robot) onBatteryPowerPercent(res *result.Result) {
 	v := uint8(res.Value().(*value.Uint64).Value)
 
 	r.batteryPowerPercent.Store(&v)
+}
+
+func (r *Robot) onActionStatus(res *result.Result) {
+	// Just log for now.
+	//
+	// TODO(bga): Implement me.
+	r.Logger().Debug("Action status", "result", res)
 }
 
 func (r *Robot) checkDiff(oldWds, newWds map[DeviceType]struct{}) (
