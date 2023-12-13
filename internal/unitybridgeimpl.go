@@ -14,7 +14,12 @@ import (
 	"github.com/brunoga/unitybridge/unity/event"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 	"github.com/brunoga/unitybridge/wrapper"
+)
+
+var (
+	voidType = reflect.TypeOf(&value.Void{})
 )
 
 type UnityBridgeImpl struct {
@@ -292,10 +297,16 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 	}
 
 	expectedKeyValue := k.ResultValue()
+	expectedType := reflect.TypeOf(expectedKeyValue)
+	actualType := reflect.TypeOf(value)
 
-	if reflect.TypeOf(value) != reflect.TypeOf(expectedKeyValue) {
+	if expectedType == voidType {
+		if value != nil {
+			return fmt.Errorf("key %s is void type but value is not nil", k)
+		}
+	} else if actualType != expectedType {
 		return fmt.Errorf("value type %s does not match expected key %s type "+
-			"%s", reflect.TypeOf(value), k, reflect.TypeOf(expectedKeyValue))
+			"%s", actualType, k, expectedType)
 	}
 
 	var data []byte
