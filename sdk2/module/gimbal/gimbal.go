@@ -11,6 +11,7 @@ import (
 	"github.com/brunoga/unitybridge/support/token"
 	"github.com/brunoga/unitybridge/unity/key"
 	"github.com/brunoga/unitybridge/unity/result"
+	"github.com/brunoga/unitybridge/unity/result/value"
 )
 
 // Gimbal is the module that allows controlling the gimbal.
@@ -33,13 +34,13 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Gimbal, error) {
 				return
 			}
 
-			connected, ok := r.Value().(bool)
+			connected, ok := r.Value().(*value.Bool)
 			if !ok {
-				g.Logger().Error("Unexpected value", "value", r.Value())
+				g.Logger().Error("Unexpected value", "key", r.Key(), "value", r.Value())
 				return
 			}
 
-			if connected {
+			if connected.Value {
 				err := g.UB().PerformActionForKey(key.KeyGimbalOpenAttitudeUpdates, nil, nil)
 				if err != nil {
 					g.Logger().Error("Error opening attitude updates", "error", err)
@@ -176,7 +177,7 @@ func (g *Gimbal) onAttitudeUpdates(r *result.Result) {
 
 	value, ok := r.Value().(map[string]interface{})
 	if !ok {
-		g.Logger().Error("Unexpected value", "value", value)
+		g.Logger().Error("Unexpected result value", "key", r.Key(), "value", value)
 		return
 	}
 
