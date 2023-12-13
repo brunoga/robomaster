@@ -3,7 +3,7 @@ module github.com/brunoga/robomaster/sdk2/examples/tracker
 go 1.21.4
 
 require (
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20231212131921-1f42aa7e207b
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24
 	gocv.io/x/gocv v0.35.0
 )
 

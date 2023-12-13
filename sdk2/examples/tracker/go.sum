@@ -1,5 +1,7 @@
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231212131921-1f42aa7e207b h1:5UqX+eqTqDpDZ/zFI91dZGBfbkGuHmbwWQ+1pncj5go=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231212131921-1f42aa7e207b/go.mod h1:D+urfntLDYmyipVn9V5eC6k5K8ZuCASHVWrx0fqglSY=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24 h1:gv+pcra71C/GZ5izzdaDsdzHyYVZvFjeEtv2huUIAVI=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24/go.mod h1:D+urfntLDYmyipVn9V5eC6k5K8ZuCASHVWrx0fqglSY=
 github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93 h1:zAuxwM/f0T6kQ/uhs1sfgXG+l8gacetRKs03rpHp2Wk=
 github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
