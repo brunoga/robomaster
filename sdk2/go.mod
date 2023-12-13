@@ -2,7 +2,7 @@ module github.com/brunoga/robomaster/sdk2
 
 go 1.21.3
 
-require github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93
+require github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee
 
 require (
 	github.com/lmittmann/tint v1.0.3 // indirect
