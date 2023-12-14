@@ -3,12 +3,12 @@ module github.com/brunoga/robomaster/sdk2/examples/tracker
 go 1.21.4
 
 require (
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20231214185437-27d0fef30325
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20231214194836-4974d54cba8c
 	gocv.io/x/gocv v0.35.0
 )
 
 require (
-	github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee // indirect
+	github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

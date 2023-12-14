@@ -25,6 +25,8 @@ github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24 h1:gv+pcra
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24/go.mod h1:D+urfntLDYmyipVn9V5eC6k5K8ZuCASHVWrx0fqglSY=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231214185437-27d0fef30325 h1:cg2ze/DhU0WjioA3kTHkOjOYLa+W87rGtDa06eZtNac=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231214185437-27d0fef30325/go.mod h1:2eAJQV0JKTdv6Sj+qQBvtB1rUMrHdUh6V/G5GUNRCus=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231214194836-4974d54cba8c h1:dz+G4V3mQZCeqh1YB/A0JUzfigW77P51TfJ+I+ZmGTk=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231214194836-4974d54cba8c/go.mod h1:2eAJQV0JKTdv6Sj+qQBvtB1rUMrHdUh6V/G5GUNRCus=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3 h1:PKhT360UHMwwv/5usxwRoQKTloA2mpRUq2dGP9B5CIM=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3/go.mod h1:wq3X99nAWWkpRbVqNCCUV3t7uAvce0i20IGBOShIt9I=
 github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523 h1:rAprHyup0V25m5v5XHxMJ3K0NZV2qRlTA9Y5U5RHjB4=
@@ -33,6 +35,8 @@ github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93 h1:zAuxwM/f0T6
 github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee h1:2PzHUSpP37Jc+jqffQUcyog1T2A2cedED2+Bpf9VVoo=
 github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
+github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88 h1:KwulLbXlqLAAwRnhIZZcHaa14K92ZjrFhW1kl1Wy0EU=
+github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
