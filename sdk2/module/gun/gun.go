@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -17,14 +18,15 @@ import (
 type Gun struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
-	r  *robot.Robot
+	rm *robot.Robot
+	cm *connection.Connection
 }
 
 var _ module.Module = (*Gun)(nil)
 
 // New creates a new Gun instance.
 func New(ub unitybridge.UnityBridge, l *logger.Logger,
-	r *robot.Robot) (*Gun, error) {
+	cm *connection.Connection, rm *robot.Robot) (*Gun, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -34,28 +36,37 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 	return &Gun{
 		ub: ub,
 		l:  l,
-		r:  r,
+		rm: rm,
+		cm: cm,
 	}, nil
 }
 
 // Start starts the Gun module.
 func (g *Gun) Start() error {
-	return g.r.EnableFunction(robot.FunctionTypeGunControl, true)
+	return g.rm.EnableFunction(robot.FunctionTypeGunControl, true)
 }
 
 // Connected returns whether the Gun module is connected.
 func (g *Gun) Connected() bool {
-	return g.r.HasDevice(robot.DeviceTypeWaterGun)
+	return g.rm.HasDevice(robot.DeviceTypeWaterGun) && g.cm.Connected()
 }
 
 // WaitForConnection waits for the Gun module to connect and returns the
 // connected status.
 func (g *Gun) WaitForConnection(timeout time.Duration) bool {
-	if !g.r.WaitForDevices(timeout) {
+	start := time.Now()
+
+	if !g.cm.WaitForConnection(timeout) {
 		return false
 	}
 
-	return g.r.HasDevice(robot.DeviceTypeWaterGun)
+	timeout = timeout - time.Since(start)
+
+	if !g.rm.WaitForDevices(timeout) {
+		return false
+	}
+
+	return g.rm.HasDevice(robot.DeviceTypeWaterGun)
 }
 
 // Fire fires the Gun module with the given type.
@@ -74,7 +85,7 @@ func (g *Gun) Fire(typ Type) error {
 
 // Stop stops the Gun module.
 func (g *Gun) Stop() error {
-	return g.r.EnableFunction(robot.FunctionTypeGunControl, false)
+	return g.rm.EnableFunction(robot.FunctionTypeGunControl, false)
 }
 
 // String returns a string representation of the Gun module.

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -39,7 +40,8 @@ var _ module.Module = (*Camera)(nil)
 
 // New creates a new Camera instance with the given UnityBridge instance and
 // logger.
-func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Camera, error) {
+func New(ub unitybridge.UnityBridge, l *logger.Logger,
+	cm *connection.Connection) (*Camera, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -65,7 +67,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Camera, error) {
 						event.TypeGetNativeTexture.String(), "error", err)
 				}
 			}
-		})
+		}, cm)
 
 	return c, nil
 }

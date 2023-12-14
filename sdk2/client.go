@@ -2,6 +2,7 @@ package sdk2
 
 import (
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -41,6 +42,10 @@ type Client struct {
 // To get a robot to broadcast a given appID, use a QRCode to configure it (see
 // https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
 	cn, err := connection.New(ub, l, appID)
@@ -48,32 +53,32 @@ func New(l *logger.Logger, appID uint64) (*Client, error) {
 		return nil, err
 	}
 
-	rb, err := robot.New(ub, l)
+	rb, err := robot.New(ub, l, cn)
 	if err != nil {
 		return nil, err
 	}
 
-	cm, err := camera.New(ub, l)
+	cm, err := camera.New(ub, l, cn)
 	if err != nil {
 		return nil, err
 	}
 
-	ch, err := chassis.New(ub, l, rb)
+	ch, err := chassis.New(ub, l, cn, rb)
 	if err != nil {
 		return nil, err
 	}
 
-	//	gm, err := gimbal.New(ub, l)
+	//	gm, err := gimbal.New(ub, l, cn)
 	//	if err != nil {
 	//		return nil, err
 	//	}
 
-	gn, err := gun.New(ub, l, rb)
+	gn, err := gun.New(ub, l, cn, rb)
 	if err != nil {
 		return nil, err
 	}
 
-	gb, err := gamepad.New(ub, l)
+	gb, err := gamepad.New(ub, l, cn)
 	if err != nil {
 		return nil, err
 	}

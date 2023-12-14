@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -24,7 +25,8 @@ type Gimbal struct {
 var _ module.Module = (*Gimbal)(nil)
 
 // New creates a new Gimbal instance.
-func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Gimbal, error) {
+func New(ub unitybridge.UnityBridge, l *logger.Logger,
+	cm *connection.Connection) (*Gimbal, error) {
 	g := &Gimbal{}
 
 	g.BaseModule = internal.NewBaseModule(ub, l, "Gimbal",
@@ -51,7 +53,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*Gimbal, error) {
 					g.Logger().Error("Error closing attitude updates", "error", err)
 				}
 			}
-		})
+		}, cm)
 
 	return g, nil
 }

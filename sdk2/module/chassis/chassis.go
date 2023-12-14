@@ -6,6 +6,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/chassis/controller"
+	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
@@ -20,14 +21,14 @@ import (
 type Chassis struct {
 	*internal.BaseModule
 
-	r *robot.Robot
+	rm *robot.Robot
 }
 
 var _ module.Module = (*Chassis)(nil)
 
 // New creates a new Chassis instance.
 func New(ub unitybridge.UnityBridge, l *logger.Logger,
-	r *robot.Robot) (*Chassis, error) {
+	cm *connection.Connection, rm *robot.Robot) (*Chassis, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -35,7 +36,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 	l = l.WithGroup("chassis_module")
 
 	c := &Chassis{
-		r: r,
+		rm: rm,
 	}
 
 	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis",
@@ -48,12 +49,14 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 				return
 			}
 
-			// TODO(bga): Maybe disable the function if we receive an actual
-			//            false here?
+			if c.rm.Connected() {
+				c.rm.EnableFunction(robot.FunctionTypeMovementControl, true)
+			} else {
+				c.rm.EnableFunction(robot.FunctionTypeMovementControl, false)
+			}
 
-			c.r.EnableFunction(robot.FunctionTypeMovementControl, true)
 			c.SetControllerMode(controller.ModeFPV) // Seems to be the default mode.
-		})
+		}, cm, rm)
 
 	return c, nil
 }
@@ -87,23 +90,23 @@ func (c *Chassis) StopMovement(m Mode) error {
 	return c.control(m, value)
 }
 
-// SetSpeed sets the chassis speed.
+// SetSpeed sets the chassis speed. Limits are [-3.5, 3.5] (m/s) for x and y and
+// [-360, 360] (degrees/s) for z.
+//
+// TODO(bga): Negative values are not working for some reason (the robot simply
+// ignores them). Needs more investigation.
 func (c *Chassis) SetSpeed(m Mode, x, y, z float64) error {
-	value := uint64(1) |
-		uint64(x*10.0) + 35<<2 |
-		uint64(y*10.0) + 35<<9 |
-		uint64(z*10.0) + 3600<<16
+	if x > 3.5 || x < -3.5 || y > 3.5 || y < -3.5 || z > 360 || z < -360 {
+		return fmt.Errorf("invalid speed values: x=%f, y=%f, z=%f", x, y, z)
+	}
+
+	xComponent := (int64(x*10) + 35) << 2
+	yComponent := (int64(y*10) + 35) << 9
+	zComponent := (int64(z*10) + 3600) << 16
+
+	value := uint64(1 | xComponent | yComponent | zComponent)
 
 	return c.control(m, value)
-}
-
-type chassisPosition struct {
-	TaskID      uint8   `json:"taskId"`
-	IsCancel    uint8   `json:"isCancel"`
-	ControlMode uint8   `json:"controlMode"`
-	X           float32 `json:"positionX"`
-	Y           float32 `json:"positionY"`
-	Z           float32 `json:"positionYaw"`
 }
 
 // SetPosition sets the chassis position.
@@ -115,14 +118,16 @@ func (c *Chassis) SetPosition(m Mode, x, y, z float64) error {
 		controlMode = 1
 	}
 
-	return c.UB().PerformActionForKey(key.KeyMainControllerChassisPosition, chassisPosition{
+	return c.UB().PerformActionForKey(key.KeyMainControllerChassisPosition, &value.ChassisPosition{
 		TaskID:      1,
 		IsCancel:    0,
 		ControlMode: controlMode,
 		X:           float32(x),
 		Y:           float32(y),
 		Z:           float32(z),
-	}, nil)
+	}, func(r *result.Result) {
+		fmt.Println("ChassisPosition result:", r)
+	})
 }
 
 // Move moves the robot using the given stick positions and control mode.

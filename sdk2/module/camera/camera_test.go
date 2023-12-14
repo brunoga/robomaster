@@ -21,7 +21,7 @@ func TestVideo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	vm, err := New(ub, l)
+	vm, err := New(ub, l, cm)
 	if err != nil {
 		t.Fatal(err)
 	}

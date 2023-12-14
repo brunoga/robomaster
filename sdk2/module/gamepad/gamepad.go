@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 
 	"github.com/brunoga/robomaster/sdk2/module"
+	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
@@ -29,7 +30,8 @@ type GamePad struct {
 
 var _ module.Module = (*GamePad)(nil)
 
-func New(ub unitybridge.UnityBridge, l *logger.Logger) (*GamePad, error) {
+func New(ub unitybridge.UnityBridge, l *logger.Logger,
+	cm *connection.Connection) (*GamePad, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -40,7 +42,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger) (*GamePad, error) {
 
 	return &GamePad{
 		BaseModule: internal.NewBaseModule(ub, l, "GamePad",
-			key.KeyRobomasterGamePadConnection, nil),
+			key.KeyRobomasterGamePadConnection, nil, cm),
 	}, nil
 }
 
