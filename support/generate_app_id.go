@@ -5,6 +5,10 @@ import (
 	"math/big"
 )
 
+// AnyAppID is a special app ID that can be used to indicate that any app ID
+// should be accepted when connecting to a Robot.
+const AnyAppID = 0
+
 // GenerateAppID generates a random app ID suitable to be used for Robomaster
 // applications.
 func GenerateAppID() (uint64, error) {
