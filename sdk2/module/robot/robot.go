@@ -134,12 +134,7 @@ func (r *Robot) EnableFunction(ft FunctionType, enable bool) error {
 // WaitForDevices waits for the robot to report devices as working. Returns
 // true if an actual result was obtained and false otherwise (i.e. timeout).
 func (r *Robot) WaitForDevices(timeout time.Duration) bool {
-	// Just wait for a result to be available.
-	if r.workingDevicesRL.Result() != nil {
-		return true
-	}
-
-	return r.workingDevicesRL.WaitForNewResult(timeout) != nil
+	return r.workingDevicesRL.WaitForAnyResult(timeout) != nil
 }
 
 // HasFunction returns true if the given device is connected to the robot and
