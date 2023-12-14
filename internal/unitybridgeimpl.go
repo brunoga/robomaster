@@ -270,8 +270,6 @@ func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
 
 	done := make(chan struct{})
 
-	fmt.Println(k, value)
-
 	err = u.SetKeyValue(k, value, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
 			err = fmt.Errorf("error setting value for key %s: %s", k, r)
