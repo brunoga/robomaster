@@ -96,7 +96,7 @@ var (
 	KeyMainControllerSlopSpeedXConfig       = newKey("KeyMainControllerSlopSpeedXConfig", 33554458, AccessTypeRead|AccessTypeWrite, nil)
 	KeyMainControllerSlopBreakYConfig       = newKey("KeyMainControllerSlopBreakYConfig", 33554459, AccessTypeRead|AccessTypeWrite, nil)
 	KeyMainControllerSlopBreakXConfig       = newKey("KeyMainControllerSlopBreakXConfig", 33554460, AccessTypeRead|AccessTypeWrite, nil)
-	KeyMainControllerChassisPosition        = newKey("KeyMainControllerChassisPosition", 33554461, AccessTypeAction, nil)
+	KeyMainControllerChassisPosition        = newKey("KeyMainControllerChassisPosition", 33554461, AccessTypeAction, &value.ChassisPosition{})
 	KeyMainControllerWheelSpeed             = newKey("KeyMainControllerWheelSpeed", 33554462, AccessTypeWrite, nil)
 	KeyMainControllerArmServoID             = newKey("KeyMainControllerArmServoID", 33554477, AccessTypeRead|AccessTypeWrite, nil)
 	KeyMainControllerServoAddressing        = newKey("KeyMainControllerServoAddressing", 33554478, AccessTypeAction, nil)
@@ -421,7 +421,9 @@ func (k *Key) ResultValue() any {
 		panic(fmt.Sprintf("Unknown result value for key %s.", k.name))
 	}
 
-	return k.resultValue
+	valueType := reflect.TypeOf(k.resultValue).Elem()
+
+	return reflect.New(valueType).Interface()
 }
 
 // FromEvent returns a Key associated with the given event. It returns
