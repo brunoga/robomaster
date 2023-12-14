@@ -173,8 +173,10 @@ L:
 		}
 	}
 
+	f.m.Lock()
 	f.quit = nil
 	f.listeningConn = nil
+	f.m.Unlock()
 }
 
 func parseAndValidateBroadcast(buf []byte, addr net.Addr) (*Broadcast, error) {
