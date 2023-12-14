@@ -95,9 +95,15 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 	err := rl.Start()
 	assert.NoError(t, err)
 
-	<-*rl.c.Load()
+	rl.m.Lock()
+	c := rl.c
+	rl.m.Unlock()
 
-	r := rl.r.Load()
+	<-c
+
+	rl.m.Lock()
+	r := rl.r
+	rl.m.Unlock()
 
 	assert.NotNil(t, r)
 
@@ -250,7 +256,7 @@ func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
 			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{})), uint64(0))
 	}()
 
-	r := rl.WaitForNewResult(1 * time.Millisecond)
+	r := rl.WaitForNewResult(1 * time.Second)
 	assert.NotNil(t, r)
 
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())

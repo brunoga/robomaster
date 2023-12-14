@@ -3,7 +3,7 @@ package support
 import (
 	"fmt"
 	"log/slog"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/brunoga/unitybridge"
@@ -25,9 +25,10 @@ type ResultListener struct {
 
 	t token.Token
 
-	r       atomic.Pointer[result.Result]
-	c       atomic.Pointer[chan struct{}]
-	started atomic.Bool
+	m       sync.Mutex
+	r       *result.Result
+	c       chan struct{}
+	started bool
 }
 
 // NewResultListener creates a new ResultListener instance.
@@ -40,44 +41,43 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 	l = l.WithGroup("result_listener").With(
 		slog.String("key", k.String()))
 
-	lr := &ResultListener{
+	return &ResultListener{
 		ub: ub,
 		l:  l,
 		k:  k,
 		cb: cb,
 	}
-
-	c := make(chan struct{})
-	lr.c.Store(&c)
-
-	return lr
 }
 
 // Start starts the listener. If cb is non nil, it will be called when a new
 // result is available.
 func (ls *ResultListener) Start() error {
-	if ls.started.Load() {
+	ls.m.Lock()
+	defer ls.m.Unlock()
+
+	if ls.started {
 		return fmt.Errorf("listener already started")
 	}
 
-	c := make(chan struct{})
-	ls.c.Store(&c)
-
-	ls.r.Store(nil)
+	ls.c = make(chan struct{})
+	ls.r = nil
 
 	var err error
 
 	ls.t, err = ls.ub.AddKeyListener(ls.k, func(r *result.Result) {
-		ls.r.Store(r)
+		ls.m.Lock()
 
-		ls.notifyWaiters()
+		ls.r = r
+		ls.notifyWaitersLocked()
 
-		if ls.cb != nil {
+		ls.m.Unlock()
+
+		if ls.cb != nil && r.Succeeded() {
 			go ls.cb(r)
 		}
 	}, true)
 
-	ls.started.Store(true)
+	ls.started = true
 
 	return err
 }
@@ -88,9 +88,13 @@ func (ls *ResultListener) Start() error {
 // inspect the result error code and description to check if the result is
 // valid.
 func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result {
+	ls.m.Lock()
+	c := ls.c
+	ls.m.Unlock()
+
 	select {
-	case <-*ls.c.Load():
-		return ls.r.Load()
+	case <-c:
+		return ls.Result()
 	case <-time.After(timeout):
 		return nil
 	}
@@ -98,12 +102,18 @@ func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result
 
 // Result returns the current result.
 func (ls *ResultListener) Result() *result.Result {
-	return ls.r.Load()
+	ls.m.Lock()
+	defer ls.m.Unlock()
+
+	return ls.r
 }
 
 // Stop stops the listener.
 func (ls *ResultListener) Stop() error {
-	if !ls.started.Load() {
+	ls.m.Lock()
+	defer ls.m.Unlock()
+
+	if !ls.started {
 		return fmt.Errorf("listener not started")
 	}
 
@@ -112,33 +122,17 @@ func (ls *ResultListener) Stop() error {
 		return err
 	}
 
-	ls.r.Store(nil)
-	ls.started.Store(false)
+	ls.r = nil
+	ls.started = false
 
-	ls.notifyWaiters()
+	ls.notifyWaitersLocked()
 
 	return nil
 }
 
-// notifyWaiters closes the current channel and creates a new one.
-// This is done in a way that is safe for concurrent access.
-func (ls *ResultListener) notifyWaiters() {
-	oldCPtr := ls.c.Load()
-	if oldCPtr == nil {
-		ls.l.Error("Old channel pointer is unexpectedly nil")
-		// This should never happen but lets be safe.
-		return
-	}
-
-	newC := make(chan struct{})
-	if ls.c.CompareAndSwap(oldCPtr, &newC) {
-		// We managed to swap the old channel pointer with the new one so we
-		// can safely close the new one now (which will notify listeners). Note
-		// that if CompareAndSwap() returned false, if means another thread
-		// closed managed to swap (and close) the channels between our load
-		// and CompareAndSwap() calls. In this case, we can safely assume our
-		// old channel is already closed and do not need to retry.
-		ls.l.Debug("Notifying waiters")
-		close(*oldCPtr)
-	}
+// notifyWaitersLocked closes the current channel and creates a new one.
+// The channel mutex must be locked when this is called.
+func (ls *ResultListener) notifyWaitersLocked() {
+	close(ls.c)
+	ls.c = make(chan struct{})
 }
