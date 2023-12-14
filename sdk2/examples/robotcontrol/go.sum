@@ -23,12 +23,16 @@ github.com/brunoga/robomaster/sdk2 v0.0.0-20231209213237-d39251d76161 h1:HjjrfaW
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231209213237-d39251d76161/go.mod h1:D+urfntLDYmyipVn9V5eC6k5K8ZuCASHVWrx0fqglSY=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24 h1:gv+pcra71C/GZ5izzdaDsdzHyYVZvFjeEtv2huUIAVI=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20231213095756-97a9bec92c24/go.mod h1:D+urfntLDYmyipVn9V5eC6k5K8ZuCASHVWrx0fqglSY=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231214185437-27d0fef30325 h1:cg2ze/DhU0WjioA3kTHkOjOYLa+W87rGtDa06eZtNac=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20231214185437-27d0fef30325/go.mod h1:2eAJQV0JKTdv6Sj+qQBvtB1rUMrHdUh6V/G5GUNRCus=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3 h1:PKhT360UHMwwv/5usxwRoQKTloA2mpRUq2dGP9B5CIM=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3/go.mod h1:wq3X99nAWWkpRbVqNCCUV3t7uAvce0i20IGBOShIt9I=
 github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523 h1:rAprHyup0V25m5v5XHxMJ3K0NZV2qRlTA9Y5U5RHjB4=
 github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93 h1:zAuxwM/f0T6kQ/uhs1sfgXG+l8gacetRKs03rpHp2Wk=
 github.com/brunoga/unitybridge v0.0.0-20231205154826-224a16945b93/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
+github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee h1:2PzHUSpP37Jc+jqffQUcyog1T2A2cedED2+Bpf9VVoo=
+github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -83,6 +87,8 @@ golang.org/x/exp/shiny v0.0.0-20231127185646-65229373498e h1:OcpyLYky9rjmUp6ZYOo
 golang.org/x/exp/shiny v0.0.0-20231127185646-65229373498e/go.mod h1:UH99kUObWAZkDnWqppdQe5ZhPYESUw8I0zVV1uWBR+0=
 golang.org/x/exp/shiny v0.0.0-20231206192017-f3f8817b8deb h1:t3SA1mKG2eyhChDjOL0n0VLKZQmqU4J8UlCoQ0+nqSk=
 golang.org/x/exp/shiny v0.0.0-20231206192017-f3f8817b8deb/go.mod h1:UH99kUObWAZkDnWqppdQe5ZhPYESUw8I0zVV1uWBR+0=
+golang.org/x/exp/shiny v0.0.0-20231214170342-aacd6d4b4611 h1:4KULGL0aJvCqUs5c7fA/eWELbK2rVfV9wpZTWW1Qs/I=
+golang.org/x/exp/shiny v0.0.0-20231214170342-aacd6d4b4611/go.mod h1:UH99kUObWAZkDnWqppdQe5ZhPYESUw8I0zVV1uWBR+0=
 golang.org/x/image v0.0.0-20190227222117-0694c2d4d067/go.mod h1:kZ7UVZpmo3dzQBMxlp+ypCbDeSB+sBbTgSJuh5dn5js=
 golang.org/x/image v0.0.0-20190802002840-cff245a6509b/go.mod h1:FeLwcggjj3mMvU+oOTbSwawSJRM1uh48EjtB4UJZlP0=
 golang.org/x/image v0.14.0 h1:tNgSxAFe3jC4uYqvZdTr84SZoM1KfwdC9SKIFrLjFn4=
