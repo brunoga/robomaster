@@ -116,8 +116,10 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	}
 
 	r, err := u.GetCachedKeyValue(k)
-	if err != nil || !r.Succeeded() {
-		// Basically ignore the error and return the token anyway.
+	if err != nil || r.ErrorCode() == -1 {
+		// Basically ignore the error just so we can return the token. Note
+		// that an ErrorCode of -1 means an error occurred while parsing the
+		// cached value (as opposed to an actual result with error).
 		return t, nil
 	}
 
@@ -487,9 +489,6 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 	dataType, tag := event.DataTypeFromTag(tag)
 
-	dataCopy := make([]byte, len(data))
-	copy(dataCopy, data)
-
 	if e.Type() == event.TypeGetValue || e.Type() == event.TypeSetValue ||
 		e.Type() == event.TypePerformAction || e.Type() == event.TypeStartListening {
 		if err := u.handleOwnedEvents(e, data, tag, dataType); err != nil {
@@ -524,9 +523,11 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 	u.m.RLock()
 
+	r := result.NewFromJSON(data)
+
 	if _, ok := u.keyListeners[k]; ok {
 		for _, c := range u.keyListeners[k] {
-			go c(result.NewFromJSON(data))
+			go c(r)
 		}
 	} else {
 		u.l.Warn("No listeners registered for key", "key", k, "data", string(data))
