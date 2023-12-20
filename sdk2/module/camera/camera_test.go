@@ -16,7 +16,7 @@ func TestVideo(t *testing.T) {
 
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
-	cm, err := connection.New(ub, l, 0, connection.TypeConnectionRouter)
+	cm, err := connection.New(ub, l, 0, connection.TypeRouter)
 	if err != nil {
 		t.Fatal(err)
 	}

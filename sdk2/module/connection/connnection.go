@@ -69,7 +69,7 @@ func (c *Connection) Start() error {
 	}
 
 	var ip net.IP = net.ParseIP(wifiDirectIPString)
-	if c.typ == TypeConnectionRouter {
+	if c.typ == TypeRouter {
 		b, err := c.f.Find(30 * time.Second)
 		if err != nil {
 			return err

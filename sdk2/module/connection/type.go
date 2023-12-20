@@ -3,6 +3,6 @@ package connection
 type Type uint8
 
 const (
-	TypeConnectionWiFiDirect Type = iota
-	TypeConnectionRouter
+	TypeWiFiDirect Type = iota
+	TypeRouter
 )
