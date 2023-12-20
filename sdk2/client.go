@@ -42,13 +42,23 @@ type Client struct {
 // To get a robot to broadcast a given appID, use a QRCode to configure it (see
 // https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
+	return new(l, appID, connection.TypeConnectionRouter)
+}
+
+// NewWifiDirect creates a new Client instance with the given logger. This
+// client will connect to the robot using WiFi Direct.
+func NewWifiDirect(l *logger.Logger) (*Client, error) {
+	return new(l, 0, connection.TypeConnectionWiFiDirect)
+}
+
+func new(l *logger.Logger, appID uint64, typ connection.Type) (*Client, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
 
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
-	cn, err := connection.New(ub, l, appID)
+	cn, err := connection.New(ub, l, appID, typ)
 	if err != nil {
 		return nil, err
 	}

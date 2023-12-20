@@ -2,6 +2,7 @@ package connection
 
 import (
 	"log/slog"
+	"net"
 	"sync/atomic"
 	"time"
 
@@ -21,6 +22,8 @@ const (
 	subTypeConnectionClose
 	subTypeConnectionSetIP
 	subTypeConnectionSetPort
+
+	wifiDirectIPString = "192.168.2.1"
 )
 
 // Connection provides support for managing the connection to the robot.
@@ -28,6 +31,7 @@ type Connection struct {
 	*internal.BaseModule
 
 	appID uint64
+	typ   Type
 
 	f *finder.Finder
 
@@ -39,7 +43,7 @@ var _ module.Module = (*Connection)(nil)
 // New creates a new Connection instance with the given UnityBridge instance and
 // logger.
 func New(ub unitybridge.UnityBridge,
-	l *logger.Logger, appID uint64) (*Connection, error) {
+	l *logger.Logger, appID uint64, typ Type) (*Connection, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -51,6 +55,7 @@ func New(ub unitybridge.UnityBridge,
 		BaseModule: internal.NewBaseModule(ub, l, "Connection",
 			key.KeyAirLinkConnection, nil),
 		appID: appID,
+		typ:   typ,
 		f:     finder.New(appID, l),
 	}, nil
 }
@@ -63,12 +68,17 @@ func (c *Connection) Start() error {
 		return err
 	}
 
-	b, err := c.f.Find(30 * time.Second)
-	if err != nil {
-		return err
-	}
+	var ip net.IP = net.ParseIP(wifiDirectIPString)
+	if c.typ == TypeConnectionRouter {
+		b, err := c.f.Find(30 * time.Second)
+		if err != nil {
+			return err
+		}
 
-	c.f.SendACK(b.SourceIp(), b.AppId())
+		c.f.SendACK(b.SourceIp(), b.AppId())
+
+		ip = b.SourceIp()
+	}
 
 	e := event.NewFromType(event.TypeConnection)
 
@@ -79,7 +89,7 @@ func (c *Connection) Start() error {
 	}
 
 	e.ResetSubType(subTypeConnectionSetIP)
-	err = c.UB().SendEventWithString(e, b.SourceIp().String())
+	err = c.UB().SendEventWithString(e, ip.String())
 	if err != nil {
 		return err
 	}

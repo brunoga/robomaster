@@ -28,6 +28,20 @@ func NewClient(appID int64) (*Client, error) {
 	}, nil
 }
 
+// NewWifiDirectClient creates a new Client instance that will connect to a
+// Robomaster robot using Wifi Direct.
+func NewWifiDirectClient() (*Client, error) {
+	l := logger.New(slog.LevelError)
+	c, err := sdk2.NewWifiDirect(l)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		c: c,
+	}, nil
+}
+
 // Start starts the client.
 func (c *Client) Start() error {
 	return c.c.Start()
