@@ -17,7 +17,7 @@ type Client struct {
 // will only connect to a robot that is broadcasting the given appID. The appID
 // can be configured in the robot through a qrcode.
 func NewClient(appID int64) (*Client, error) {
-	l := logger.New(slog.LevelError)
+	l := logger.New(slog.LevelDebug)
 	c, err := sdk2.New(l, uint64(appID))
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func NewClient(appID int64) (*Client, error) {
 // NewWifiDirectClient creates a new Client instance that will connect to a
 // Robomaster robot using Wifi Direct.
 func NewWifiDirectClient() (*Client, error) {
-	l := logger.New(slog.LevelError)
+	l := logger.New(slog.LevelDebug)
 	c, err := sdk2.NewWifiDirect(l)
 	if err != nil {
 		return nil, err
