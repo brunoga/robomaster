@@ -5,7 +5,7 @@ go 1.21.4
 require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20240106194718-45356a7abdd2
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20240106195221-444e51bfafdd
 	github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20231223183121-56fa3ac82ce7
 )
