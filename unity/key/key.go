@@ -403,16 +403,26 @@ var (
 
 // String returns a string representation of the key.
 func (k *Key) String() string {
+	if k == nil {
+		return "[UNKNOWN KEY]"
+	}
 	return k.name
 }
 
 // SubType returns the sub-type associated wit hhis key. Used for events.
 func (k *Key) SubType() uint32 {
+	if k == nil {
+		return 0
+	}
 	return k.subType
 }
 
 // AccessType returns the access type of the
 func (k *Key) AccessType() AccessType {
+	if k == nil {
+		return AccessTypeNone
+	}
+
 	return k.accessType
 }
 
