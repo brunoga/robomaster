@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module"
@@ -72,7 +71,6 @@ func (g *BaseModule) WaitForConnection(timeout time.Duration) bool {
 
 	for _, dep := range g.deps {
 		timeout -= time.Since(start)
-		fmt.Println(timeout)
 		if !dep.WaitForConnection(timeout) {
 			return false
 		}
