@@ -3,6 +3,7 @@ package logger
 import (
 	"log/slog"
 	"os"
+	"runtime"
 
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-colorable"
@@ -23,7 +24,7 @@ func New(level slog.Level) *Logger {
 
 	opts := &tint.Options{
 		Level:   levelVar,
-		NoColor: !isatty.IsTerminal(output.Fd()),
+		NoColor: !isatty.IsTerminal(output.Fd()) || runtime.GOOS == "ios",
 	}
 
 	return &Logger{
