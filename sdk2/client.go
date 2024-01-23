@@ -83,10 +83,10 @@ func new(l *logger.Logger, appID uint64, typ connection.Type) (*Client, error) {
 	//		return nil, err
 	//	}
 
-	gn, err := gun.New(ub, l, cn, rb)
-	if err != nil {
-		return nil, err
-	}
+	//gn, err := gun.New(ub, l, cn, rb)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	gb, err := gamepad.New(ub, l, cn)
 	if err != nil {
@@ -101,7 +101,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type) (*Client, error) {
 		cm: cm,
 		//		gm: gm,
 		ch: ch,
-		gn: gn,
+		// gn: gn,
 		gb: gb,
 	}, nil
 }
