@@ -152,7 +152,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	if !c.cm.WaitForConnection(10 * time.Second) {
+	if !c.cm.WaitForConnection(20 * time.Second) {
 		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
