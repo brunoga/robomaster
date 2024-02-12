@@ -100,6 +100,7 @@ func (c *Camera) Start() error {
 		return err
 	}
 
+	c.Logger().Logger.Debug("** Starting Camera Result Listener **")
 	return c.BaseModule.Start()
 }
 
