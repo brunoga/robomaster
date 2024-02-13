@@ -100,16 +100,16 @@ func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result
 	}
 }
 
-// WaitForAnyResult returns any existing result imemdiatelly or blocks until a
-// result is available, a timeout happens or the listener is stopped. IF result
+// WaitForAnyResult returns any existing result immediatelly or blocks until a
+// result is available, a timeout happens or the listener is stopped. If result
 // is nil, no result was available (for example, if the listener is closed). If
 // result is non nil, Callers should inspect the result error code and
 // description to check if the result is valid.
 func (ls *ResultListener) WaitForAnyResult(timeout time.Duration) *result.Result {
 	// Make sure we get a correct snapshot of the current channel and result
-	// state by obtainignthem inside a lock. This guarantee that we either
-	// have a result or that, if we do not, we are going to be listen on a
-	// channel that is guaranteed to b ethe one existing when the value
+	// state by obtaining them inside a lock. This guarantees that we either
+	// have a result or that, if we do not, we are going to be listening on a
+	// channel that is guaranteed to be the one existing when the value
 	// was nil so either it is closed now and we do have a non-nil value or
 	// it will be closed after we start waiting on it (and we will get a result
 	// or a timeout.
