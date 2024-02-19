@@ -111,21 +111,21 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 
 	u.m.Unlock()
 
-	// TODO(bga): Uncomment this after the race condition between getting
-	// a cached value and waiting for results is fixed.
-	//if !immediate {
-	//	return t, nil
-	//}
+	if !immediate {
+		return t, nil
+	}
 
-	//r, err := u.GetCachedKeyValue(k)
-	//if err != nil || r.ErrorCode() == -1 {
-	// Basically ignore the error just so we can return the token. Note
-	// that an ErrorCode of -1 means an error occurred while parsing the
-	// cached value (as opposed to an actual result with error).
-	//	return t, nil
-	//}
+	r, err := u.GetCachedKeyValue(k)
+	u.l.Debug("GetCachedKeyValue", "key", k, "result", r, "err", err)
+	if err != nil || r.ErrorCode() == -1 {
+		// Basically ignore the error just so we can return the token. Note
+		// that an ErrorCode of -1 means an error occurred while parsing the
+		// cached value (as opposed to an actual result with error).
+		return t, nil
+	}
 
-	//go c(r)
+	u.l.Debug("GetCachedKeyValue: Calling callback", "key", k, "result", r, "err", err)
+	go c(r)
 
 	return t, nil
 }

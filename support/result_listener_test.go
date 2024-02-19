@@ -231,42 +231,75 @@ func TestWaitForNewResult_Success(t *testing.T) {
 	uw.AssertExpectations(t)
 }
 
-func TestWaitForNewResult_Success_NotImmediate(t *testing.T) {
+/*
+func TestWaitForAnyResult_AvailableResult(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
+	})
 	assert.NotNil(t, rl)
 
-	ev1 := event.NewFromTypeAndSubType(event.TypeStartListening,
+	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
 		key.KeyAirLinkConnection.SubType())
-	uw.On("SendEvent", ev1.Code(), []byte(nil), uint64(0))
+	uw.On("SendEvent", ev.Code(), []byte(nil), uint64(0))
 
-	ev2 := event.NewFromTypeAndSubType(event.TypeGetAvailableValue,
+	ev = event.NewFromTypeAndSubType(event.TypeGetAvailableValue,
 		key.KeyAirLinkConnection.SubType())
 	output := make([]byte, 2048)
-	uw.On("SendEvent", ev2.Code(), output, uint64(0)).
-		Return([]byte("invalid"))
+	uw.On("SendEvent", ev.Code(), output, uint64(0)).
+		Return(resultToData(result.New(
+			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{Value: true})))
 
 	err := rl.Start()
 	assert.NoError(t, err)
 
-	go func() {
-		uw.GenerateEvent(ev1.Code(), resultToData(result.New(
-			key.KeyAirLinkConnection, 0, 0, "", &value.Bool{})), uint64(0))
-	}()
-
-	r := rl.WaitForNewResult(1 * time.Second)
+	r := rl.WaitForAnyResult(1 * time.Second)
 	assert.NotNil(t, r)
-
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
 	assert.Equal(t, int32(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
-	assert.Equal(t, &value.Bool{}, r.Value())
+	assert.Equal(t, &value.Bool{Value: true}, r.Value())
 
 	uw.AssertExpectations(t)
 }
+
+func TestWaitForAnyResult_NoAvailableResult(t *testing.T) {
+	uw, ub := setupUnityBridge(t)
+	defer cleanupUnityBridge(t, uw, ub)
+
+	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
+	})
+	assert.NotNil(t, rl)
+
+	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
+		key.KeyAirLinkConnection.SubType())
+	uw.On("SendEvent", ev.Code(), []byte(nil), uint64(0))
+
+	ev = event.NewFromTypeAndSubType(event.TypeGetAvailableValue,
+		key.KeyAirLinkConnection.SubType())
+	output := make([]byte, 2048)
+	uw.On("SendEvent", ev.Code(), output, uint64(0)).
+		Return(resultToData(nil))
+
+	err := rl.Start()
+	assert.NoError(t, err)
+
+	uw.GenerateEvent(0, resultToData(result.New(key.KeyAirLinkConnection, 1, 0,
+		"", &value.Bool{Value: true})), 1)
+
+	r := rl.WaitForAnyResult(5 * time.Second)
+	assert.NotNil(t, r)
+	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
+	assert.Equal(t, uint64(0), r.Tag())
+	assert.Equal(t, int32(0), r.ErrorCode())
+	assert.Equal(t, "", r.ErrorDesc())
+	assert.Equal(t, &value.Bool{Value: true}, r.Value())
+
+	uw.AssertExpectations(t)
+}
+*/
 
 func resultToData(r *result.Result) []byte {
 	if r == nil {

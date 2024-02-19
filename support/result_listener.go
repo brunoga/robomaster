@@ -14,9 +14,9 @@ import (
 )
 
 // ResultListener is a helper class to listen for event results from the
-// Unity Bridge. It allows callers to wait for new results, to get the
-// the last result obtained and to register a callback to be called when
-// a new result is available. It is thread safe (and lock free).
+// Unity Bridge. It allows callers to wait for new results, to get the last
+// result obtained and to register a callback to be called when a new result
+// is available. It is thread safe.
 type ResultListener struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
@@ -65,15 +65,20 @@ func (ls *ResultListener) Start() error {
 	var err error
 
 	ls.t, err = ls.ub.AddKeyListener(ls.k, func(r *result.Result) {
+		ls.l.Debug("Received result.", "key", ls.k, "result", r)
 		ls.m.Lock()
 
 		ls.r = r
+		ls.l.Debug("Notifying waiters.")
 		ls.notifyWaitersLocked()
 
 		ls.m.Unlock()
 
 		if ls.cb != nil && r.Succeeded() {
+			ls.l.Debug("Calling ResultListener callback.", "key", ls.k, "result", r)
 			go ls.cb(r)
+		} else {
+			ls.l.Debug("Not calling ResultListener callback.", "key", ls.k, "result", r, "nil_callback", ls.cb == nil)
 		}
 	}, true)
 
@@ -83,7 +88,7 @@ func (ls *ResultListener) Start() error {
 }
 
 // WaitForNewResult blocks until a new result is available, a timeout happens
-// or the listener is stopped. IF result is nil, no result was available (for
+// or the listener is stopped. If result is nil, no result was available (for
 // example, if the listener is closed). If result is non nil, Callers should
 // inspect the result error code and description to check if the result is
 // valid.
@@ -113,20 +118,27 @@ func (ls *ResultListener) WaitForAnyResult(timeout time.Duration) *result.Result
 	// was nil so either it is closed now and we do have a non-nil value or
 	// it will be closed after we start waiting on it (and we will get a result
 	// or a timeout.
+	ls.l.Debug("Waiting for any result.", "key", ls.k)
 	ls.m.Lock()
 	if ls.r != nil {
+		ls.l.Debug("Existing result is not nil.", "key", ls.k)
 		ls.m.Unlock()
 		return ls.r
 	}
+
+	ls.l.Debug("Existing result is nil.", "key", ls.k)
 
 	c := ls.c
 
 	ls.m.Unlock()
 
+	ls.l.Debug("Waiting for new result.", "key", ls.k)
 	select {
 	case <-c:
+		ls.l.Debug("Got new result.", "key", ls.k, "result", ls.Result)
 		return ls.Result()
 	case <-time.After(timeout):
+		ls.l.Debug("Timeout waiting for new result.", "key", ls.k)
 		return nil
 	}
 }
@@ -164,6 +176,8 @@ func (ls *ResultListener) Stop() error {
 // notifyWaitersLocked closes the current channel and creates a new one.
 // The channel mutex must be locked when this is called.
 func (ls *ResultListener) notifyWaitersLocked() {
+	ls.l.Debug("Notifying waiters.", "key", ls.k)
 	close(ls.c)
 	ls.c = make(chan struct{})
+	ls.l.Debug("Notified waiters.", "key", ls.k)
 }
