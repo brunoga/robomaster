@@ -6,10 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/camera"
 	"github.com/brunoga/robomaster/sdk2/module/chassis"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/gamepad"
+	"github.com/brunoga/robomaster/sdk2/module/gimbal"
 	"github.com/brunoga/robomaster/sdk2/module/gun"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
 	"github.com/brunoga/unitybridge"
@@ -25,7 +27,7 @@ type Client struct {
 	cn *connection.Connection
 	cm *camera.Camera
 	ch *chassis.Chassis
-	//	gm *gimbal.Gimbal
+	gm *gimbal.Gimbal
 	rb *robot.Robot
 	gn *gun.Gun
 	gb *gamepad.GamePad
@@ -42,68 +44,23 @@ type Client struct {
 // To get a robot to broadcast a given appID, use a QRCode to configure it (see
 // https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
-	return new(l, appID, connection.TypeRouter)
+	return new(l, appID, connection.TypeRouter, module.TypeAllButGamePad)
+}
+
+func NewWithModules(l *logger.Logger, appID uint64,
+	modules module.Type) (*Client, error) {
+	return new(l, appID, connection.TypeRouter, modules)
 }
 
 // NewWifiDirect creates a new Client instance with the given logger. This
 // client will connect to the robot using WiFi Direct.
 func NewWifiDirect(l *logger.Logger) (*Client, error) {
-	return new(l, 0, connection.TypeWiFiDirect)
+	return new(l, 0, connection.TypeWiFiDirect, module.TypeAllButGamePad)
 }
 
-func new(l *logger.Logger, appID uint64, typ connection.Type) (*Client, error) {
-	if l == nil {
-		l = logger.New(slog.LevelError)
-	}
-
-	ub := unitybridge.Get(wrapper.Get(l), true, l)
-
-	cn, err := connection.New(ub, l, appID, typ)
-	if err != nil {
-		return nil, err
-	}
-
-	rb, err := robot.New(ub, l, cn)
-	if err != nil {
-		return nil, err
-	}
-
-	cm, err := camera.New(ub, l, cn)
-	if err != nil {
-		return nil, err
-	}
-
-	ch, err := chassis.New(ub, l, cn, rb)
-	if err != nil {
-		return nil, err
-	}
-
-	//	gm, err := gimbal.New(ub, l, cn)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-
-	//gn, err := gun.New(ub, l, cn, rb)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	gb, err := gamepad.New(ub, l, cn)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Client{
-		ub: ub,
-		l:  l,
-		cn: cn,
-		rb: rb,
-		cm: cm,
-		//		gm: gm,
-		ch: ch,
-		// gn: gn,
-		gb: gb,
-	}, nil
+func NewWifiDirectWithModules(l *logger.Logger,
+	modules module.Type) (*Client, error) {
+	return new(l, 0, connection.TypeWiFiDirect, modules)
 }
 
 // Start starts the client and all associated modules.
@@ -122,87 +79,59 @@ func (c *Client) Start() error {
 
 	// Start modules.
 
+	waitTimeout := 5 * time.Second
+
 	// Connection.
-	err = c.cn.Start()
+	err = c.changeStateIfNonNil(c.cn, waitTimeout, true)
 	if err != nil {
 		return err
-	}
-
-	if !c.cn.WaitForConnection(20 * time.Second) {
-		return fmt.Errorf("network connection unexpectedly not established")
 	}
 
 	// Robot.
-	err = c.rb.Start()
+	err = c.changeStateIfNonNil(c.rb, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
-	if !c.rb.WaitForConnection(10 * time.Second) {
-		return fmt.Errorf("robot connection unexpectedly not established")
-	}
-
-	if !c.rb.WaitForDevices(10 * time.Second) {
+	// Wait for devices to be available.
+	if !c.rb.WaitForDevices(waitTimeout) {
 		return fmt.Errorf("robot working devices unexpectedly not established")
 	}
 
 	// Camera.
-	err = c.cm.Start()
+	err = c.changeStateIfNonNil(c.cm, waitTimeout, true)
 	if err != nil {
 		return err
-	}
-
-	if !c.cm.WaitForConnection(20 * time.Second) {
-		return fmt.Errorf("camera connection unexpectedly not established")
 	}
 
 	// Chassis.
-	err = c.ch.Start()
+	err = c.changeStateIfNonNil(c.ch, waitTimeout, true)
 	if err != nil {
 		return err
-	}
-
-	if !c.ch.WaitForConnection(10 * time.Second) {
-		return fmt.Errorf("chassis connection unexpectedly not established")
 	}
 
 	// Gimbal.
-	//err = c.gm.Start()
-	//if err != nil {
-	//	return err
-	//}
-
-	//if !c.gm.WaitForConnection(10 * time.Second) {
-	//	return fmt.Errorf("gimbal connection unexpectedly not established")
-	//}
+	err = c.changeStateIfNonNil(c.gm, waitTimeout, true)
+	if err != nil {
+		return err
+	}
 
 	// Gun.
-	err = c.gn.Start()
+	err = c.changeStateIfNonNil(c.gn, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
-	if !c.gn.WaitForConnection(10 * time.Second) {
-		return fmt.Errorf("gun connection unexpectedly not established")
-	}
-
-	// GamePad. (Optional)
-	err = c.gb.Start()
+	// GamePad.
+	err = c.changeStateIfNonNil(c.gb, waitTimeout, true)
 	if err != nil {
-		return err
-	}
-
-	go func() {
-		if !c.gb.WaitForConnection(2 * time.Second) {
-			// GamePad is optional.
-			c.l.Warn("Gamepad connection not stablished. Gamepad not available.")
-			err := c.gb.Stop()
-			if err != nil {
-				c.l.Warn("Error stopping Gamepad module", "error", err)
-			}
-			c.gb = nil
+		if err.Error() == "GamePad connection not established" {
+			// GamePad is optional so it is fine it did not connect.
+			c.l.Warn("GamePad connection not established.")
+		} else {
+			return err
 		}
-	}()
+	}
 
 	c.started = true
 
@@ -225,9 +154,9 @@ func (c *Client) Chassis() *chassis.Chassis {
 }
 
 // Gimbal returns the Gimbal module.
-//func (c *Client) Gimbal() *gimbal.Gimbal {
-//	return c.gm
-//}
+func (c *Client) Gimbal() *gimbal.Gimbal {
+	return c.gm
+}
 
 // Robot returns the Robot module.
 func (c *Client) Robot() *robot.Robot {
@@ -255,40 +184,40 @@ func (c *Client) Stop() error {
 
 	// Stop modules.
 
+	waitTime := 5 * time.Second
+
 	// Gamepad.
-	if c.gb != nil {
-		err := c.gb.Stop()
-		if err != nil {
-			return err
-		}
+	err := c.changeStateIfNonNil(c.gb, waitTime, false)
+	if err != nil {
+		return err
 	}
 
 	// Gun.
-	err := c.gn.Stop()
+	err = c.changeStateIfNonNil(c.gn, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Chassis.
-	err = c.ch.Stop()
+	err = c.changeStateIfNonNil(c.ch, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Camera.
-	err = c.cm.Stop()
+	err = c.changeStateIfNonNil(c.cm, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Robot.
-	err = c.rb.Stop()
+	err = c.changeStateIfNonNil(c.rb, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Connection.
-	err = c.cn.Stop()
+	err = c.changeStateIfNonNil(c.cn, waitTime, false)
 	if err != nil {
 		return err
 	}
@@ -297,6 +226,107 @@ func (c *Client) Stop() error {
 	err = c.ub.Stop()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func new(l *logger.Logger, appID uint64, typ connection.Type,
+	modules module.Type) (*Client, error) {
+	if l == nil {
+		l = logger.New(slog.LevelError)
+	}
+
+	if modules&module.TypeConnection == 0 {
+		return nil, fmt.Errorf("connection module is required")
+	}
+
+	if modules&module.TypeRobot == 0 {
+		return nil, fmt.Errorf("robot module is required")
+	}
+
+	ub := unitybridge.Get(wrapper.Get(l), true, l)
+
+	cn, err := connection.New(ub, l, appID, typ)
+	if err != nil {
+		return nil, err
+	}
+
+	rb, err := robot.New(ub, l, cn)
+	if err != nil {
+		return nil, err
+	}
+
+	var cm *camera.Camera
+	if modules&module.TypeCamera == 1 {
+		cm, err = camera.New(ub, l, cn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var ch *chassis.Chassis
+	if modules&module.TypeChassis == 1 {
+		ch, err = chassis.New(ub, l, cn, rb)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var gm *gimbal.Gimbal
+	if modules&module.TypeGimbal == 1 {
+		gm, err = gimbal.New(ub, l, cn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var gn *gun.Gun
+	if modules&module.TypeGun == 1 {
+		gn, err = gun.New(ub, l, cn, rb)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var gb *gamepad.GamePad
+	if modules&module.TypeGamePad == 1 {
+		gb, err = gamepad.New(ub, l, cn)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Client{
+		ub: ub,
+		l:  l,
+		cn: cn,
+		rb: rb,
+		cm: cm,
+		gm: gm,
+		ch: ch,
+		gn: gn,
+		gb: gb,
+	}, nil
+}
+
+func (c *Client) changeStateIfNonNil(m module.Module, waitTime time.Duration,
+	start bool) error {
+	var err error
+	if m != nil {
+		if start {
+			err = m.Start()
+		} else {
+			err = m.Stop()
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if !m.WaitForConnection(waitTime) {
+		return fmt.Errorf("%s connection not established", m)
 	}
 
 	return nil
