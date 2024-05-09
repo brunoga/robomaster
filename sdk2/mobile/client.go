@@ -4,7 +4,13 @@ import (
 	"log/slog"
 
 	"github.com/brunoga/robomaster/sdk2"
+	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/unitybridge/support/logger"
+)
+
+const (
+	mobileModules = module.TypeConnection | module.TypeRobot |
+		module.TypeChassis | module.TypeGimbal | module.TypeCamera | module.TypeGamePad
 )
 
 // Client is the main entry point for the mobile SDK.
@@ -18,7 +24,7 @@ type Client struct {
 // can be configured in the robot through a qrcode.
 func NewClient(appID int64) (*Client, error) {
 	l := logger.New(slog.LevelDebug)
-	c, err := sdk2.New(l, uint64(appID))
+	c, err := sdk2.NewWithModules(l, uint64(appID), mobileModules)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +38,7 @@ func NewClient(appID int64) (*Client, error) {
 // Robomaster robot using Wifi Direct.
 func NewWifiDirectClient() (*Client, error) {
 	l := logger.New(slog.LevelDebug)
-	c, err := sdk2.NewWifiDirect(l)
+	c, err := sdk2.NewWifiDirectWithModules(l, mobileModules)
 	if err != nil {
 		return nil, err
 	}
