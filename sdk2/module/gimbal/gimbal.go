@@ -177,37 +177,13 @@ func (g *Gimbal) onAttitudeUpdates(r *result.Result) {
 		return
 	}
 
-	value, ok := r.Value().(map[string]interface{})
+	value, ok := r.Value().(*value.GimbalAttitude)
 	if !ok {
 		g.Logger().Error("Unexpected result value", "key", r.Key(), "value", value)
 		return
 	}
 
-	pitch := g.tryGetFloat64Field(value, "pitch")
-	roll := g.tryGetFloat64Field(value, "roll")
-	yaw := g.tryGetFloat64Field(value, "yaw")
-	yawOpposite := g.tryGetFloat64Field(value, "yawOpposite")
-	pitchSpeed := g.tryGetFloat64Field(value, "pitchSpeed")
-	rollSpeed := g.tryGetFloat64Field(value, "rollSpeed")
-	yawSpeed := g.tryGetFloat64Field(value, "yawSpeed")
-
-	g.Logger().Info("Gimbal attitude", "pitch", pitch, "roll", roll, "yaw", yaw,
-		"yawOpposite", yawOpposite, "pitchSpeed", pitchSpeed, "rollSpeed", rollSpeed,
-		"yawSpeed", yawSpeed)
-}
-
-func (g *Gimbal) tryGetFloat64Field(value map[string]interface{}, field string) float64 {
-	v, ok := value[field]
-	if !ok {
-		g.Logger().Error("Missing field", "field", field)
-		return 0.0
-	}
-
-	f, ok := v.(float64)
-	if !ok {
-		g.Logger().Error("Unexpected value", "field", field, "value", v)
-		return 0.0
-	}
-
-	return f
+	g.Logger().Info("Gimbal attitude", "pitch", value.Pitch, "roll", value.Roll,
+		"yaw", value.Yaw, "yawOpposite", value.YawOpposite, "pitchSpeed",
+		value.PitchSpeed, "rollSpeed", value.RollSpeed, "yawSpeed", value.YawSpeed)
 }
