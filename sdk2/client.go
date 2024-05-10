@@ -3,6 +3,7 @@ package sdk2
 import (
 	"fmt"
 	"log/slog"
+	"reflect"
 	"sync"
 	"time"
 
@@ -79,7 +80,7 @@ func (c *Client) Start() error {
 
 	// Start modules.
 
-	waitTimeout := 5 * time.Second
+	waitTimeout := 10 * time.Second
 
 	// Connection.
 	err = c.changeStateIfNonNil(c.cn, waitTimeout, true)
@@ -258,7 +259,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	var cm *camera.Camera
-	if modules&module.TypeCamera == 1 {
+	if modules&module.TypeCamera != 0 {
 		cm, err = camera.New(ub, l, cn)
 		if err != nil {
 			return nil, err
@@ -266,7 +267,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	var ch *chassis.Chassis
-	if modules&module.TypeChassis == 1 {
+	if modules&module.TypeChassis != 0 {
 		ch, err = chassis.New(ub, l, cn, rb)
 		if err != nil {
 			return nil, err
@@ -274,7 +275,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	var gm *gimbal.Gimbal
-	if modules&module.TypeGimbal == 1 {
+	if modules&module.TypeGimbal != 0 {
 		gm, err = gimbal.New(ub, l, cn)
 		if err != nil {
 			return nil, err
@@ -282,7 +283,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	var gn *gun.Gun
-	if modules&module.TypeGun == 1 {
+	if modules&module.TypeGun != 0 {
 		gn, err = gun.New(ub, l, cn, rb)
 		if err != nil {
 			return nil, err
@@ -290,7 +291,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	var gb *gamepad.GamePad
-	if modules&module.TypeGamePad == 1 {
+	if modules&module.TypeGamePad != 0 {
 		gb, err = gamepad.New(ub, l, cn)
 		if err != nil {
 			return nil, err
@@ -313,12 +314,14 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 func (c *Client) changeStateIfNonNil(m module.Module, waitTime time.Duration,
 	start bool) error {
 	var err error
-	if m != nil {
+	if m != nil && !reflect.ValueOf(m).IsNil() {
 		if start {
 			err = m.Start()
 		} else {
 			err = m.Stop()
 		}
+	} else {
+		return nil
 	}
 
 	if err != nil {
