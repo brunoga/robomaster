@@ -1,10 +1,13 @@
 module github.com/brunoga/robomaster/sdk2
 
-go 1.21.3
+go 1.22.2
 
-require github.com/brunoga/unitybridge v0.0.0-20240509192742-25cd53d3f048
+toolchain go1.22.3
+
+require github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f
 
 require (
+	github.com/brunoga/broadcaster v1.0.0 // indirect
 	github.com/lmittmann/tint v1.0.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
