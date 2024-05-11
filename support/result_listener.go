@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/broadcaster"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
@@ -25,9 +26,10 @@ type ResultListener struct {
 
 	t token.Token
 
+	b *broadcaster.Broadcaster
+
 	m       sync.Mutex
 	r       *result.Result
-	c       chan struct{}
 	started bool
 }
 
@@ -46,6 +48,7 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 		l:  l,
 		k:  k,
 		cb: cb,
+		b:  broadcaster.NewBroadcaster(),
 	}
 }
 
@@ -59,7 +62,6 @@ func (ls *ResultListener) Start() error {
 		return fmt.Errorf("listener already started")
 	}
 
-	ls.c = make(chan struct{})
 	ls.r = nil
 
 	var err error
@@ -93,16 +95,13 @@ func (ls *ResultListener) Start() error {
 // inspect the result error code and description to check if the result is
 // valid.
 func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result {
-	ls.m.Lock()
-	c := ls.c
-	ls.m.Unlock()
-
-	select {
-	case <-c:
-		return ls.Result()
-	case <-time.After(timeout):
-		return nil
+	if ls.b.Wait(timeout) {
+		ls.m.Lock()
+		defer ls.m.Unlock()
+		return ls.r
 	}
+
+	return nil
 }
 
 // WaitForAnyResult returns any existing result immediatelly or blocks until a
@@ -126,21 +125,12 @@ func (ls *ResultListener) WaitForAnyResult(timeout time.Duration) *result.Result
 		return ls.r
 	}
 
-	ls.l.Debug("Existing result is nil.", "key", ls.k)
-
-	c := ls.c
-
 	ls.m.Unlock()
 
+	ls.l.Debug("Existing result is nil.", "key", ls.k)
+
 	ls.l.Debug("Waiting for new result.", "key", ls.k)
-	select {
-	case <-c:
-		ls.l.Debug("Got new result.", "key", ls.k, "result", ls.Result)
-		return ls.Result()
-	case <-time.After(timeout):
-		ls.l.Debug("Timeout waiting for new result.", "key", ls.k)
-		return nil
-	}
+	return ls.WaitForNewResult(timeout)
 }
 
 // Result returns the current result.
@@ -177,7 +167,6 @@ func (ls *ResultListener) Stop() error {
 // The channel mutex must be locked when this is called.
 func (ls *ResultListener) notifyWaitersLocked() {
 	ls.l.Debug("Notifying waiters.", "key", ls.k)
-	close(ls.c)
-	ls.c = make(chan struct{})
+	ls.b.Signal()
 	ls.l.Debug("Notified waiters.", "key", ls.k)
 }
