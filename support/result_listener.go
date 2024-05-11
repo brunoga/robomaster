@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brunoga/broadcaster"
+	"github.com/brunoga/timedsignalwaiter"
 	"github.com/brunoga/unitybridge"
 	"github.com/brunoga/unitybridge/support/logger"
 	"github.com/brunoga/unitybridge/support/token"
@@ -26,7 +26,7 @@ type ResultListener struct {
 
 	t token.Token
 
-	b *broadcaster.Broadcaster
+	b *timedsignalwaiter.TimedSignalWaiter
 
 	m       sync.Mutex
 	r       *result.Result
@@ -48,7 +48,7 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 		l:  l,
 		k:  k,
 		cb: cb,
-		b:  broadcaster.NewBroadcaster(),
+		b:  timedsignalwaiter.New(k.String()),
 	}
 }
 
