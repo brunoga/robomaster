@@ -42,53 +42,51 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	l = l.WithGroup("robot_module")
 
-	r := &Robot{
-		BaseModule: internal.NewBaseModule(ub, l, "Robot",
-			key.KeyRobomasterSystemConnection, nil, cm),
-	}
+	rb := &Robot{}
+
+	rb.BaseModule = internal.NewBaseModule(ub, l, "Robot",
+		key.KeyRobomasterSystemConnection, func(r *result.Result) {
+			rb.Logger().Debug("Connection status", "result", r)
+			if r.Succeeded() {
+				err := rb.workingDevicesRL.Start()
+				if err != nil {
+					rb.Logger().Error("Failed to start working devices result listener")
+				}
+
+				err = rb.batteryPowerPercentRL.Start()
+				if err != nil {
+					rb.Logger().Error("Failed to start battery power percent result listener")
+				}
+
+				err = rb.actionStatusRL.Start()
+				if err != nil {
+					rb.Logger().Error("Failed to start action status result listener")
+				}
+			}
+		}, cm)
 
 	functions := make(map[FunctionType]bool)
-	r.functions.Store(&functions)
+	rb.functions.Store(&functions)
 
 	wds := make(map[DeviceType]struct{})
-	r.workingDevices.Store(&wds)
+	rb.workingDevices.Store(&wds)
 
-	r.workingDevicesRL = support.NewResultListener(ub, l,
+	rb.workingDevicesRL = support.NewResultListener(ub, l,
 		key.KeyRobomasterSystemWorkingDevices, func(res *result.Result) {
-			r.onWorkingDevices(res)
+			rb.onWorkingDevices(res)
 		})
 
-	r.batteryPowerPercentRL = support.NewResultListener(ub, l,
+	rb.batteryPowerPercentRL = support.NewResultListener(ub, l,
 		key.KeyRobomasterBatteryPowerPercent, func(res *result.Result) {
-			r.onBatteryPowerPercent(res)
+			rb.onBatteryPowerPercent(res)
 		})
 
-	r.actionStatusRL = support.NewResultListener(ub, l,
+	rb.actionStatusRL = support.NewResultListener(ub, l,
 		key.KeyRobomasterSystemTaskStatus, func(res *result.Result) {
-			r.onActionStatus(res)
+			rb.onActionStatus(res)
 		})
 
-	return r, nil
-}
-
-// Start starts the Robot module.
-func (r *Robot) Start() error {
-	err := r.BaseModule.Start()
-	if err != nil {
-		return err
-	}
-
-	err = r.workingDevicesRL.Start()
-	if err != nil {
-		return err
-	}
-
-	err = r.batteryPowerPercentRL.Start()
-	if err != nil {
-		return err
-	}
-
-	return r.actionStatusRL.Start()
+	return rb, nil
 }
 
 // EnableFunction enables or disables the given function. This keeps track of
