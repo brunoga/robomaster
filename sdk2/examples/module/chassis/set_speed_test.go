@@ -15,9 +15,11 @@ func TestSetSpeed(t *testing.T) {
 	}
 	defer chassisModule.SetControllerMode(controller.ModeFPV)
 
-	setSpeed(1*time.Second, -0.5, 0.0, 0.0)
-	setSpeed(1*time.Second, 0.0, 0.5, 0.0)
-	setSpeed(1*time.Second, 0.0, 0.0, 180.0)
+	setSpeed(1*time.Second, 0.2, 0.0, 0.0)
+	setSpeed(1*time.Second, 0.0, 0.2, 0.0)
+	setSpeed(1*time.Second, -0.2, 0.0, 0.0)
+	setSpeed(1*time.Second, 0.0, -0.2, 0.0)
+	setSpeed(1*time.Second, 0.0, 0.0, 360.0)
 }
 
 func setSpeed(d time.Duration, x, y, z float64) {
