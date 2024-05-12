@@ -68,20 +68,28 @@ func (ls *ResultListener) Start() error {
 
 	ls.t, err = ls.ub.AddKeyListener(ls.k, func(r *result.Result) {
 		ls.l.Debug("Received result.", "key", ls.k, "result", r)
+
+		// Fierst we synchronously execute any associated callback so that any
+		// required initialization might be completed before we notify any
+		// waiters.
+		if ls.cb != nil && r.Succeeded() {
+			ls.l.Debug("Calling ResultListener callback.", "key", ls.k, "result", r)
+			ls.cb(r)
+		} else {
+			ls.l.Debug("Not calling ResultListener callback.", "key", ls.k, "result", r, "nil_callback", ls.cb == nil)
+		}
+
+		// Now we are going to change our state, so we need to lock.
 		ls.m.Lock()
 
+		// Update our result cache.
 		ls.r = r
+
+		// And now we can notify waiters.
 		ls.l.Debug("Notifying waiters.")
 		ls.notifyWaitersLocked()
 
 		ls.m.Unlock()
-
-		if ls.cb != nil && r.Succeeded() {
-			ls.l.Debug("Calling ResultListener callback.", "key", ls.k, "result", r)
-			go ls.cb(r)
-		} else {
-			ls.l.Debug("Not calling ResultListener callback.", "key", ls.k, "result", r, "nil_callback", ls.cb == nil)
-		}
 	}, true)
 
 	ls.started = true
