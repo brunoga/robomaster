@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	// All modules except for Gun (for now).
 	mobileModules = module.TypeConnection | module.TypeRobot |
 		module.TypeChassis | module.TypeGimbal | module.TypeCamera | module.TypeGamePad
 )

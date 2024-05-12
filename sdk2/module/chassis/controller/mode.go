@@ -1,14 +1,12 @@
 package controller
 
-// Mode is the type of control mode for the robot. Apparently, only
-// ControlModeDefault is ever used but we know for a fact that there is a
-// second mode.
-//
-// TODO(bga): Investigate.
+// Mode is the type of control mode for the robot.
 type Mode uint8
 
 const (
+	// ModeFPV enables the dual stick controller type.
 	ModeFPV Mode = iota
+	// ModeSDK enables the SDK controller type.
 	ModeSDK
 )
 

@@ -92,9 +92,6 @@ func (c *Chassis) StopMovement(m Mode) error {
 
 // SetSpeed sets the chassis speed. Limits are [-3.5, 3.5] (m/s) for x and y and
 // [-360, 360] (degrees/s) for z.
-//
-// TODO(bga): Negative values are not working for some reason (the robot simply
-// ignores them). Needs more investigation.
 func (c *Chassis) SetSpeed(m Mode, x, y, z float64) error {
 	if x > 3.5 || x < -3.5 || y > 3.5 || y < -3.5 || z > 360 || z < -360 {
 		return fmt.Errorf("invalid speed values: x=%f, y=%f, z=%f", x, y, z)

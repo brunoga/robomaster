@@ -45,9 +45,11 @@ type Client struct {
 // To get a robot to broadcast a given appID, use a QRCode to configure it (see
 // https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
-	return new(l, appID, connection.TypeRouter, module.TypeAllButGamePad)
+	return new(l, appID, connection.TypeRouter, module.TypeAll)
 }
 
+// NewWithModules is like New but allows selecting which mkodules to enable.
+// The Connection and Robot modules are required.
 func NewWithModules(l *logger.Logger, appID uint64,
 	modules module.Type) (*Client, error) {
 	return new(l, appID, connection.TypeRouter, modules)

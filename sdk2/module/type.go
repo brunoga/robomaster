@@ -11,6 +11,8 @@ const (
 	TypeGun
 	TypeGamePad
 
+	TypeAll = TypeConnection | TypeRobot | TypeChassis | TypeGimbal |
+		TypeCamera | TypeGun | TypeGamePad
 	TypeAllButGamePad = TypeConnection | TypeRobot | TypeChassis | TypeGimbal |
 		TypeCamera | TypeGun
 )
