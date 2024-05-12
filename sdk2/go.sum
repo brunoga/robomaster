@@ -1,5 +1,7 @@
 github.com/brunoga/broadcaster v1.0.0 h1:qYBArzXlDMoTDB9rcXEz64rj9y7eRveP/4m3Jreu7XY=
 github.com/brunoga/broadcaster v1.0.0/go.mod h1:Af1Y5eujIKVrl7IlmOh3NYIV6EdSzy7w5mZvvY8CIqA=
+github.com/brunoga/timedsignalwaiter v1.0.0 h1:qrOJVQHkEs3THyiA6VJq9x5gk332Y+P1so5oNKXKyqY=
+github.com/brunoga/timedsignalwaiter v1.0.0/go.mod h1:BdJJP3W2pKIagoTPlFpoReg5sxZQ2rDa0ZspHWoX7Sw=
 github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee h1:2PzHUSpP37Jc+jqffQUcyog1T2A2cedED2+Bpf9VVoo=
 github.com/brunoga/unitybridge v0.0.0-20231213131825-7fb853f981ee/go.mod h1:BPIRmZv8fg097+W1vnKQ/ai/7CpoyWv+rK0WRGsmNok=
 github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88 h1:KwulLbXlqLAAwRnhIZZcHaa14K92ZjrFhW1kl1Wy0EU=
@@ -14,6 +16,8 @@ github.com/brunoga/unitybridge v0.0.0-20240509192742-25cd53d3f048 h1:3a+43KBTAgA
 github.com/brunoga/unitybridge v0.0.0-20240509192742-25cd53d3f048/go.mod h1:tkr/pVjQdSizT3IxLi3e+L8a3rnz4VBcXwKy0BT0J3I=
 github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f h1:QmvzLyt5gOE0TWqWzsedv3HfcmzC7HplnaXejUbkEYY=
 github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f/go.mod h1:jD+ZMzX3K4D9IYrZc8zYfVbG5tm7oFnPNfdXtoQeWwo=
+github.com/brunoga/unitybridge v0.0.0-20240511152815-e1399e967d54 h1:NiduQJh2d/4Cod7Zou3eJEWRXB/ByS2rCvKO565C36g=
+github.com/brunoga/unitybridge v0.0.0-20240511152815-e1399e967d54/go.mod h1:yW0h/WxBB7zjSGKmELq4a1yOhloSJpum4AaKSWEZCMI=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/lmittmann/tint v1.0.3 h1:W5PHeA2D8bBJVvabNfQD/XW9HPLZK1XoPZH0cq8NouQ=
