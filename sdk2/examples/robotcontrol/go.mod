@@ -1,14 +1,12 @@
 module github.com/brunoga/robomaster/sdk2/examples/robotcontrol
 
-go 1.22.2
-
-toolchain go1.22.3
+go 1.22.3
 
 require (
 	github.com/EngoEngine/ecs v1.0.5
 	github.com/EngoEngine/engo v1.0.8
-	github.com/brunoga/robomaster/sdk2 v0.0.0-20240510142257-b23d5596cb1b
-	github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f
+	github.com/brunoga/robomaster/sdk2 v0.0.0-20240513134621-4f275972f66c
+	github.com/brunoga/unitybridge v0.0.0-20240512220129-c06859fdee3c
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240506104042-037f3cc74f2a
 )
 
@@ -18,6 +16,7 @@ require (
 	github.com/Noofbiz/sdlMojaveFix v0.0.1 // indirect
 	github.com/Noofbiz/tmx v0.2.0 // indirect
 	github.com/brunoga/broadcaster v1.0.0 // indirect
+	github.com/brunoga/timedsignalwaiter v1.0.0 // indirect
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect

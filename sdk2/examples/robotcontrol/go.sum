@@ -39,6 +39,10 @@ github.com/brunoga/robomaster/sdk2 v0.0.0-20240509192833-82bc383fc17d h1:UlAgZL1
 github.com/brunoga/robomaster/sdk2 v0.0.0-20240509192833-82bc383fc17d/go.mod h1:ehaYWuM3kNV+RuJTjIH1DdDef2L7WvevQmZuhrOYhjk=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20240510142257-b23d5596cb1b h1:kF2/TlaqTvDzp8XAJjx8lylPq7gdlf+7sxncvcYt1Ew=
 github.com/brunoga/robomaster/sdk2 v0.0.0-20240510142257-b23d5596cb1b/go.mod h1:HcfdgE4LNgd3eHRi4+rZ/NkYvYejFpOQFjxLTNXw6kk=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20240513134621-4f275972f66c h1:8x1oIB9LZExKf7ocxyNvO83/37vRkM5aDm8GwmOR+rY=
+github.com/brunoga/robomaster/sdk2 v0.0.0-20240513134621-4f275972f66c/go.mod h1:r+eiWc0RwksHXKz+x5MRNMXE57U0Na+Xpbr1TZ0WftU=
+github.com/brunoga/timedsignalwaiter v1.0.0 h1:qrOJVQHkEs3THyiA6VJq9x5gk332Y+P1so5oNKXKyqY=
+github.com/brunoga/timedsignalwaiter v1.0.0/go.mod h1:BdJJP3W2pKIagoTPlFpoReg5sxZQ2rDa0ZspHWoX7Sw=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3 h1:PKhT360UHMwwv/5usxwRoQKTloA2mpRUq2dGP9B5CIM=
 github.com/brunoga/unitybridge v0.0.0-20231202154741-31e5c0039db3/go.mod h1:wq3X99nAWWkpRbVqNCCUV3t7uAvce0i20IGBOShIt9I=
 github.com/brunoga/unitybridge v0.0.0-20231205113415-228b9b42c523 h1:rAprHyup0V25m5v5XHxMJ3K0NZV2qRlTA9Y5U5RHjB4=
@@ -55,6 +59,8 @@ github.com/brunoga/unitybridge v0.0.0-20240509192742-25cd53d3f048 h1:3a+43KBTAgA
 github.com/brunoga/unitybridge v0.0.0-20240509192742-25cd53d3f048/go.mod h1:tkr/pVjQdSizT3IxLi3e+L8a3rnz4VBcXwKy0BT0J3I=
 github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f h1:QmvzLyt5gOE0TWqWzsedv3HfcmzC7HplnaXejUbkEYY=
 github.com/brunoga/unitybridge v0.0.0-20240511000850-52fb72f8d30f/go.mod h1:jD+ZMzX3K4D9IYrZc8zYfVbG5tm7oFnPNfdXtoQeWwo=
+github.com/brunoga/unitybridge v0.0.0-20240512220129-c06859fdee3c h1:hGNEHcf8N9URUnq7EbGmBfCGQo77K2dZCVDRC2u1E+k=
+github.com/brunoga/unitybridge v0.0.0-20240512220129-c06859fdee3c/go.mod h1:yW0h/WxBB7zjSGKmELq4a1yOhloSJpum4AaKSWEZCMI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
