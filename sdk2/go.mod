@@ -2,7 +2,7 @@ module github.com/brunoga/robomaster/sdk2
 
 go 1.22.3
 
-require github.com/brunoga/unitybridge v0.0.0-20240511152815-e1399e967d54
+require github.com/brunoga/unitybridge v0.0.0-20240512220129-c06859fdee3c
 
 require (
 	github.com/brunoga/broadcaster v1.0.0 // indirect
