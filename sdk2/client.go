@@ -126,15 +126,17 @@ func (c *Client) Start() error {
 	}
 
 	// GamePad.
-	err = c.changeStateIfNonNil(c.gb, waitTimeout, true)
-	if err != nil {
-		if err.Error() == "GamePad connection not established" {
-			// GamePad is optional so it is fine it did not connect.
-			c.l.Warn("GamePad connection not established.")
-		} else {
-			return err
+	go func() {
+		err = c.changeStateIfNonNil(c.gb, waitTimeout, true)
+		if err != nil {
+			if err.Error() == "GamePad connection not established" {
+				// GamePad is optional so it is fine it did not connect.
+				c.l.Warn("GamePad connection not established.")
+			} else {
+				c.l.Error("GamePad connection error: %v", err)
+			}
 		}
-	}
+	}()
 
 	c.started = true
 
