@@ -10,6 +10,17 @@ type StickPosition struct {
 	sp *controller.StickPosition
 }
 
+// NewStickPosition creates a new StickPosition with the given X and Y
+// positions.
+func NewStickPosition(x, y float64) *StickPosition {
+	return &StickPosition{
+		sp: &controller.StickPosition{
+			X: x,
+			Y: y,
+		},
+	}
+}
+
 // Set sets the position of the stick controller. X and Y must be between 0.0
 // and 1.0.
 func (s *StickPosition) Set(x, y float64) {
