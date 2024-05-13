@@ -10,6 +10,11 @@ import (
 
 type Chassis struct {
 	controllerEntityMap map[uint64]*entities.Chassis
+
+	previousLeftRight       float32
+	previousForwardBackward float32
+	previousMouseXDelta     float32
+	previousMouseYDelta     float32
 }
 
 func (c *Chassis) New(w *ecs.World) {
@@ -54,6 +59,20 @@ func (c *Chassis) Update(dt float32) {
 	} else if mouseYDelta < -100 {
 		mouseYDelta = -100
 	}
+
+	// Check if any movenet happened, if not, just return.
+	if currentLeftRight == c.previousLeftRight &&
+		currentForwardBackward == c.previousForwardBackward &&
+		mouseXDelta == c.previousMouseXDelta &&
+		mouseYDelta == c.previousMouseYDelta {
+		return
+	}
+
+	// Update previous values to the current ones.
+	c.previousLeftRight = currentLeftRight
+	c.previousForwardBackward = currentForwardBackward
+	c.previousMouseXDelta = mouseXDelta
+	c.previousMouseYDelta = mouseYDelta
 
 	for _, controllerEntity := range c.controllerEntityMap {
 		cec := controllerEntity.Chassis
