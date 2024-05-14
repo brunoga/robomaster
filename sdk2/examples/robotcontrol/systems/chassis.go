@@ -46,33 +46,22 @@ func (c *Chassis) Update(dt float32) {
 	currentLeftRight := engo.Input.Axis("Left/Right").Value()
 	currentForwardBackward := engo.Input.Axis("Forward/Backward").Value()
 
-	mouseXDelta := engo.Input.Axis("MouseXAxis").Value()
-	if mouseXDelta > 100 {
-		mouseXDelta = 100
-	} else if mouseXDelta < -100 {
-		mouseXDelta = -100
-	}
-
-	mouseYDelta := engo.Input.Axis("MouseYAxis").Value()
-	if mouseYDelta > 100 {
-		mouseYDelta = 100
-	} else if mouseYDelta < -100 {
-		mouseYDelta = -100
-	}
+	currentMouseXDelta := clampValueTo(engo.Input.Axis("MouseXAxis").Value(), 100)
+	currentMouseYDelta := clampValueTo(engo.Input.Axis("MouseYAxis").Value(), 100)
 
 	// Check if any movenet happened, if not, just return.
 	if currentLeftRight == c.previousLeftRight &&
 		currentForwardBackward == c.previousForwardBackward &&
-		mouseXDelta == c.previousMouseXDelta &&
-		mouseYDelta == c.previousMouseYDelta {
+		currentMouseXDelta == c.previousMouseXDelta &&
+		currentMouseYDelta == c.previousMouseYDelta {
 		return
 	}
 
 	// Update previous values to the current ones.
 	c.previousLeftRight = currentLeftRight
 	c.previousForwardBackward = currentForwardBackward
-	c.previousMouseXDelta = mouseXDelta
-	c.previousMouseYDelta = mouseYDelta
+	c.previousMouseXDelta = currentMouseXDelta
+	c.previousMouseYDelta = currentMouseYDelta
 
 	for _, controllerEntity := range c.controllerEntityMap {
 		cec := controllerEntity.Chassis
@@ -83,11 +72,20 @@ func (c *Chassis) Update(dt float32) {
 		}
 
 		gimbalStickPosition := &controller.StickPosition{
-			X: float64(mouseXDelta) / float64(100),
-			Y: float64(mouseYDelta) / float64(100),
+			X: float64(currentMouseXDelta) / float64(100),
+			Y: float64(currentMouseYDelta) / float64(100),
 		}
 
 		cec.Chassis.Move(chassisStickPosition, gimbalStickPosition,
 			controller.ModeFPV)
 	}
+}
+
+func clampValueTo(value, clamp float32) float32 {
+	if value > clamp {
+		return clamp
+	} else if value < -clamp {
+		return -clamp
+	}
+	return value
 }
