@@ -196,7 +196,7 @@ func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key,
 
 	err = u.GetKeyValue(k, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
-			err = fmt.Errorf("error getting value for key %s: %s", k, r)
+			err = fmt.Errorf("error getting value for key %s: %s", k, r.ErrorDesc())
 		} else {
 			res = r
 		}
@@ -210,7 +210,7 @@ func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key,
 
 	select {
 	case <-done:
-		return res, nil
+		return res, err
 	case <-time.After(5 * time.Second):
 		return nil, fmt.Errorf("timeout getting value for key %s", k)
 	}
@@ -275,7 +275,7 @@ func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
 
 	err = u.SetKeyValue(k, value, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
-			err = fmt.Errorf("error setting value for key %s: %s", k, r)
+			err = fmt.Errorf("error setting value for key %s: %s", k, r.ErrorDesc())
 		}
 
 		close(done)
@@ -287,7 +287,7 @@ func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
 
 	select {
 	case <-done:
-		return nil
+		return err
 	case <-time.After(5 * time.Second):
 		return fmt.Errorf("timeout setting value for key %s", k)
 	}
@@ -348,7 +348,7 @@ func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key, value any) error {
 
 	err = u.PerformActionForKey(k, value, func(r *result.Result) {
 		if r.ErrorCode() != 0 {
-			err = fmt.Errorf("error performing action for key %s: %s", k, r)
+			err = fmt.Errorf("error performing action for key %s: %s", k, r.ErrorDesc())
 		}
 
 		close(done)
@@ -360,7 +360,7 @@ func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key, value any) error {
 
 	select {
 	case <-done:
-		return nil
+		return err
 	case <-time.After(5 * time.Second):
 		return fmt.Errorf("timeout performing action for key %s", k)
 	}
