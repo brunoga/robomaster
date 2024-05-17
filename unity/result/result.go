@@ -13,7 +13,7 @@ import (
 type Result struct {
 	key       *key.Key
 	tag       uint64
-	errorCode int32
+	errorCode int64
 	errorDesc string
 	value     any
 }
@@ -21,12 +21,12 @@ type Result struct {
 type jsonResult struct {
 	Key   uint32
 	Tag   uint64
-	Error int32
+	Error int64
 	Value json.RawMessage // defer decoding value until we know the type
 }
 
 // New creates a new Result with the given parameters.
-func New(key *key.Key, tag uint64, errorCode int32, errorDesc string,
+func New(key *key.Key, tag uint64, errorCode int64, errorDesc string,
 	value any) *Result {
 	if reflect.TypeOf(key.ResultValue()) != reflect.TypeOf(value) {
 		panic(fmt.Sprintf("result value type (%s) does not match key %s value "+
@@ -77,7 +77,7 @@ func (r *Result) Tag() uint64 {
 }
 
 // ErrorCode returns the error code associated with this result.
-func (r *Result) ErrorCode() int32 {
+func (r *Result) ErrorCode() int64 {
 	return r.errorCode
 }
 
@@ -115,10 +115,20 @@ func (r *Result) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	value := key.ResultValue()
-	err = json.Unmarshal(jr.Value, &value)
-	if err != nil {
-		return err
+	// First try to parse value as a string (for when a request has an empty
+	// value response)
+	var stringValue string
+	err = json.Unmarshal(jr.Value, &stringValue)
+	if err != nil || len(stringValue) != 0 {
+		// Parsing as a string either failed or resulted in an non-empty string.
+		// Try to parse as the actual value type.
+		value := key.ResultValue()
+		err = json.Unmarshal(jr.Value, &value)
+		if err != nil {
+			return err
+		}
+
+		r.value = value
 	}
 
 	errorDesc := ""
@@ -130,7 +140,6 @@ func (r *Result) UnmarshalJSON(data []byte) error {
 	r.tag = jr.Tag
 	r.errorCode = jr.Error
 	r.errorDesc = errorDesc
-	r.value = value
 
 	return nil
 }
