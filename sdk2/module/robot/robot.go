@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"fmt"
 	"log/slog"
 	"sort"
 	"sync/atomic"
@@ -168,18 +169,36 @@ func (r *Robot) SpeakerVolume() (uint8, error) {
 		return 0, err
 	}
 
-	return uint8(res.Value().(float64)), nil
+	return uint8(res.Value().(*value.Uint64).Value), nil
 }
 
 // SetSpeakerVolume sets the speaker volume.
 func (r *Robot) SetSpeakerVolume(volume uint8) error {
 	return r.UB().SetKeyValueSync(key.KeyRobomasterSystemSpeakerVolumn,
-		volume)
+		&value.Uint64{Value: uint64(volume)})
 }
 
 // BatteryPowerPercent returns the current battery power percent.
 func (r *Robot) BatteryPowerPercent() uint8 {
 	return *r.batteryPowerPercent.Load()
+}
+
+func (r *Robot) ChassisSpeedLevel() (uint8, error) {
+	res, err := r.UB().GetKeyValueSync(key.KeyRobomasterSystemChassisSpeedLevel, true)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint8(res.Value().(*value.Uint64).Value), nil
+}
+
+func (r *Robot) SetChassisSpeedLevel(speedLevel uint8) error {
+	if speedLevel < 1 || speedLevel > 4 {
+		return fmt.Errorf("invalid chassis speed level: %d", speedLevel)
+	}
+
+	return r.UB().SetKeyValueSync(key.KeyRobomasterSystemChassisSpeedLevel,
+		&value.Uint64{Value: uint64(speedLevel)})
 }
 
 // Stop stops the Robot module.
