@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/brunoga/unitybridge/unity/key"
-	"github.com/brunoga/unitybridge/unity/result/value"
+	"github.com/brunoga/robomaster/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
 func TestNewFromJSON(t *testing.T) {

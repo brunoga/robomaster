@@ -10,13 +10,13 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/support/token"
-	"github.com/brunoga/unitybridge/unity/event"
-	"github.com/brunoga/unitybridge/unity/key"
-	"github.com/brunoga/unitybridge/unity/result"
-	"github.com/brunoga/unitybridge/unity/result/value"
+	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/support/token"
+	"github.com/brunoga/robomaster/unitybridge/unity/event"
+	"github.com/brunoga/robomaster/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
 // Camera provides support for managing the camera attached to the robot.

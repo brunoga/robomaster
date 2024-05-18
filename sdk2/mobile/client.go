@@ -5,7 +5,7 @@ import (
 
 	"github.com/brunoga/robomaster/sdk2"
 	"github.com/brunoga/robomaster/sdk2/module"
-	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
 
 const (

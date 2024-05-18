@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/brunoga/unitybridge v0.0.0-20231214185119-86e2604d8a88 // indirect
+	github.com/brunoga/robomaster/unitybridge v0.0.0-20231214185119-86e2604d8a88 // indirect
 	github.com/lmittmann/tint v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

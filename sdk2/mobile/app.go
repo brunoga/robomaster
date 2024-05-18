@@ -1,6 +1,6 @@
 package mobile
 
-import "github.com/brunoga/unitybridge/support"
+import "github.com/brunoga/robomaster/unitybridge/support"
 
 // App holds the ID for a specific app.
 type App struct {

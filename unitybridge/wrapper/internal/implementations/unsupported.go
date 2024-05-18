@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper/callback"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
 )
 
 func init() {

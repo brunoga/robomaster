@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/sdk2/module/connection"
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper"
+	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper"
 )
 
 func TestVideo(t *testing.T) {

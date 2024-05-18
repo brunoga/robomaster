@@ -1,10 +1,10 @@
 package mock
 
 import (
-	"github.com/brunoga/unitybridge/wrapper/callback"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
 	"github.com/stretchr/testify/mock"
 
-	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
+	internal_callback "github.com/brunoga/robomaster/unitybridge/wrapper/internal/callback"
 )
 
 type UnityBridge struct {

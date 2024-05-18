@@ -15,9 +15,9 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module/gimbal"
 	"github.com/brunoga/robomaster/sdk2/module/gun"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper"
+	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper"
 )
 
 type Client struct {
@@ -43,7 +43,7 @@ type Client struct {
 // will connect to the first robot it finds.
 //
 // To get a robot to broadcast a given appID, use a QRCode to configure it (see
-// https://github.com/brunoga/unitybridge/blob/main/support/qrcode/qrcode.go).
+// https://github.com/brunoga/robomaster/unitybridge/blob/main/support/qrcode/qrcode.go).
 func New(l *logger.Logger, appID uint64) (*Client, error) {
 	return new(l, appID, connection.TypeRouter, module.TypeAll)
 }

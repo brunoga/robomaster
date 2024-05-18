@@ -1,4 +1,4 @@
-module github.com/brunoga/unitybridge
+module github.com/brunoga/robomaster/unitybridge
 
 go 1.22.3
 

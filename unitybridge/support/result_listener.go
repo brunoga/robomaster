@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/support/token"
+	"github.com/brunoga/robomaster/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/unitybridge/unity/result"
 	"github.com/brunoga/timedsignalwaiter"
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/support/token"
-	"github.com/brunoga/unitybridge/unity/key"
-	"github.com/brunoga/unitybridge/unity/result"
 )
 
 // ResultListener is a helper class to listen for event results from the

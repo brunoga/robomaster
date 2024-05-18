@@ -8,9 +8,9 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/robot"
-	"github.com/brunoga/unitybridge"
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/unity/key"
 )
 
 // Gun is the module that controls turret firing. It supports both infrared and

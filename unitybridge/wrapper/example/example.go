@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/brunoga/robomaster/sdk2"
-	"github.com/brunoga/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
 
 func main() {

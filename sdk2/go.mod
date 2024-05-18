@@ -2,7 +2,7 @@ module github.com/brunoga/robomaster/sdk2
 
 go 1.22.3
 
-require github.com/brunoga/unitybridge v0.0.0-20240517190757-9ffe79125497
+require github.com/brunoga/robomaster/unitybridge v0.0.0-20240517190757-9ffe79125497
 
 require (
 	github.com/brunoga/timedsignalwaiter v1.0.0 // indirect

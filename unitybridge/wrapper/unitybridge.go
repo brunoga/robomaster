@@ -1,9 +1,9 @@
 package wrapper
 
 import (
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper/callback"
-	"github.com/brunoga/unitybridge/wrapper/internal/implementations"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/internal/implementations"
 )
 
 // UnityBridge is the interface to the UnityBridge library. It will always wrap

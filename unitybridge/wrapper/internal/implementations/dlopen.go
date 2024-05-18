@@ -52,11 +52,11 @@ import (
 	"runtime"
 	"unsafe"
 
-	"github.com/brunoga/unitybridge/support/logger"
-	"github.com/brunoga/unitybridge/wrapper/callback"
+	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
 
-	internal_callback "github.com/brunoga/unitybridge/wrapper/internal/callback"
-	"github.com/brunoga/unitybridge/wrapper/internal/implementations/support"
+	internal_callback "github.com/brunoga/robomaster/unitybridge/wrapper/internal/callback"
+	"github.com/brunoga/robomaster/unitybridge/wrapper/internal/implementations/support"
 )
 
 var (
