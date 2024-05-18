@@ -3,6 +3,7 @@ package gamepad
 import (
 	"log/slog"
 	"sync/atomic"
+	"time"
 
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/connection"
@@ -12,6 +13,7 @@ import (
 	"github.com/brunoga/robomaster/unitybridge/support/token"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
 type GamePad struct {
@@ -38,12 +40,51 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	l = l.WithGroup("gamepad_module")
 
-	// TODO(bga): On connection we might need to activate the controller.
+	var g *GamePad
 
-	return &GamePad{
+	g = &GamePad{
 		BaseModule: internal.NewBaseModule(ub, l, "GamePad",
-			key.KeyRobomasterGamePadConnection, nil, cm),
-	}, nil
+			key.KeyRobomasterGamePadConnection, func(r *result.Result) {
+				if r == nil || r.ErrorCode() != 0 {
+					l.Warn("GamePad connection failed.", "result", r)
+					return
+				}
+
+				if res, ok := r.Value().(bool); !ok || !res {
+					l.Warn("GamePad connection failed. Unexpected result.", "result", r)
+					return
+				}
+
+				l.Info("GamePad connected.")
+
+				firmwareVersionResult, err := g.UB().GetKeyValueSync(
+					key.KeyRobomasterGamePadFirmwareVersion, true)
+				if err != nil || firmwareVersionResult == nil ||
+					!firmwareVersionResult.Succeeded() {
+					l.Error("Failed to get GamePad firmware version.", "error",
+						err, "result", firmwareVersionResult)
+					return
+				}
+
+				firmwareVersion := firmwareVersionResult.Value().(string)
+
+				// Bypass the activation dance with the server and just tell the
+				// GamePad it is activated.
+				//
+				// TODO(bga): Test this.
+				value := value.GamePadActivationSettings{
+					IsActivated:  true,
+					ActivateTime: time.Now().Unix(),
+					SerialNumber: firmwareVersion,
+				}
+				err = g.UB().SetKeyValueSync(key.KeyRobomasterGamePadActivationSettings, &value)
+				if err != nil {
+					l.Error("Failed to set GamePad activation settings.", "error", err)
+				}
+			}, cm),
+	}
+
+	return g, nil
 }
 
 func (m *GamePad) Start() error {

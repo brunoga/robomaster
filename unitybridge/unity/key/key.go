@@ -230,7 +230,7 @@ var (
 	KeyRobomasterBatteryReboot          = newKey("KeyRobomasterBatteryReboot", 218103815, AccessTypeAction, nil)
 
 	KeyRobomasterGamePadConnection                   = newKey("KeyRobomasterGamePadConnection", 234881025, AccessTypeRead, &value.Bool{})
-	KeyRobomasterGamePadFirmwareVersion              = newKey("KeyRobomasterGamePadFirmwareVersion", 234881026, AccessTypeRead, nil)
+	KeyRobomasterGamePadFirmwareVersion              = newKey("KeyRobomasterGamePadFirmwareVersion", 234881026, AccessTypeRead, &value.String{})
 	KeyRobomasterGamePadHasMouse                     = newKey("KeyRobomasterGamePadHasMouse", 234881027, AccessTypeRead, nil)
 	KeyRobomasterGamePadHasKeyboard                  = newKey("KeyRobomasterGamePadHasKeyboard", 234881028, AccessTypeRead, nil)
 	KeyRobomasterGamePadCtrlSensitivityX             = newKey("KeyRobomasterGamePadCtrlSensitivityX", 234881029, AccessTypeWrite, nil)
@@ -251,7 +251,7 @@ var (
 	KeyRobomasterGamePadNotAtMiddle                  = newKey("KeyRobomasterGamePadNotAtMiddle", 234881044, AccessTypeRead, nil)
 	KeyRobomasterGamePadBatteryWarning               = newKey("KeyRobomasterGamePadBatteryWarning", 234881045, AccessTypeRead, nil)
 	KeyRobomasterGamePadBatteryPercent               = newKey("KeyRobomasterGamePadBatteryPercent", 234881046, AccessTypeRead, nil)
-	KeyRobomasterGamePadActivationSettings           = newKey("KeyRobomasterGamePadActivationSettings", 234881047, AccessTypeRead|AccessTypeWrite, nil)
+	KeyRobomasterGamePadActivationSettings           = newKey("KeyRobomasterGamePadActivationSettings", 234881047, AccessTypeRead|AccessTypeWrite, &value.GamePadActivationSettings{})
 	KeyRobomasterGamePadControlEnabled               = newKey("KeyRobomasterGamePadControlEnabled", 234881048, AccessTypeWrite, nil)
 
 	KeyRobomasterClawConnection          = newKey("KeyRobomasterClawConnection", 251658241, AccessTypeRead, &value.Bool{})
