@@ -13,7 +13,7 @@ import (
 	"github.com/brunoga/robomaster/module/camera"
 	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/module/gimbal"
-	"github.com/brunoga/robomaster/sdk2"
+	"github.com/brunoga/robomaster/robomaster"
 	"github.com/brunoga/robomaster/support/pid"
 	"gocv.io/x/gocv"
 )
@@ -152,7 +152,7 @@ func (e *exampleVideoHandler) HandleFrame(frame *camera.RGB) {
 func main() {
 	flag.Parse()
 
-	client, err := sdk2.New(nil, 0)
+	client, err := robomaster.New(nil, 0)
 	if err != nil {
 		panic(err)
 	}

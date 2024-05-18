@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	sdk2 "github.com/brunoga/robomaster"
+	robomaster "github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/unitybridge/support"
@@ -15,7 +15,7 @@ import (
 var chassisModule *chassis.Chassis
 
 func TestMain(m *testing.M) {
-	c, err := sdk2.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
+	c, err := robomaster.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
 		module.TypeConnection|module.TypeRobot|module.TypeChassis)
 	if err != nil {
 		panic(err)

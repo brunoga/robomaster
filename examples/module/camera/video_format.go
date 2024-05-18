@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	sdk2 "github.com/brunoga/robomaster"
+	robomaster "github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module/camera"
 	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
@@ -12,7 +12,7 @@ import (
 func main() {
 	l := logger.New(slog.LevelError)
 
-	c, err := sdk2.New(l, 0)
+	c, err := robomaster.New(l, 0)
 	if err != nil {
 		panic(err)
 	}

@@ -1,4 +1,4 @@
-package sdk2
+package robomaster
 
 import (
 	"fmt"
