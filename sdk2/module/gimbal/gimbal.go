@@ -7,12 +7,12 @@ import (
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/connection"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
-	"github.com/brunoga/robomaster/unitybridge"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
-	"github.com/brunoga/robomaster/unitybridge/support/token"
-	"github.com/brunoga/robomaster/unitybridge/unity/key"
-	"github.com/brunoga/robomaster/unitybridge/unity/result"
-	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
+	"github.com/brunoga/robomaster/sdk2/unitybridge"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/token"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/result/value"
 )
 
 // Gimbal is the module that allows controlling the gimbal.

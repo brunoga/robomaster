@@ -8,7 +8,7 @@ import (
 	"github.com/brunoga/robomaster/sdk2"
 	"github.com/brunoga/robomaster/sdk2/examples/robotcontrol/scenes"
 	"github.com/brunoga/robomaster/sdk2/module"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/logger"
 )
 
 var (

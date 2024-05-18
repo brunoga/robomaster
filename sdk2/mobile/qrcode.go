@@ -4,7 +4,7 @@ import (
 	"image/draw"
 
 	"github.com/brunoga/robomaster/sdk2/module/camera"
-	"github.com/brunoga/robomaster/unitybridge/support/qrcode"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/qrcode"
 )
 
 // QRCode allows generating QRCodes that can be read by a Robomaster robot.

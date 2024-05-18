@@ -8,13 +8,13 @@ import (
 
 	"github.com/brunoga/robomaster/sdk2/module"
 	"github.com/brunoga/robomaster/sdk2/module/internal"
-	"github.com/brunoga/robomaster/unitybridge"
-	"github.com/brunoga/robomaster/unitybridge/support/finder"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
-	"github.com/brunoga/robomaster/unitybridge/unity/event"
-	"github.com/brunoga/robomaster/unitybridge/unity/key"
-	"github.com/brunoga/robomaster/unitybridge/unity/result"
-	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
+	"github.com/brunoga/robomaster/sdk2/unitybridge"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/finder"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/event"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/sdk2/unitybridge/unity/result/value"
 )
 
 const (
