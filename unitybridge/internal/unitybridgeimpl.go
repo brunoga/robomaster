@@ -121,7 +121,7 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 		// Basically ignore the error just so we can return the token. Note
 		// that an ErrorCode of -1 means an error occurred while parsing the
 		// cached value (as opposed to an actual result with error).
-		u.l.Error("Error getting cached value for key", "key", k, "err", err, "result", r)
+		u.l.Debug("Error getting cached value for key", "key", k, "err", err, "result", r)
 		return t, nil
 	}
 
