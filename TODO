@@ -1,0 +1,9 @@
+- Make all module startup fully asynchronous.
+    - Each module will keep track of its connected/disconnected startus.
+    - Modules that depend on other modules should listen to those status changes and act accordingly.
+    - Probabloy never set a module to nil and, instead, use Connected() to gat all calls (unless it becomes expensive).
+- Finish up Chassis example tests.
+- Implement example tests for all other modules (will require updates to key value types).
+- Move larger examples (robot control, tracker) to their own repos. Modules within modules is not working very well.
+- Improve mobile interface.
+- Support other Robomaster functionality (TBD).
