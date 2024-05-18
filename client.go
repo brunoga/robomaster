@@ -250,7 +250,10 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		return nil, fmt.Errorf("robot module is required")
 	}
 
-	ub := unitybridge.Get(wrapper.Get(l), true, l)
+	// Enable Unity Bridge debug logging if the logger level is debug.
+	unityBridgeDebugEnabled := l.Level() == slog.LevelDebug
+
+	ub := unitybridge.Get(wrapper.Get(l), unityBridgeDebugEnabled, l)
 
 	cn, err := connection.New(ub, l, appID, typ)
 	if err != nil {
