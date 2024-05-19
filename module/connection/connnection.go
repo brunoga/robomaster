@@ -96,7 +96,7 @@ func New(ub unitybridge.UnityBridge,
 						"error", err)
 				}
 			}
-		}, nil)
+		})
 
 	c.signalQualityRL = support.NewResultListener(ub, l,
 		key.KeyAirLinkSignalQuality, func(r *result.Result) {
@@ -152,7 +152,7 @@ func (c *Connection) Start() error {
 		return err
 	}
 
-	return c.BaseModule.Start()
+	return nil
 }
 
 // SignalQualityLevel returns the current signal quality level. 0 means no
