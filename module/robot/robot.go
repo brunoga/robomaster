@@ -289,12 +289,21 @@ func (r *Robot) onWorkingDevices(res *result.Result) {
 
 func (r *Robot) onBatteryPowerPercent(res *result.Result) {
 	if res == nil || !res.Succeeded() {
+		r.Logger().Error("Unexpected battery power percent result.", "result",
+			res)
 		return
 	}
 
-	v := uint8(res.Value().(*value.Uint64).Value)
+	value, ok := res.Value().(*value.Uint64)
+	if !ok {
+		r.Logger().Error("Unexpected battery power percent value.", "value",
+			res.Value())
+		return
+	}
 
-	r.batteryPowerPercent.Store(&v)
+	batterhyPowerPercent := uint8(value.Value)
+
+	r.batteryPowerPercent.Store(&batterhyPowerPercent)
 }
 
 func (r *Robot) onActionStatus(res *result.Result) {

@@ -9,6 +9,7 @@ import (
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/internal"
 	"github.com/brunoga/robomaster/unitybridge"
+	"github.com/brunoga/robomaster/unitybridge/support"
 	"github.com/brunoga/robomaster/unitybridge/support/finder"
 	"github.com/brunoga/robomaster/unitybridge/support/logger"
 	"github.com/brunoga/robomaster/unitybridge/unity/event"
@@ -36,6 +37,8 @@ type Connection struct {
 	f *finder.Finder
 
 	signalQuality atomic.Uint64
+
+	signalQualityRL *support.ResultListener
 }
 
 var _ module.Module = (*Connection)(nil)
@@ -51,13 +54,56 @@ func New(ub unitybridge.UnityBridge,
 	l = l.WithGroup("connection_module").With(
 		slog.Uint64("app_id", appID))
 
-	return &Connection{
-		BaseModule: internal.NewBaseModule(ub, l, "Connection",
-			key.KeyAirLinkConnection, nil),
+	c := &Connection{
 		appID: appID,
 		typ:   typ,
 		f:     finder.New(appID, l),
-	}, nil
+	}
+
+	c.BaseModule = internal.NewBaseModule(ub, l, "Connection",
+		key.KeyAirLinkConnection, func(r *result.Result) {
+			if r == nil || !r.Succeeded() {
+				c.Logger().Error(
+					"Connection: Unexpected result.", "result", r)
+				return
+			}
+
+			value, ok := r.Value().(*value.Bool)
+			if !ok {
+				c.Logger().Error("Connection: Unexpected value.", "value",
+					r.Value())
+				return
+			}
+
+			if value.Value {
+				// Connection is up. Start listeners.
+				c.Logger().Debug(
+					"Connection: Connected. Starting listeners.")
+				err := c.signalQualityRL.Start()
+				if err != nil {
+					c.Logger().Error(
+						"Connection: Failed to start signal quality listener.",
+						"error", err)
+				}
+			} else {
+				// Connection is down. Stop listeners.
+				c.Logger().Debug(
+					"Connection: Disconnected. Stopping listeners.")
+				err := c.signalQualityRL.Stop()
+				if err != nil {
+					c.Logger().Error(
+						"Connection: Failed to stop signal quality listener.",
+						"error", err)
+				}
+			}
+		}, nil)
+
+	c.signalQualityRL = support.NewResultListener(ub, l,
+		key.KeyAirLinkSignalQuality, func(r *result.Result) {
+			c.onSignalQuality(r)
+		})
+
+	return c, nil
 }
 
 // Start starts the connection module. It will try to find a robot broadcasting
@@ -106,11 +152,7 @@ func (c *Connection) Start() error {
 		return err
 	}
 
-	c.UB().AddKeyListener(key.KeyAirLinkSignalQuality, func(r *result.Result) {
-		c.signalQuality.Store(r.Value().(*value.Uint64).Value)
-	}, false)
-
-	return nil
+	return c.BaseModule.Start()
 }
 
 // SignalQualityLevel returns the current signal quality level. 0 means no
@@ -148,4 +190,21 @@ func (cm *Connection) Stop() error {
 	}
 
 	return cm.BaseModule.Stop()
+}
+
+func (c *Connection) onSignalQuality(r *result.Result) {
+	if r == nil || !r.Succeeded() {
+		c.Logger().Error("Connection: Unexpected signal quality result.",
+			"result", r)
+		return
+	}
+
+	value, ok := r.Value().(*value.Uint64)
+	if !ok {
+		c.Logger().Error("Connection: Unexpected signal quality value.",
+			"value", r.Value())
+		return
+	}
+
+	c.signalQuality.Store(value.Value)
 }
