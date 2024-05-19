@@ -47,7 +47,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	rb.BaseModule = internal.NewBaseModule(ub, l, "Robot",
 		key.KeyRobomasterSystemConnection, func(r *result.Result) {
-			rb.Logger().Debug("Connection status", "result", r)
+			rb.Logger().Debug("Robot connection status", "result", r)
 			if r.Succeeded() {
 				err := rb.workingDevicesRL.Start()
 				if err != nil {
