@@ -335,7 +335,7 @@ func (c *Client) changeStateIfNonNil(m module.Module, waitTime time.Duration,
 		return err
 	}
 
-	if !m.WaitForConnection(waitTime) {
+	if start && !m.WaitForConnection(waitTime) {
 		return fmt.Errorf("%s connection not established", m)
 	}
 
