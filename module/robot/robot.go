@@ -47,21 +47,60 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	rb.BaseModule = internal.NewBaseModule(ub, l, "Robot",
 		key.KeyRobomasterSystemConnection, func(r *result.Result) {
-			rb.Logger().Debug("Robot connection status", "result", r)
-			if r.Succeeded() {
+			if r == nil || !r.Succeeded() {
+				rb.Logger().Error(
+					"Connection: Unexpected result.", "result", r)
+				return
+			}
+
+			value, ok := r.Value().(*value.Bool)
+			if !ok {
+				rb.Logger().Error("Connection: Unexpected value.", "value",
+					r.Value())
+				return
+			}
+
+			if value.Value {
+				// Connection is up. Start listeners.
+				rb.Logger().Debug(
+					"Connection: Connected. Starting listeners.")
 				err := rb.workingDevicesRL.Start()
 				if err != nil {
-					rb.Logger().Error("Failed to start working devices result listener")
+					rb.Logger().Error("Connection: Failed to start working "+
+						"devices result listener.", "error", err)
 				}
 
 				err = rb.batteryPowerPercentRL.Start()
 				if err != nil {
-					rb.Logger().Error("Failed to start battery power percent result listener")
+					rb.Logger().Error("Connection: Failed to start battery "+
+						"power percent result listener", "error", err)
 				}
 
 				err = rb.actionStatusRL.Start()
 				if err != nil {
-					rb.Logger().Error("Failed to start action status result listener")
+					rb.Logger().Error("Connection: Failed to start action "+
+						"status result listener", "error", err)
+				}
+			} else {
+				// Connection is down. Stop listeners.
+				rb.Logger().Debug(
+					"Connection: Disconnected. Stopping listeners.")
+				err := rb.workingDevicesRL.Stop()
+				if err != nil {
+					rb.Logger().Error("Connection: Failed to stop working "+
+						"devices result listener.", "error", err)
+				}
+
+				err = rb.batteryPowerPercentRL.Stop()
+				if err != nil {
+					rb.Logger().Error("Connection: Failed to stop battery "+
+						"power percent result listener", "error", err)
+				}
+
+				err = rb.actionStatusRL.Stop()
+				if err != nil {
+					rb.Logger().Error("Connection: Failed to stop action "+
+						"status result listener", "error", err)
 				}
 			}
 		}, cm)
