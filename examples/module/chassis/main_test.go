@@ -8,6 +8,7 @@ import (
 	robomaster "github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/chassis"
+	"github.com/brunoga/robomaster/module/chassis/controller"
 	"github.com/brunoga/robomaster/unitybridge/support"
 	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
@@ -31,6 +32,12 @@ func TestMain(m *testing.M) {
 	}()
 
 	chassisModule = c.Chassis()
+
+	// Set controller mode to SDK for the tests here.
+	err = chassisModule.SetControllerMode(controller.ModeSDK)
+	if err != nil {
+		panic(err)
+	}
 
 	os.Exit(m.Run())
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
+	"github.com/brunoga/robomaster/unitybridge/unity/task"
 )
 
 // Chassis allows controlling the robot chassis. It also works as the robot main
@@ -115,15 +116,13 @@ func (c *Chassis) SetPosition(m Mode, x, y, z float64) error {
 		controlMode = 1
 	}
 
-	return c.UB().PerformActionForKey(key.KeyMainControllerChassisPosition, &value.ChassisPosition{
-		TaskID:      1,
+	return c.UB().PerformActionForKeySync(key.KeyMainControllerChassisPosition, &value.ChassisPosition{
+		TaskType:    task.TypeChassisPosition,
 		IsCancel:    0,
 		ControlMode: controlMode,
 		X:           float32(x),
 		Y:           float32(y),
 		Z:           float32(z),
-	}, func(r *result.Result) {
-		fmt.Println("ChassisPosition result:", r)
 	})
 }
 

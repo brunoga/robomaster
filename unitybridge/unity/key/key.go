@@ -168,7 +168,7 @@ var (
 	KeyRobomasterSystemConfigSkillTable                 = newKey("KeyRobomasterSystemConfigSkillTable", 83886130, AccessTypeWrite, nil)
 	KeyRobomasterSystemWorkingDevices                   = newKey("KeyRobomasterSystemWorkingDevices", 83886131, AccessTypeRead, &value.List[uint16]{})
 	KeyRobomasterSystemExceptions                       = newKey("KeyRobomasterSystemExceptions", 83886132, AccessTypeRead, nil)
-	KeyRobomasterSystemTaskStatus                       = newKey("KeyRobomasterSystemTaskStatus", 83886133, AccessTypeRead, nil)
+	KeyRobomasterSystemTaskStatus                       = newKey("KeyRobomasterSystemTaskStatus", 83886133, AccessTypeRead, &value.TaskStatus{})
 	KeyRobomasterSystemReturnEnabled                    = newKey("KeyRobomasterSystemReturnEnabled", 83886134, AccessTypeRead|AccessTypeWrite, nil)
 	KeyRobomasterSystemSafeMode                         = newKey("KeyRobomasterSystemSafeMode", 83886135, AccessTypeRead|AccessTypeWrite, nil)
 	KeyRobomasterSystemScratchExecuteState              = newKey("KeyRobomasterSystemScratchExecuteState", 83886136, AccessTypeRead, nil)
