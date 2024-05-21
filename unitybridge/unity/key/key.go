@@ -43,7 +43,7 @@ var (
 	KeyCameraPhotoSize                             = newKey("KeyCameraPhotoSize", 16777221, AccessTypeRead|AccessTypeWrite, nil)
 	KeyCameraStartRecordVideo                      = newKey("KeyCameraStartRecordVideo", 16777222, AccessTypeAction, nil)
 	KeyCameraStopRecordVideo                       = newKey("KeyCameraStopRecordVideo", 16777223, AccessTypeAction, nil)
-	KeyCameraIsRecording                           = newKey("KeyCameraIsRecording", 16777224, AccessTypeRead, nil)
+	KeyCameraIsRecording                           = newKey("KeyCameraIsRecording", 16777224, AccessTypeRead, &value.Bool{})
 	KeyCameraCurrentRecordingTimeInSeconds         = newKey("KeyCameraCurrentRecordingTimeInSeconds", 16777225, AccessTypeRead, nil)
 	KeyCameraVideoFormat                           = newKey("KeyCameraVideoFormat", 16777226, AccessTypeRead|AccessTypeWrite, nil)
 	KeyCameraMode                                  = newKey("KeyCameraMode", 16777227, AccessTypeRead|AccessTypeWrite, nil)
