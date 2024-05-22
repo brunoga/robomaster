@@ -30,6 +30,10 @@ func (d *DController) Output(currentError float64) float64 {
 	var deltaTime time.Duration
 	if !d.lastOutput.IsZero() {
 		deltaTime = now.Sub(d.lastOutput)
+	} else {
+		d.lastOutput = now
+		d.lastError = currentError
+		return 0.0
 	}
 
 	derivative := (currentError - d.lastError) / deltaTime.Seconds()
