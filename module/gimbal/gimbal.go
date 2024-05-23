@@ -43,12 +43,12 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			}
 
 			if connected.Value {
-				err := g.UB().PerformActionForKey(key.KeyGimbalOpenAttitudeUpdates, nil, nil)
+				err := g.UB().PerformActionForKeySync(key.KeyGimbalOpenAttitudeUpdates, nil)
 				if err != nil {
 					g.Logger().Error("Error opening attitude updates", "error", err)
 				}
 			} else {
-				err := g.UB().PerformActionForKey(key.KeyGimbalCloseAttitudeUpdates, nil, nil)
+				err := g.UB().PerformActionForKeySync(key.KeyGimbalCloseAttitudeUpdates, nil)
 				if err != nil {
 					g.Logger().Error("Error closing attitude updates", "error", err)
 				}
@@ -70,78 +70,98 @@ func (g *Gimbal) Start() error {
 	return g.BaseModule.Start()
 }
 
-// ResetPosition resets the gimbal position.
-func (g *Gimbal) ResetPosition() {
-	g.UB().PerformActionForKeySync(key.KeyGimbalResetPosition, nil)
-}
-
-type gimbalSpeedRotation struct {
-	Pitch int16 `json:"pitch"`
-	Roll  int16 `json:"roll"` // unused
-	Yaw   int16 `json:"yaw"`
-}
-
-// SetSpeed sets the gimbal speed.
-//
-// TODO(bga): Figure out units.
-func (g *Gimbal) SetSpeed(pitch, yaw int16) error {
-	// TODO(bga): Check if this is needed all the time.
-	err := g.UB().PerformActionForKey(key.KeyGimbalSpeedRotationEnabled, 1, nil)
-	if err != nil {
-		return err
+// SetRotationSpeed sets the gimbal rotation speed for the pitch and yaw axis in
+// degrees per second.
+func (g *Gimbal) SetRotationSpeed(pitch, yaw int16) error {
+	if pitch < -360 || pitch > 360 {
+		return fmt.Errorf("invalid pitch value %d", pitch)
+	}
+	if yaw < -360 || yaw > 360 {
+		return fmt.Errorf("invalid yaw value %d", yaw)
 	}
 
-	return g.UB().PerformActionForKey(key.KeyGimbalSpeedRotation,
-		gimbalSpeedRotation{Pitch: pitch, Yaw: yaw}, nil)
+	// TODO(bga): Check if this is needed all the time.
+	//err := g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotationEnabled, &value.Uint64{Value: 1})
+	//if err != nil {
+	//	return err
+	//}
+
+	return g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotation,
+		&value.GimbalSpeedRotation{Pitch: pitch, Yaw: yaw})
 }
 
-type gimbalAngleRotation struct {
-	Pitch int16 `json:"pitch"`
-	Yaw   int16 `json:"yaw"`
-	Time  int16 `json:"time"`
-}
-
-// SetRelativePosition sets the gimbal position relative to the current
+// SetRelativeAngleRotation sets the gimbal rotation relative to the current
 // position. This is executed asynchronously.
 //
 // TODO(bga): Figure out units.
-func (g *Gimbal) SetRelativePosition(pitch, yaw int16,
+func (g *Gimbal) SetRelativeAngleRotation(pitch, yaw int16,
 	duration time.Duration) error {
-	return g.UB().PerformActionForKey(key.KeyGimbalAngleIncrementRotation,
-		gimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)}, nil)
+	//if pitch < -60 || pitch > 60 {
+	//	return fmt.Errorf("invalid pitch value %d", pitch)
+	//}
+
+	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleIncrementRotation,
+		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
+			Time: int16(duration * time.Second)})
 }
 
-// SetAbsolutePosition sets the absolute gimbal position in relation to its
+// SetAbsoluteAngleRotation sets the absolute gimbal rotation relative to its
 // default position. This is executed asynchronously.
-func (g *Gimbal) SetAbsolutePosition(pitch, yaw int16,
+func (g *Gimbal) SetAbsoluteAngleRotation(pitch, yaw int16,
 	duration time.Duration) error {
+	//if pitch < -25 || pitch > 35 {
+	//	return fmt.Errorf("invalid pitch value %d", pitch)
+	//}
+
 	// Unfortunatelly it seems that there is no way to set the absolute position
 	// for both pitch and yaw at the same time. So we need to do it in two
 	// steps.
 
 	// Set pitch.
-	err := g.UB().PerformActionForKey(key.KeyGimbalAngleFrontPitchRotation,
-		gimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)}, nil)
+	err := g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontPitchRotation,
+		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
+			Time: int16(duration * time.Second)})
 	if err != nil {
 		return err
 	}
 
-	// Set yaw
-	return g.UB().PerformActionForKey(key.KeyGimbalAngleFrontYawRotation,
-		gimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)}, nil)
+	// Set yaw,
+	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontYawRotation,
+		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
+			Time: int16(duration * time.Second)})
 }
 
-// StopMovement stops any ongoing gimbal movement.
-func (g *Gimbal) StopMovement() error {
-	err := g.SetSpeed(0, 0)
+// StopRotation stops any ongoing gimbal rotation.
+func (g *Gimbal) StopRotation() error {
+	err := g.SetRotationSpeed(0, 0)
 	if err != nil {
 		return err
 	}
 
-	return g.UB().PerformActionForKey(key.KeyGimbalSpeedRotationEnabled, 0, nil)
+	return g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotationEnabled, 0)
+}
+
+// ResetPosition resets the gimbal position.
+func (g *Gimbal) ResetPosition() {
+	g.UB().PerformActionForKeySync(key.KeyGimbalResetPosition, nil)
+}
+
+func (g *Gimbal) ControlMode() (uint64, error) {
+	r, err := g.UB().GetKeyValueSync(key.KeyGimbalControlMode, true)
+	if err != nil {
+		return 0, err
+	}
+
+	if !r.Succeeded() {
+		return 0, fmt.Errorf("error getting control mode: %s", r.ErrorDesc())
+	}
+
+	cm, ok := r.Value().(*value.Uint64)
+	if !ok {
+		return 0, fmt.Errorf("unexpected value: %v", r.Value())
+	}
+
+	return cm.Value, nil
 }
 
 // SetControlMode sets the gimbal control mode.
@@ -158,7 +178,7 @@ func (g *Gimbal) SetControlMode(cm ControlMode) error {
 }
 
 func (g *Gimbal) Stop() error {
-	err := g.StopMovement()
+	err := g.StopRotation()
 	if err != nil {
 		return err
 	}
