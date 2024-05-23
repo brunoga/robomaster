@@ -1,7 +1,6 @@
 package robot
 
 import (
-	"log/slog"
 	"os"
 	"testing"
 
@@ -9,13 +8,12 @@ import (
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/robot"
 	"github.com/brunoga/robomaster/unitybridge/support"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
 
 var robotModule *robot.Robot
 
 func TestMain(m *testing.M) {
-	c, err := robomaster.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
+	c, err := robomaster.NewWithModules(nil, support.AnyAppID,
 		module.TypeConnection|module.TypeRobot)
 	if err != nil {
 		panic(err)
