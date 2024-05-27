@@ -132,6 +132,8 @@ func Get(l *logger.Logger) *dlOpenUnityBridgeImpl {
 		l = logger.New(slog.LevelError)
 	}
 
+	l = l.WithGroup("wrapper_dlopen")
+
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
 
@@ -140,6 +142,9 @@ func Get(l *logger.Logger) *dlOpenUnityBridgeImpl {
 
 func (d *dlOpenUnityBridgeImpl) Create(name string, debuggable bool,
 	logPath string) {
+	d.l.Debug("Create", "name", name, "debuggable", debuggable, "logPath",
+		logPath)
+
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -151,11 +156,15 @@ func (d *dlOpenUnityBridgeImpl) Create(name string, debuggable bool,
 }
 
 func (d *dlOpenUnityBridgeImpl) Initialize() bool {
+	d.l.Debug("Initialize")
+
 	return bool(C.UnityBridgeInitializeCaller(d.unityBridgeInitialize))
 }
 
 func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 	c callback.Callback) {
+	d.l.Debug("SetEventCallback", "eventTypeCode", eventTypeCode, "callback", c)
+
 	var eventCallback C.EventCallback
 	if c != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
@@ -169,6 +178,9 @@ func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 
 func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
+	d.l.Debug("SendEvent", "eventCode", eventCode, "len(output)", len(output),
+		"tag", tag)
+
 	var outputUintptr uintptr
 	if len(output) > 0 {
 		outputUintptr = uintptr(unsafe.Pointer(&output[0]))
@@ -180,6 +192,9 @@ func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 
 func (d *dlOpenUnityBridgeImpl) SendEventWithString(eventCode uint64,
 	data string, tag uint64) {
+	d.l.Debug("SendEventWithString", "eventCode", eventCode, "data", data,
+		"tag", tag)
+
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
@@ -189,12 +204,17 @@ func (d *dlOpenUnityBridgeImpl) SendEventWithString(eventCode uint64,
 
 func (d *dlOpenUnityBridgeImpl) SendEventWithNumber(eventCode, data,
 	tag uint64) {
+	d.l.Debug("SendEventWithNumber", "eventCode", eventCode, "data", data,
+		"tag", tag)
+
 	C.UnitySendEventWithNumberCaller(unsafe.Pointer(d.unitySendEventWithNumber),
 		C.uint64_t(eventCode), C.uint64_t(data), C.uint64_t(tag))
 }
 
 func (d *dlOpenUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(
 	index int) string {
+	d.l.Debug("GetSecurityKeyByKeyChainIndex", "index", index)
+
 	cKey := C.UnityGetSecurityKeyByKeyChainIndexCaller(
 		unsafe.Pointer(d.UnityGetSecurityKeyByKeyChainIndex), C.int(index))
 	defer C.free(unsafe.Pointer(cKey))
@@ -203,10 +223,14 @@ func (d *dlOpenUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(
 }
 
 func (d *dlOpenUnityBridgeImpl) Uninitialize() {
+	d.l.Debug("Uninitialize")
+
 	C.UnityBridgeUninitializeCaller(unsafe.Pointer(d.unityBridgeUninitialize))
 }
 
 func (d *dlOpenUnityBridgeImpl) Destroy() {
+	d.l.Debug("Destroy")
+
 	C.DestroyUnityBridgeCaller(unsafe.Pointer(d.destroyUnityBridge))
 }
 
