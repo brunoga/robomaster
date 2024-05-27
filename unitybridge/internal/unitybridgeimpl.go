@@ -42,6 +42,8 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 		l = logger.New(slog.LevelError)
 	}
 
+	l = l.WithGroup("unity_bridge")
+
 	return &UnityBridgeImpl{
 		uw:                 uw,
 		unityBridgeDebug:   unityBridgeDebug,
@@ -54,6 +56,8 @@ func NewUnityBridgeImpl(uw wrapper.UnityBridge,
 }
 
 func (u *UnityBridgeImpl) Start() error {
+	u.l.Debug("Start")
+
 	u.m.Lock()
 
 	if u.started {
@@ -86,6 +90,8 @@ func (u *UnityBridgeImpl) Start() error {
 
 func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	immediate bool) (token.Token, error) {
+	u.l.Debug("AddKeyListener", "key", k, "callback", c, "immediate", immediate)
+
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return 0, fmt.Errorf("key %s is not readable", k)
 	}
@@ -116,22 +122,24 @@ func (u *UnityBridgeImpl) AddKeyListener(k *key.Key, c result.Callback,
 	}
 
 	r, err := u.GetCachedKeyValue(k)
-	u.l.Debug("GetCachedKeyValue", "key", k, "result", r, "err", err)
-	if err != nil || r.ErrorCode() == -1 {
-		// Basically ignore the error just so we can return the token. Note
-		// that an ErrorCode of -1 means an error occurred while parsing the
-		// cached value (as opposed to an actual result with error).
-		u.l.Debug("Error getting cached value for key", "key", k, "err", err, "result", r)
+	if err != nil {
+		return 0, err
+	}
+
+	if r == nil {
+		// Nil error with nil result means no cached value. Just return the
+		// token.
 		return t, nil
 	}
 
-	u.l.Debug("GetCachedKeyValue: Calling callback", "key", k, "result", r, "err", err)
 	go c(r)
 
 	return t, nil
 }
 
 func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token token.Token) error {
+	u.l.Debug("RemoveKeyListener", "key", k, "token", token)
+
 	if token == 0 {
 		return fmt.Errorf("token cannot be 0")
 	}
@@ -160,6 +168,8 @@ func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key, token token.Token) error
 }
 
 func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
+	u.l.Debug("GetKeyValue", "key", k, "callback", c)
+
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return fmt.Errorf("key %s is not readable", k)
 	}
@@ -181,6 +191,8 @@ func (u *UnityBridgeImpl) GetKeyValue(k *key.Key, c result.Callback) error {
 
 func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key,
 	useCache bool) (*result.Result, error) {
+	u.l.Debug("GetKeyValueSync", "key", k, "useCache", useCache)
+
 	var err error
 	var res *result.Result
 
@@ -217,6 +229,8 @@ func (u *UnityBridgeImpl) GetKeyValueSync(k *key.Key,
 }
 
 func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) (*result.Result, error) {
+	u.l.Debug("GetCachedKeyValue", "key", k)
+
 	if k.AccessType()&key.AccessTypeRead == 0 {
 		return nil, fmt.Errorf("key %s is not readable", k)
 	}
@@ -232,11 +246,18 @@ func (u *UnityBridgeImpl) GetCachedKeyValue(k *key.Key) (*result.Result, error) 
 		output = output[:n]
 	}
 
+	if len(output) == 0 {
+		// No cached value.
+		return nil, nil
+	}
+
 	return result.NewFromJSON(output), nil
 }
 
 func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 	c result.Callback) error {
+	u.l.Debug("SetKeyValue", "key", k, "value", value, "callback", c)
+
 	if k.AccessType()&key.AccessTypeWrite == 0 {
 		return fmt.Errorf("key %s is not writable", k)
 	}
@@ -269,6 +290,8 @@ func (u *UnityBridgeImpl) SetKeyValue(k *key.Key, value any,
 }
 
 func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
+	u.l.Debug("SetKeyValueSync", "key", k, "value", value)
+
 	var err error
 
 	done := make(chan struct{})
@@ -295,6 +318,8 @@ func (u *UnityBridgeImpl) SetKeyValueSync(k *key.Key, value any) error {
 
 func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 	c result.Callback) error {
+	u.l.Debug("PerformActionForKey", "key", k, "value", value, "callback", c)
+
 	if k.AccessType()&key.AccessTypeAction == 0 {
 		return fmt.Errorf("key %s is not an action", k)
 	}
@@ -342,6 +367,8 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 }
 
 func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key, value any) error {
+	u.l.Debug("PerformActionForKeySync", "key", k, "value", value)
+
 	var err error
 
 	done := make(chan struct{})
@@ -368,6 +395,8 @@ func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key, value any) error {
 
 func (u *UnityBridgeImpl) DirectSendKeyValue(k *key.Key,
 	value uint64) error {
+	u.l.Debug("DirectSendKeyValue", "key", k, "value", value)
+
 	// This always sends the event as an action but it never checks for the
 	// action access type. This is intentional as we want to be able to do this
 	// for any key regardless of access type.
@@ -379,6 +408,8 @@ func (u *UnityBridgeImpl) DirectSendKeyValue(k *key.Key,
 }
 
 func (u *UnityBridgeImpl) SendEvent(ev *event.Event) error {
+	u.l.Debug("SendEvent", "event", ev)
+
 	u.uw.SendEvent(ev.Code(), nil, 0)
 
 	return nil
@@ -386,6 +417,8 @@ func (u *UnityBridgeImpl) SendEvent(ev *event.Event) error {
 
 func (u *UnityBridgeImpl) SendEventWithString(ev *event.Event,
 	data string) error {
+	u.l.Debug("SendEventWithString", "event", ev, "data", data)
+
 	u.uw.SendEventWithString(ev.Code(), data, 0)
 
 	return nil
@@ -393,6 +426,8 @@ func (u *UnityBridgeImpl) SendEventWithString(ev *event.Event,
 
 func (u *UnityBridgeImpl) SendEventWithUint64(ev *event.Event,
 	data uint64) error {
+	u.l.Debug("SendEventWithUint64", "event", ev, "data", data)
+
 	u.uw.SendEventWithNumber(ev.Code(), data, 0)
 
 	return nil
@@ -400,6 +435,8 @@ func (u *UnityBridgeImpl) SendEventWithUint64(ev *event.Event,
 
 func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 	c event.TypeCallback) (token.Token, error) {
+	u.l.Debug("AddEventTypeListener", "eventType", t, "callback", c)
+
 	if c == nil {
 		return 0, fmt.Errorf("callback cannot be nil")
 	}
@@ -421,6 +458,8 @@ func (u *UnityBridgeImpl) AddEventTypeListener(t event.Type,
 
 func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 	tk token.Token) error {
+	u.l.Debug("RemoveEventTypeListener", "eventType", t, "token", tk)
+
 	if tk == 0 {
 		return fmt.Errorf("token cannot be 0")
 	}
@@ -447,6 +486,8 @@ func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 }
 
 func (u *UnityBridgeImpl) Stop() error {
+	u.l.Debug("Stop")
+
 	u.m.Lock()
 
 	if !u.started {
@@ -471,6 +512,8 @@ func (u *UnityBridgeImpl) Stop() error {
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
+	u.l.Debug("handleOwnedEvents", "event", e, "data", string(data), "tag", tag,
+		"dataType", dataType)
 	switch e.Type() {
 	case event.TypeSetValue, event.TypePerformAction, event.TypeGetValue:
 		u.notifyCallbacks(data, tag)
@@ -486,6 +529,9 @@ func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 }
 
 func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint64) {
+	u.l.Debug("eventCallback", "eventCode", eventCode, "data", string(data),
+		"tag", tag)
+
 	e := event.NewFromCode(eventCode)
 
 	dataType, tag := event.DataTypeFromTag(tag)
@@ -507,6 +553,9 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 	data []byte, dataType event.DataType) {
+	u.l.Debug("notifyEventTypeListeners", "event", e, "data", string(data),
+		"dataType", dataType)
+
 	u.m.RLock()
 
 	if _, ok := u.eventTypeListeners[e.Type()]; ok {
@@ -522,6 +571,8 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 }
 
 func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
+	u.l.Debug("notifyKeyListeners", "key", k, "data", string(data))
+
 	u.m.RLock()
 
 	r := result.NewFromJSON(data)
@@ -538,6 +589,8 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 }
 
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
+	u.l.Debug("notifyCallbacks", "data", string(data), "tag", tag)
+
 	u.m.Lock()
 	if c, ok := u.callbackListener[token.Token(tag)]; ok {
 		if c != nil {
