@@ -116,16 +116,17 @@ func (c *Camera) AddVideoCallback(vc VideoCallback) (token.Token, error) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	if len(c.callbacks) == 0 {
+	t := c.tg.Next()
+
+	c.callbacks[t] = vc
+
+	if len(c.callbacks) == 1 {
+		// We just added the first callback. Start video stream.
 		err := c.UB().SendEvent(event.NewFromType(event.TypeStartVideo))
 		if err != nil {
 			return 0, err
 		}
 	}
-
-	t := c.tg.Next()
-
-	c.callbacks[t] = vc
 
 	return t, nil
 }
@@ -136,10 +137,6 @@ func (c *Camera) RemoveVideoCallback(t token.Token) error {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	if len(c.callbacks) == 0 {
-		return fmt.Errorf("no callbacks added")
-	}
-
 	_, ok := c.callbacks[t]
 	if !ok {
 		return fmt.Errorf("no callback added for token %d", t)
@@ -148,6 +145,7 @@ func (c *Camera) RemoveVideoCallback(t token.Token) error {
 	delete(c.callbacks, t)
 
 	if len(c.callbacks) == 0 {
+		// We just removed the last callback. Stop video stream.
 		err := c.UB().SendEvent(event.NewFromType(event.TypeStopVideo))
 		if err != nil {
 			return err
