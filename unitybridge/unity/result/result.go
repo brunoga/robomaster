@@ -28,10 +28,12 @@ type jsonResult struct {
 // New creates a new Result with the given parameters.
 func New(key *key.Key, tag uint64, errorCode int64, errorDesc string,
 	value any) *Result {
-	if reflect.TypeOf(key.ResultValue()) != reflect.TypeOf(value) {
-		panic(fmt.Sprintf("result value type (%s) does not match key %s value "+
-			"type (%s)", reflect.TypeOf(value), key, reflect.TypeOf(
-			key.ResultValue())))
+	if key != nil {
+		if reflect.TypeOf(key.ResultValue()) != reflect.TypeOf(value) {
+			panic(fmt.Sprintf("result value type (%s) does not match key %s value "+
+				"type (%s)", reflect.TypeOf(value), key, reflect.TypeOf(
+				key.ResultValue())))
+		}
 	}
 
 	return &Result{
@@ -93,7 +95,7 @@ func (r *Result) Value() any {
 
 // Succeeded returns true if this result represents a successful operation.
 func (r *Result) Succeeded() bool {
-	return r.errorCode == 0
+	return r != nil && r.errorCode == 0
 }
 
 // String returns a string representation of this result.
