@@ -2,7 +2,7 @@ package chassis
 
 import "fmt"
 
-type Mode int8
+type Mode uint8
 
 const (
 	ModeYawFollow Mode = iota
@@ -11,6 +11,8 @@ const (
 	ModeAngularVelocity
 	ModeWayPoint
 	ModeNone
+	// modeCount is the number of modes. Intentionaly not exported.
+	modeCount
 )
 
 func (m Mode) String() string {
@@ -33,5 +35,5 @@ func (m Mode) String() string {
 }
 
 func (m Mode) Valid() bool {
-	return m >= ModeYawFollow && m <= ModeNone
+	return m < modeCount
 }

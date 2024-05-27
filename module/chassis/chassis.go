@@ -3,9 +3,9 @@ package chassis
 import (
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/brunoga/robomaster/module"
-	"github.com/brunoga/robomaster/module/chassis/controller"
 	"github.com/brunoga/robomaster/module/connection"
 	"github.com/brunoga/robomaster/module/internal"
 	"github.com/brunoga/robomaster/module/robot"
@@ -21,8 +21,6 @@ import (
 // controller interface.
 type Chassis struct {
 	*internal.BaseModule
-
-	rm *robot.Robot
 }
 
 var _ module.Module = (*Chassis)(nil)
@@ -36,55 +34,55 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	l = l.WithGroup("chassis_module")
 
-	c := &Chassis{
-		rm: rm,
-	}
+	c := &Chassis{}
 
-	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis",
-		key.KeyMainControllerConnection, func(r *result.Result) {
-			if r == nil || r.ErrorCode() != 0 {
-				return
-			}
+	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis", nil, func(r *result.Result) {
+		if !r.Succeeded() {
+			c.Logger().Error("Connection: Unsuccessfull result.", "result", r)
+			return
+		}
 
-			if res, ok := r.Value().(*value.Bool); !ok || !res.Value {
-				return
-			}
+		connectedValue, ok := r.Value().(*value.Bool)
+		if !ok {
+			c.Logger().Error("Connection: Unexpected value.", "value", r.Value())
+			return
+		}
 
-			if c.rm.Connected() {
-				c.rm.EnableFunction(robot.FunctionTypeMovementControl, true)
-			} else {
-				c.rm.EnableFunction(robot.FunctionTypeMovementControl, false)
-			}
-
-			c.SetControllerMode(controller.ModeFPV) // Seems to be the default mode.
-		}, cm, rm)
+		if connectedValue.Value {
+			c.Logger().Debug("Connected.")
+		} else {
+			c.Logger().Debug("Disconnected.")
+		}
+	})
 
 	return c, nil
 }
 
-// SetControllerMode sets the controller mode for the robot.
-func (c *Chassis) SetControllerMode(m controller.Mode) error {
-	if !m.Valid() {
-		return fmt.Errorf("invalid controller mode: %d", m)
-	}
-
-	return c.UB().SetKeyValueSync(key.KeyMainControllerChassisCarControlMode,
-		&value.Uint64{Value: uint64(m)})
-}
-
 // SetMode sets the chassis mode for the robot.
 func (c *Chassis) SetMode(m Mode) error {
+	if !m.Valid() {
+		return fmt.Errorf("invalid mode: %d", m)
+	}
+
 	// TODO(bga): Figure out this value.
 	value := uint64(1) | uint64(140) | uint64(17920) | uint64(235929600)
 
-	return c.control(m, value)
+	defer func() {
+		// Stop movement after 0.3 seconds. Most likelly to give enough
+		// time for the mode setting to stick.
+		time.Sleep(333 * time.Millisecond)
+		c.StopMovement(m)
+	}()
 
-	// TODO(bga): Apparently we need to stop the chassis mode before returning.
-	//            Check if that is indeed the case.
+	return c.control(m, value)
 }
 
 // StopMovement stops the chassis movement.
 func (c *Chassis) StopMovement(m Mode) error {
+	if !m.Valid() {
+		return fmt.Errorf("invalid mode: %d", m)
+	}
+
 	// TODO(bga): Figure out this value.
 	value := uint64(0) | uint64(140) | uint64(17920) | uint64(235929600)
 
@@ -124,34 +122,6 @@ func (c *Chassis) SetPosition(m Mode, x, y, z float64) error {
 		Y:           float32(y),
 		Z:           float32(z),
 	})
-}
-
-// Move moves the robot using the given stick positions and control mode.
-func (c *Chassis) Move(leftStick *controller.StickPosition,
-	rightStick *controller.StickPosition, m controller.Mode) error {
-	if !m.Valid() {
-		return fmt.Errorf("invalid control mode: %d", m)
-	}
-
-	var leftStickEnabled uint64
-	if leftStick != nil {
-		leftStickEnabled = 1
-	}
-
-	var rightStickEnabled uint64
-	if rightStick != nil {
-		rightStickEnabled = 1
-	}
-
-	v := leftStick.InterpolatedY() |
-		leftStick.InterpolatedX()<<11 |
-		rightStick.InterpolatedY()<<22 |
-		rightStick.InterpolatedX()<<33 |
-		leftStickEnabled<<44 |
-		rightStickEnabled<<45 |
-		uint64(m)<<46
-
-	return c.UB().DirectSendKeyValue(key.KeyMainControllerVirtualStick, v)
 }
 
 func (c *Chassis) control(m Mode, value uint64) error {

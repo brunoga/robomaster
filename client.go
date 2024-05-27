@@ -11,6 +11,7 @@ import (
 	"github.com/brunoga/robomaster/module/camera"
 	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/module/connection"
+	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/module/gamepad"
 	"github.com/brunoga/robomaster/module/gimbal"
 	"github.com/brunoga/robomaster/module/gun"
@@ -25,13 +26,14 @@ type Client struct {
 
 	ub unitybridge.UnityBridge
 
-	cn *connection.Connection
-	cm *camera.Camera
-	ch *chassis.Chassis
-	gm *gimbal.Gimbal
-	rb *robot.Robot
-	gn *gun.Gun
-	gb *gamepad.GamePad
+	connectionModule *connection.Connection
+	cameraModule     *camera.Camera
+	chassisModule    *chassis.Chassis
+	gimbalModule     *gimbal.Gimbal
+	robotModule      *robot.Robot
+	gunModule        *gun.Gun
+	gamePadModule    *gamepad.GamePad
+	controllerModule *controller.Controller
 
 	m       sync.RWMutex
 	started bool
@@ -85,49 +87,55 @@ func (c *Client) Start() error {
 	waitTimeout := 10 * time.Second
 
 	// Connection.
-	err = c.changeStateIfNonNil(c.cn, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.connectionModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// Robot.
-	err = c.changeStateIfNonNil(c.rb, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.robotModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// Wait for devices to be available.
-	if !c.rb.WaitForDevices(waitTimeout) {
+	if !c.robotModule.WaitForDevices(waitTimeout) {
 		return fmt.Errorf("robot working devices unexpectedly not established")
 	}
 
+	// Controller.
+	err = c.changeStateIfNonNil(c.controllerModule, waitTimeout, true)
+	if err != nil {
+		return err
+	}
+
 	// Camera.
-	err = c.changeStateIfNonNil(c.cm, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.cameraModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// Chassis.
-	err = c.changeStateIfNonNil(c.ch, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.chassisModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// Gimbal.
-	err = c.changeStateIfNonNil(c.gm, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.gimbalModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// Gun.
-	err = c.changeStateIfNonNil(c.gn, waitTimeout, true)
+	err = c.changeStateIfNonNil(c.gunModule, waitTimeout, true)
 	if err != nil {
 		return err
 	}
 
 	// GamePad.
 	go func() {
-		err = c.changeStateIfNonNil(c.gb, waitTimeout, true)
+		err = c.changeStateIfNonNil(c.gamePadModule, waitTimeout, true)
 		if err != nil {
 			if err.Error() == "GamePad connection not established" {
 				// GamePad is optional so it is fine it did not connect.
@@ -145,37 +153,42 @@ func (c *Client) Start() error {
 
 // Connection returns the Connection module.
 func (c *Client) Connection() *connection.Connection {
-	return c.cn
+	return c.connectionModule
 }
 
 // Camera returns the Camera module.
 func (c *Client) Camera() *camera.Camera {
-	return c.cm
+	return c.cameraModule
 }
 
 // Chassis returns the Chassis module.
 func (c *Client) Chassis() *chassis.Chassis {
-	return c.ch
+	return c.chassisModule
 }
 
 // Gimbal returns the Gimbal module.
 func (c *Client) Gimbal() *gimbal.Gimbal {
-	return c.gm
+	return c.gimbalModule
 }
 
 // Robot returns the Robot module.
 func (c *Client) Robot() *robot.Robot {
-	return c.rb
+	return c.robotModule
 }
 
 // Gun returns the Gun module.
 func (c *Client) Gun() *gun.Gun {
-	return c.gn
+	return c.gunModule
 }
 
 // GamePad returns the GamePad module. The GamePad is optional and may be nil.
 func (c *Client) GamePad() *gamepad.GamePad {
-	return c.gb
+	return c.gamePadModule
+}
+
+// Controller returns the Controller module.
+func (c *Client) Controller() *controller.Controller {
+	return c.controllerModule
 }
 
 // Stop stops the client and all associated modules.
@@ -192,37 +205,43 @@ func (c *Client) Stop() error {
 	waitTime := 5 * time.Second
 
 	// Gamepad.
-	err := c.changeStateIfNonNil(c.gb, waitTime, false)
+	err := c.changeStateIfNonNil(c.gamePadModule, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Gun.
-	err = c.changeStateIfNonNil(c.gn, waitTime, false)
+	err = c.changeStateIfNonNil(c.gunModule, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Chassis.
-	err = c.changeStateIfNonNil(c.ch, waitTime, false)
+	err = c.changeStateIfNonNil(c.chassisModule, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Camera.
-	err = c.changeStateIfNonNil(c.cm, waitTime, false)
+	err = c.changeStateIfNonNil(c.cameraModule, waitTime, false)
+	if err != nil {
+		return err
+	}
+
+	// Controller.
+	err = c.changeStateIfNonNil(c.controllerModule, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Robot.
-	err = c.changeStateIfNonNil(c.rb, waitTime, false)
+	err = c.changeStateIfNonNil(c.robotModule, waitTime, false)
 	if err != nil {
 		return err
 	}
 
 	// Connection.
-	err = c.changeStateIfNonNil(c.cn, waitTime, false)
+	err = c.changeStateIfNonNil(c.connectionModule, waitTime, false)
 	if err != nil {
 		return err
 	}
@@ -255,66 +274,75 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 
 	ub := unitybridge.Get(wrapper.Get(l), unityBridgeDebugEnabled, l)
 
-	cn, err := connection.New(ub, l, appID, typ)
+	connectionModule, err := connection.New(ub, l, appID, typ)
 	if err != nil {
 		return nil, err
 	}
 
-	rb, err := robot.New(ub, l, cn)
+	robotModule, err := robot.New(ub, l, connectionModule)
 	if err != nil {
 		return nil, err
 	}
 
-	var cm *camera.Camera
+	var cameraModule *camera.Camera
 	if modules&module.TypeCamera != 0 {
-		cm, err = camera.New(ub, l, cn)
+		cameraModule, err = camera.New(ub, l, connectionModule)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var ch *chassis.Chassis
+	var chassisModule *chassis.Chassis
 	if modules&module.TypeChassis != 0 {
-		ch, err = chassis.New(ub, l, cn, rb)
+		chassisModule, err = chassis.New(ub, l, connectionModule, robotModule)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var gm *gimbal.Gimbal
+	var gimbalModule *gimbal.Gimbal
 	if modules&module.TypeGimbal != 0 {
-		gm, err = gimbal.New(ub, l, cn)
+		gimbalModule, err = gimbal.New(ub, l, connectionModule)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var gn *gun.Gun
+	var gunModule *gun.Gun
 	if modules&module.TypeGun != 0 {
-		gn, err = gun.New(ub, l, cn, rb)
+		gunModule, err = gun.New(ub, l, connectionModule, robotModule)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	var gb *gamepad.GamePad
+	var gamePadModule *gamepad.GamePad
 	if modules&module.TypeGamePad != 0 {
-		gb, err = gamepad.New(ub, l, cn)
+		gamePadModule, err = gamepad.New(ub, l, connectionModule)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var controllerModule *controller.Controller
+	if modules&module.TypeController != 0 {
+		controllerModule, err = controller.New(ub, l, connectionModule)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return &Client{
-		ub: ub,
-		l:  l,
-		cn: cn,
-		rb: rb,
-		cm: cm,
-		gm: gm,
-		ch: ch,
-		gn: gn,
-		gb: gb,
+		ub:               ub,
+		l:                l,
+		connectionModule: connectionModule,
+		robotModule:      robotModule,
+		cameraModule:     cameraModule,
+		gimbalModule:     gimbalModule,
+		chassisModule:    chassisModule,
+		gunModule:        gunModule,
+		gamePadModule:    gamePadModule,
+		controllerModule: controllerModule,
 	}, nil
 }
 

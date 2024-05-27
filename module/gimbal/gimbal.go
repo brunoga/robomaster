@@ -102,7 +102,7 @@ func (g *Gimbal) SetRelativeAngleRotation(pitch, yaw int16,
 
 	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleIncrementRotation,
 		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)})
+			Time: int16(100)})
 }
 
 // SetAbsoluteAngleRotation sets the absolute gimbal rotation relative to its
@@ -118,17 +118,17 @@ func (g *Gimbal) SetAbsoluteAngleRotation(pitch, yaw int16,
 	// steps.
 
 	// Set pitch.
-	err := g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontPitchRotation,
-		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)})
-	if err != nil {
-		return err
-	}
+	//err := g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontPitchRotation,
+	//	&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
+	//		Time: int16(duration * time.Millisecond)})
+	//if err != nil {
+	//	return err
+	//}
 
 	// Set yaw,
 	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontYawRotation,
 		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(duration * time.Second)})
+			Time: int16(1000)})
 }
 
 // StopRotation stops any ongoing gimbal rotation.
@@ -175,6 +175,29 @@ func (g *Gimbal) SetControlMode(cm ControlMode) error {
 	}
 
 	return g.UB().DirectSendKeyValue(key.KeyGimbalControlMode, uint64(cm))
+}
+
+func (g *Gimbal) WorkMode() (uint64, error) {
+	r, err := g.UB().GetKeyValueSync(key.KeyGimbalWorkMode, true)
+	if err != nil {
+		return 0, err
+	}
+
+	if !r.Succeeded() {
+		return 0, fmt.Errorf("error getting work mode: %s", r.ErrorDesc())
+	}
+
+	wm, ok := r.Value().(*value.Uint64)
+	if !ok {
+		return 0, fmt.Errorf("unexpected value: %v", r.Value())
+	}
+
+	return wm.Value, nil
+}
+
+// SetWorkMode sets the gimbal work mode.
+func (g *Gimbal) SetWorkMode(wm uint64) error {
+	return g.UB().SetKeyValueSync(key.KeyGimbalWorkMode, &value.Uint64{Value: wm})
 }
 
 func (g *Gimbal) Stop() error {

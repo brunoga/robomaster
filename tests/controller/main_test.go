@@ -1,4 +1,4 @@
-package chassis
+package controller
 
 import (
 	"log/slog"
@@ -7,17 +7,16 @@ import (
 
 	robomaster "github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module"
-	"github.com/brunoga/robomaster/module/chassis"
-	"github.com/brunoga/robomaster/module/robot"
+	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/unitybridge/support"
 	"github.com/brunoga/robomaster/unitybridge/support/logger"
 )
 
-var chassisModule *chassis.Chassis
+var controllerModule *controller.Controller
 
 func TestMain(m *testing.M) {
 	c, err := robomaster.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
-		module.TypeConnection|module.TypeRobot|module.TypeController|module.TypeChassis)
+		module.TypeConnection|module.TypeRobot|module.TypeController)
 	if err != nil {
 		panic(err)
 	}
@@ -31,16 +30,7 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
-	chassisModule = c.Chassis()
-
-	// Set controller mode to SDK for the tests here.
-	//err = c.Controller().SetMode(controller.ModeSDK)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	// Enable robot movement.
-	c.Robot().EnableFunction(robot.FunctionTypeMovementControl, true)
+	controllerModule = c.Controller()
 
 	os.Exit(m.Run())
 }

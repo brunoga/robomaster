@@ -1,18 +1,19 @@
 package module
 
-type Type int8
+type Type uint8
 
 const (
 	TypeConnection Type = 1 << iota
 	TypeRobot
+	TypeController
 	TypeChassis
 	TypeGimbal
 	TypeCamera
 	TypeGun
 	TypeGamePad
 
-	TypeAll = TypeConnection | TypeRobot | TypeChassis | TypeGimbal |
-		TypeCamera | TypeGun | TypeGamePad
-	TypeAllButGamePad = TypeConnection | TypeRobot | TypeChassis | TypeGimbal |
-		TypeCamera | TypeGun
+	TypeAll = TypeConnection | TypeRobot | TypeController | TypeChassis |
+		TypeGimbal | TypeCamera | TypeGun | TypeGamePad
+	TypeAllButGamePad = TypeConnection | TypeRobot | TypeController | TypeChassis |
+		TypeGimbal | TypeCamera | TypeGun
 )

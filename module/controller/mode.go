@@ -1,5 +1,7 @@
 package controller
 
+import "fmt"
+
 // Mode is the type of control mode for the robot.
 type Mode uint8
 
@@ -8,19 +10,21 @@ const (
 	ModeFPV Mode = iota
 	// ModeSDK enables the SDK controller type.
 	ModeSDK
+	// modeCount is the number of modes. Intentionaly not exported.
+	modeCount
 )
 
-func (cm Mode) String() string {
-	switch cm {
+func (m Mode) String() string {
+	switch m {
 	case ModeFPV:
 		return "FPV"
 	case ModeSDK:
 		return "SDK"
 	default:
-		return "Unknown"
+		return fmt.Sprintf("Unknown(%d)", m)
 	}
 }
 
-func (cm Mode) Valid() bool {
-	return cm <= ModeSDK
+func (m Mode) Valid() bool {
+	return m <= modeCount
 }

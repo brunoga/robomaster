@@ -25,6 +25,7 @@ type BaseModule struct {
 	deps []module.Module
 
 	rl *support.ResultListener
+	cb result.Callback
 }
 
 var _ module.Module = (*BaseModule)(nil)
@@ -35,17 +36,35 @@ var _ module.Module = (*BaseModule)(nil)
 func NewBaseModule(ub unitybridge.UnityBridge, l *logger.Logger,
 	name string, k *key.Key, cb result.Callback,
 	deps ...module.Module) *BaseModule {
+
+	var rl *support.ResultListener
+	if k != nil {
+		// We have a key so we need a result listener.
+		rl = support.NewResultListener(ub, l, k, cb)
+	}
+
 	return &BaseModule{
 		ub:   ub,
 		l:    l,
 		name: name,
 		deps: deps,
-		rl:   support.NewResultListener(ub, l, k, cb),
+		rl:   rl,
+		cb:   cb,
 	}
 }
 
 // Start starts the module by starting the connection result listener.
 func (g *BaseModule) Start() error {
+	if g.rl == nil {
+		if g.cb != nil {
+			defer func() {
+				g.cb(result.New(nil, 0, 0, "", &value.Bool{Value: true}))
+			}()
+		}
+
+		return nil
+	}
+
 	return g.rl.Start()
 }
 
@@ -81,6 +100,16 @@ func (g *BaseModule) WaitForConnection(timeout time.Duration) bool {
 
 // Stop stops the module by stopping the connection result listener.
 func (g *BaseModule) Stop() error {
+	if g.rl == nil {
+		if g.cb != nil {
+			defer func() {
+				g.cb(result.New(nil, 0, 0, "", &value.Bool{Value: false}))
+			}()
+		}
+
+		return nil
+	}
+
 	return g.rl.Stop()
 }
 
@@ -100,17 +129,24 @@ func (g *BaseModule) Logger() *logger.Logger {
 }
 
 func (g *BaseModule) isConnected() bool {
-	r := g.rl.Result()
+	if g.rl != nil {
+		r := g.rl.Result()
 
-	if r == nil || r.ErrorCode() != 0 {
-		return false
+		if !r.Succeeded() {
+			return false
+		}
+
+		connected, ok := r.Value().(*value.Bool)
+		if !ok || !connected.Value {
+			return false
+		}
 	}
 
-	connected, ok := r.Value().(*value.Bool)
-	if !ok || !connected.Value {
-		return false
-	}
-
+	// Check if dependencies are connected. Notice that this does not wait for
+	// connection currently so if any dependencies are not connected, this will
+	// return false.
+	//
+	// TODO(bga): Maybe actually wait for connection here?
 	depsConnected := true
 	for _, dep := range g.deps {
 		if !dep.Connected() {
