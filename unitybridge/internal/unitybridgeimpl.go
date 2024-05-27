@@ -512,8 +512,14 @@ func (u *UnityBridgeImpl) Stop() error {
 
 func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 	tag uint64, dataType event.DataType) error {
-	u.l.Debug("handleOwnedEvents", "event", e, "data", string(data), "tag", tag,
-		"dataType", dataType)
+	if len(data) > 100 {
+		u.l.Debug("handleOwnedEvents", "event", e, "len(data)", len(data),
+			"tag", tag, "dataType", dataType)
+	} else {
+		u.l.Debug("handleOwnedEvents", "event", e, "data", string(data), "tag", tag,
+			"dataType", dataType)
+	}
+
 	switch e.Type() {
 	case event.TypeSetValue, event.TypePerformAction, event.TypeGetValue:
 		u.notifyCallbacks(data, tag)
@@ -529,8 +535,13 @@ func (u *UnityBridgeImpl) handleOwnedEvents(e *event.Event, data []byte,
 }
 
 func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint64) {
-	u.l.Debug("eventCallback", "eventCode", eventCode, "data", string(data),
-		"tag", tag)
+	if len(data) > 100 {
+		u.l.Debug("eventCallback", "eventCode", eventCode, "len(data)", len(data),
+			"tag", tag)
+	} else {
+		u.l.Debug("eventCallback", "eventCode", eventCode, "data", string(data),
+			"tag", tag)
+	}
 
 	e := event.NewFromCode(eventCode)
 
@@ -553,8 +564,13 @@ func (u *UnityBridgeImpl) eventCallback(eventCode uint64, data []byte, tag uint6
 
 func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 	data []byte, dataType event.DataType) {
-	u.l.Debug("notifyEventTypeListeners", "event", e, "data", string(data),
-		"dataType", dataType)
+	if len(data) > 100 {
+		u.l.Debug("notifyEventTypeListeners", "event", e, "len(data)", len(data),
+			"dataType", dataType)
+	} else {
+		u.l.Debug("notifyEventTypeListeners", "event", e, "data", string(data),
+			"dataType", dataType)
+	}
 
 	u.m.RLock()
 
@@ -571,7 +587,11 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 }
 
 func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
-	u.l.Debug("notifyKeyListeners", "key", k, "data", string(data))
+	if len(data) > 100 {
+		u.l.Debug("notifyKeyListeners", "key", k, "len(data)", len(data))
+	} else {
+		u.l.Debug("notifyKeyListeners", "key", k, "data", string(data))
+	}
 
 	u.m.RLock()
 
@@ -589,7 +609,11 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 }
 
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
-	u.l.Debug("notifyCallbacks", "data", string(data), "tag", tag)
+	if len(data) > 100 {
+		u.l.Debug("notifyCallbacks", "len(data)", len(data), "tag", tag)
+	} else {
+		u.l.Debug("notifyCallbacks", "data", string(data), "tag", tag)
+	}
 
 	u.m.Lock()
 	if c, ok := u.callbackListener[token.Token(tag)]; ok {
