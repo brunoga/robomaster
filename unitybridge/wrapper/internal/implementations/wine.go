@@ -14,7 +14,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
 
 	internal_callback "github.com/brunoga/robomaster/unitybridge/wrapper/internal/callback"

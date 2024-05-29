@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge/wrapper/callback"
 )
 

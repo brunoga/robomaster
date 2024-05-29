@@ -9,8 +9,8 @@ import (
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/module/gimbal"
-	"github.com/brunoga/robomaster/unitybridge/support"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/support"
+	"github.com/brunoga/robomaster/support/logger"
 )
 
 var gimbalModule *gimbal.Gimbal

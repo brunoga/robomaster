@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/support/logger"
 )
 
 const (

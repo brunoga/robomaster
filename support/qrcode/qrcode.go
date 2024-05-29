@@ -9,7 +9,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/brunoga/robomaster/unitybridge/support"
+	"github.com/brunoga/robomaster/support"
 	"github.com/skip2/go-qrcode"
 )
 

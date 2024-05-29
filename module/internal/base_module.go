@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/module"
+	"github.com/brunoga/robomaster/support"
+	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge"
-	"github.com/brunoga/robomaster/unitybridge/support"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"

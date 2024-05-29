@@ -8,7 +8,7 @@ import (
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/module/controller"
-	"github.com/brunoga/robomaster/unitybridge/support"
+	"github.com/brunoga/robomaster/support"
 )
 
 var chassisModule *chassis.Chassis

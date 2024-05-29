@@ -1,9 +1,9 @@
 package unitybridge
 
 import (
+	"github.com/brunoga/robomaster/support/logger"
+	"github.com/brunoga/robomaster/support/token"
 	"github.com/brunoga/robomaster/unitybridge/internal"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
-	"github.com/brunoga/robomaster/unitybridge/support/token"
 	"github.com/brunoga/robomaster/unitybridge/unity/event"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"

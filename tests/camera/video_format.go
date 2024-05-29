@@ -6,7 +6,7 @@ import (
 
 	robomaster "github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module/camera"
-	"github.com/brunoga/robomaster/unitybridge/support/logger"
+	"github.com/brunoga/robomaster/support/logger"
 )
 
 func main() {
