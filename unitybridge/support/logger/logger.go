@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"runtime"
@@ -8,6 +9,10 @@ import (
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
+)
+
+const (
+	LevelTrace = slog.Level(slog.LevelDebug - 1)
 )
 
 type Logger struct {
@@ -49,5 +54,12 @@ func (l *Logger) With(args ...any) *Logger {
 	return &Logger{
 		Logger:   l.Logger.With(args...),
 		levelVar: l.levelVar,
+	}
+}
+
+func (l *Logger) Trace(msg string, args ...any) func(args ...any) {
+	l.Logger.Log(context.Background(), LevelTrace, "TRACE START: "+msg, args...)
+	return func(args ...any) {
+		l.Logger.Log(context.Background(), LevelTrace, "TRACE END: "+msg, args...)
 	}
 }
