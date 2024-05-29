@@ -118,17 +118,14 @@ func (g *Gimbal) SetAbsoluteAngleRotation(pitch, yaw int16,
 	// steps.
 
 	// Set pitch.
-	//err := g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontPitchRotation,
+	//return g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontPitchRotation,
 	//	&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
 	//		Time: int16(duration * time.Millisecond)})
-	//if err != nil {
-	//	return err
-	//}
 
 	// Set yaw,
 	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleFrontYawRotation,
 		&value.GimbalAngleRotation{Pitch: pitch, Yaw: yaw,
-			Time: int16(1000)})
+			Time: int16(100)})
 }
 
 // StopRotation stops any ongoing gimbal rotation.
