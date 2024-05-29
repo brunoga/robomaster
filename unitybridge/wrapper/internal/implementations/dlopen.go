@@ -47,6 +47,7 @@ char* UnityGetSecurityKeyByKeyChainIndexCaller(void *f, int index) {
 import "C"
 
 import (
+	"bytes"
 	"fmt"
 	"log/slog"
 	"runtime"
@@ -132,12 +133,7 @@ func Get(l *logger.Logger) (unityBridge *dlOpenUnityBridgeImpl) {
 		l = logger.New(slog.LevelError)
 	}
 
-	l = l.WithGroup("wrapper_dlopen")
-
-	endTrace := l.Trace("Get", "logger", l)
-	defer func() {
-		endTrace("unityBridge", unityBridge)
-	}()
+	l = l.WithGroup("unity_bridge_wrapper")
 
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
@@ -187,8 +183,16 @@ func (d *dlOpenUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 
 func (d *dlOpenUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
-	defer d.l.Trace("SendEvent", "eventCode", eventCode, "output", output,
-		"tag", tag)()
+	endTrace := d.l.Trace("SendEvent", "eventCode", eventCode, "len(output)",
+		len(output), "tag", tag)
+	defer func() {
+		zeroPos := bytes.Index(output, []byte{0})
+		if zeroPos == -1 {
+			endTrace("output", output)
+		} else {
+			endTrace("output", output[0:zeroPos])
+		}
+	}()
 
 	var outputUintptr uintptr
 	if len(output) > 0 {
@@ -241,7 +245,7 @@ func (d *dlOpenUnityBridgeImpl) Uninitialize() {
 }
 
 func (d *dlOpenUnityBridgeImpl) Destroy() {
-	defer d.l.Trace("Destroy")
+	defer d.l.Trace("Destroy")()
 
 	C.DestroyUnityBridgeCaller(unsafe.Pointer(d.destroyUnityBridge))
 }

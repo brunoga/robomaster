@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/brunoga/groupfilterhandler"
 	"github.com/lmittmann/tint"
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-	LevelTrace = slog.Level(slog.LevelDebug - 1)
+	LevelTrace = slog.LevelDebug - 1
 )
 
 type Logger struct {
@@ -31,6 +32,16 @@ func New(level slog.Level, allowedGroups ...string) *Logger {
 	opts := &tint.Options{
 		Level:   levelVar,
 		NoColor: !isatty.IsTerminal(output.Fd()) || runtime.GOOS == "ios",
+		ReplaceAttr: func(groups []string, attr slog.Attr) slog.Attr {
+			stringValue := attr.Value.String()
+			if len(stringValue) > 100 {
+				stringValue = stringValue[:100] + "..."
+			}
+			return slog.Attr{
+				Key:   attr.Key,
+				Value: slog.StringValue(stringValue),
+			}
+		},
 	}
 
 	return &Logger{
@@ -59,8 +70,24 @@ func (l *Logger) With(args ...any) *Logger {
 }
 
 func (l *Logger) Trace(msg string, args ...any) func(args ...any) {
-	l.Logger.Log(context.Background(), LevelTrace, "TRACE START: "+msg, args...)
-	return func(args ...any) {
-		l.Logger.Log(context.Background(), LevelTrace, "TRACE END: "+msg, args...)
+	if !l.Enabled(context.Background(), LevelTrace) {
+		return func(args ...any) {}
 	}
+
+	// Convert args to []slog.Attr (if needed).
+	attrs := slog.Group("", args...).Value.Group()
+
+	l.trace(msg, "TRACE START: ", attrs...)
+	return func(args ...any) {
+		attrs := slog.Group("", args...).Value.Group()
+		l.trace(msg, "TRACE END: ", attrs...)
+	}
+}
+
+func (l *Logger) trace(msg, prefix string, args ...slog.Attr) {
+	var pcs [1]uintptr
+	runtime.Callers(3, pcs[:])
+	r := slog.NewRecord(time.Now(), LevelTrace, prefix+msg, pcs[0])
+	r.AddAttrs(args...)
+	l.Logger.Handler().Handle(context.Background(), r)
 }

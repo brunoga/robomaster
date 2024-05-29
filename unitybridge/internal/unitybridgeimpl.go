@@ -628,7 +628,7 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 		}
 	} else {
 		u.l.Warn("No listeners registered for event type", "eventType",
-			e.Type(), "event", e, "len(data)", len(data))
+			e.Type(), "event", e, "data", data)
 	}
 
 	u.m.RUnlock()
