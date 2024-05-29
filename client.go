@@ -269,8 +269,8 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		return nil, fmt.Errorf("robot module is required")
 	}
 
-	// Enable Unity Bridge debug logging if the logger level is debug.
-	unityBridgeDebugEnabled := l.Level() == slog.LevelDebug
+	// Enable Unity Bridge debug logging if the logger level is trace.
+	unityBridgeDebugEnabled := l.Level() == logger.LevelTrace
 
 	ub := unitybridge.Get(wrapper.Get(l), unityBridgeDebugEnabled, l)
 
