@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/brunoga/groupfilterhandler"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
@@ -21,7 +22,7 @@ type Logger struct {
 	levelVar *slog.LevelVar
 }
 
-func New(level slog.Level) *Logger {
+func New(level slog.Level, allowedGroups ...string) *Logger {
 	levelVar := &slog.LevelVar{}
 	levelVar.Set(level)
 
@@ -33,8 +34,8 @@ func New(level slog.Level) *Logger {
 	}
 
 	return &Logger{
-		Logger: slog.New(tint.NewHandler(colorable.NewColorable(output),
-			opts)),
+		Logger: slog.New(groupfilterhandler.New(tint.NewHandler(colorable.NewColorable(output),
+			opts), allowedGroups...)),
 		levelVar: levelVar,
 	}
 }
