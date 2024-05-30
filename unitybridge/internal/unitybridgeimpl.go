@@ -635,7 +635,7 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 }
 
 func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
-	endTrace := u.l.Trace("notifyKeyListeners", "key", k, "data", data)
+	endTrace := u.l.Trace("notifyKeyListeners", "key", k, "data", string(data))
 	defer endTrace()
 
 	u.m.RLock()
@@ -654,7 +654,7 @@ func (u *UnityBridgeImpl) notifyKeyListeners(k *key.Key, data []byte) {
 }
 
 func (u *UnityBridgeImpl) notifyCallbacks(data []byte, tag uint64) {
-	endTrace := u.l.Trace("notifyCallbacks", "data", data, "tag", tag)
+	endTrace := u.l.Trace("notifyCallbacks", "data", string(data), "tag", tag)
 	defer endTrace()
 
 	u.m.Lock()

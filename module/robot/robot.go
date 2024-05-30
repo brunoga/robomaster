@@ -47,7 +47,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	rb.BaseModule = internal.NewBaseModule(ub, l, "Robot",
 		key.KeyRobomasterSystemConnection, func(r *result.Result) {
-			if r == nil || !r.Succeeded() {
+			if !r.Succeeded() {
 				rb.Logger().Error(
 					"Connection: Unexpected result.", "result", r)
 				return

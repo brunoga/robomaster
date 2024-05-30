@@ -6,7 +6,7 @@ import (
 )
 
 func TestSetRotationSpeed(t *testing.T) {
-	err := gimbalModule.SetRotationSpeed(0, 10)
+	err := gimbalModule.SetRotationSpeed(10, 10)
 	if err != nil {
 		t.Errorf("SetRotationSpeed() failed, got: %v", err)
 	}

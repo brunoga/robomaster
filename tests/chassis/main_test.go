@@ -9,12 +9,15 @@ import (
 	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/support"
+	"github.com/brunoga/robomaster/support/logger"
 )
 
 var chassisModule *chassis.Chassis
 
 func TestMain(m *testing.M) {
-	c, err := robomaster.NewWithModules(nil, support.AnyAppID,
+	l := logger.New(logger.LevelTrace, "unity_bridge", "wrapper")
+
+	c, err := robomaster.NewWithModules(l, support.AnyAppID,
 		module.TypeConnection|module.TypeRobot|module.TypeController|module.TypeChassis)
 	if err != nil {
 		panic(err)
@@ -30,18 +33,6 @@ func TestMain(m *testing.M) {
 	}()
 
 	chassisModule = c.Chassis()
-
-	// Enable robot movement.
-	//err = c.Robot().EnableFunction(robot.FunctionTypeMovementControl, true)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer func() {
-	//	err := c.Robot().EnableFunction(robot.FunctionTypeMovementControl, false)
-	//	if err != nil {
-	//		panic(err)
-	//	}
-	//}()
 
 	// Set controller mode to SDK for the tests here.
 	err = c.Controller().SetMode(controller.ModeSDK)
