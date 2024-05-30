@@ -55,23 +55,28 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	c.BaseModule = internal.NewBaseModule(ub, l, "Camera",
 		key.KeyCameraConnection, func(r *result.Result) {
-			l.Debug("** Camera connection result **", "result", r)
-			if r == nil || r.ErrorCode() != 0 {
+			if !r.Succeeded() {
+				l.Error("Camera Connection: Unsuccessfull result.", "result", r)
 				return
 			}
 
-			if connected, ok := r.Value().(*bool); ok && *connected {
-				l.Debug("** Camera connected **")
+			connectedValue, ok := r.Value().(*value.Bool)
+
+			if !ok {
+				l.Error("Camera Connection: Unexpected value.", "value", r.Value())
+				return
+			}
+
+			if connectedValue.Value {
 				// Ask for video texture information.
 				if err := c.UB().SendEvent(event.NewFromType(
 					event.TypeGetNativeTexture)); err != nil {
-					c.Logger().Error("error sending event", "event",
+					l.Error("error sending event", "event",
 						event.TypeGetNativeTexture.String(), "error", err)
 				}
-			} else if !ok {
-				l.Debug("** Camera connection result value not a bool **")
-			} else if !*connected {
-				l.Debug("** Camera not connected **")
+				l.Debug("Camera Connected.")
+			} else {
+				l.Debug("Camera Disconnected.")
 			}
 		}, cm)
 
@@ -100,7 +105,6 @@ func (c *Camera) Start() error {
 		return err
 	}
 
-	c.Logger().Logger.Debug("** Starting Camera Result Listener **")
 	return c.BaseModule.Start()
 }
 
