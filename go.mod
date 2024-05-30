@@ -3,6 +3,7 @@ module github.com/brunoga/robomaster
 go 1.22.3
 
 require (
+	github.com/brunoga/groupfilterhandler v0.0.1
 	github.com/brunoga/timedsignalwaiter v1.0.0
 	github.com/google/uuid v1.6.0
 	github.com/lmittmann/tint v1.0.4
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/brunoga/groupfilterhandler v0.0.0-20240529152547-549eb8e3c392 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
