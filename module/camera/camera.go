@@ -192,12 +192,13 @@ func (c *Camera) Mode() (Mode, error) {
 		return 0, err
 	}
 
-	return Mode(r.Value().(float64)), nil
+	return Mode(r.Value().(*value.Uint64).Value), nil
 }
 
 // SetMode sets the camera mode.
 func (c *Camera) SetMode(mode Mode) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraMode, mode)
+	return c.UB().SetKeyValueSync(key.KeyCameraMode,
+		&value.Uint64{Value: uint64(mode)})
 }
 
 // ExposureMode returns the current digital zoom factor.
@@ -225,8 +226,8 @@ func (c *Camera) StartRecordingVideo() error {
 		return err
 	}
 
-	if currentMode != 1 {
-		err = c.SetMode(1)
+	if currentMode != ModeVideo {
+		err = c.SetMode(ModeVideo)
 		if err != nil {
 			return err
 		}
@@ -240,13 +241,14 @@ func (c *Camera) StartRecordingVideo() error {
 	c.crToken, err = c.UB().AddKeyListener(
 		key.KeyCameraCurrentRecordingTimeInSeconds,
 		func(r *result.Result) {
-			if r.ErrorCode() != 0 {
-				c.Logger().Warn("error getting current recording time", "error",
+			if !r.Succeeded() {
+				c.Logger().Error("error getting current recording time", "error",
 					r.ErrorDesc())
+				return
 			}
 
 			c.m.Lock()
-			c.recordingTime = time.Duration(r.Value().(float64)) * time.Second
+			c.recordingTime = time.Duration(r.Value().(*value.Uint64).Value) * time.Second
 			c.m.Unlock()
 		}, true)
 
@@ -261,7 +263,7 @@ func (c *Camera) IsRecordingVideo() (bool, error) {
 		return false, err
 	}
 
-	return r.Value().(bool), nil
+	return r.Value().(*value.Bool).Value, nil
 }
 
 // RecordingTime returns the current recording time in seconds.

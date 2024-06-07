@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
-	"log/slog"
 	"net"
 	"strings"
 	"sync"
@@ -37,13 +36,13 @@ var (
 func main() {
 	flag.Parse()
 
-	if strings.TrimSpace(*ssid) == "" || strings.TrimSpace(*password) == "" {
+	if *appID != 0 && (strings.TrimSpace(*ssid) == "" || strings.TrimSpace(*password) == "") {
 		panic("SSID and password must be provided.")
 	}
 
-	l := logger.New(slog.LevelDebug)
+	l := logger.New(logger.LevelTrace)
 
-	l.Info("starting example application", "app_id", *appID)
+	l.Info("Starting example application", "app_id", *appID)
 
 	ub := unitybridge.Get(wrapper.Get(l), true, l)
 
@@ -56,7 +55,7 @@ func main() {
 
 	if *appID != 0 {
 		// And generate a QRCode to pair a Robomaster.
-		qrCode, err := qrcode.New(*appID, "CN", "Discworld", "zwergschnauzer", "")
+		qrCode, err := qrcode.New(*appID, "US", *ssid, *password, "")
 		if err != nil {
 			panic(err)
 		}

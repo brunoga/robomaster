@@ -34,6 +34,8 @@ func NewManager(l *logger.Logger) *Manager {
 			l = logger.New(slog.LevelError)
 		}
 
+		l = l.WithGroup("event_callback_manager")
+
 		instance = &Manager{
 			l:                 l,
 			eventCodeCallback: make(map[uint32]callback.Callback),
@@ -46,10 +48,10 @@ func NewManager(l *logger.Logger) *Manager {
 // Set sets the callback for the given event type code. If the callback is nil,
 // the callback for the given event type code is removed.
 func (m *Manager) Set(eventCode uint64, c callback.Callback) error {
+	eventTypeCode := getEventType(eventCode)
+
 	m.m.Lock()
 	defer m.m.Unlock()
-
-	eventTypeCode := getEventType(eventCode)
 
 	_, ok := m.eventCodeCallback[eventTypeCode]
 	if !ok {
@@ -72,15 +74,15 @@ func (m *Manager) Set(eventCode uint64, c callback.Callback) error {
 
 // Run runs the callback for the given event code.
 func (m *Manager) Run(eventCode uint64, data []byte, tag uint64) error {
-	m.m.RLock()
-	defer m.m.RUnlock()
-
 	eventTypeCode := getEventType(eventCode)
 
+	m.m.RLock()
 	c, ok := m.eventCodeCallback[eventTypeCode]
 	if !ok {
+		m.m.RUnlock()
 		return fmt.Errorf("no handlers for event type code %d", eventTypeCode)
 	}
+	m.m.RUnlock()
 
 	// Make a copy of the data so we can:
 	//

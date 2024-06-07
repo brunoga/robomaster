@@ -14,13 +14,14 @@ extern void UnitySendEvent(uint64_t event_code, intptr_t data, uint64_t tag);
 extern void UnitySendEventWithString(uint64_t event_code, const char* data, uint64_t tag);
 extern void UnitySendEventWithNumber(uint64_t event_code, uint64_t data, uint64_t tag);
 extern void UnitySetEventCallback(uint64_t event_code, EventCallback event_callback);
-extern intptr_t UnityGetSecurityKeyByKeyChainIndex(int index);
+extern char* UnityGetSecurityKeyByKeyChainIndex(int index);
 extern void UnityBridgeUninitialze();
 extern void DestroyUnityBridge();
 */
 import "C"
 
 import (
+	"bytes"
 	"log/slog"
 	"unsafe"
 
@@ -45,13 +46,19 @@ func Get(l *logger.Logger) *linkUnityBridgeImpl {
 		l = logger.New(slog.LevelError)
 	}
 
+	l = l.WithGroup("unity_bridge_wrapper")
+
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
+
+	l.Debug("Unity Bridge implementation loaded", "implememntation", "link")
 
 	return UnityBridgeImpl
 }
 
 func (u *linkUnityBridgeImpl) Create(name string, debuggable bool, logPath string) {
+	defer u.l.Trace("Create", "name", name, "debuggable", debuggable,
+		"logPath", logPath)()
 	cName := C.CString(name)
 	defer C.free(unsafe.Pointer(cName))
 
@@ -61,12 +68,20 @@ func (u *linkUnityBridgeImpl) Create(name string, debuggable bool, logPath strin
 	C.CreateUnityBridge(cName, C.bool(debuggable), cLogPath)
 }
 
-func (u *linkUnityBridgeImpl) Initialize() bool {
+func (u *linkUnityBridgeImpl) Initialize() (initialized bool) {
+	endTrace := u.l.Trace("Initialize")
+	defer func() {
+		endTrace("initialized", initialized)
+	}()
+
 	return bool(C.UnityBridgeInitialize())
 }
 
 func (u *linkUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 	c callback.Callback) {
+	defer u.l.Trace("SetEventCallback", "eventTypeCode", eventTypeCode,
+		"callback", c)()
+
 	var eventCallback C.EventCallback
 	if c != nil {
 		eventCallback = C.EventCallback(C.eventCallbackC)
@@ -79,6 +94,17 @@ func (u *linkUnityBridgeImpl) SetEventCallback(eventTypeCode uint64,
 
 func (u *linkUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 	tag uint64) {
+	endTrace := u.l.Trace("SendEvent", "eventCode", eventCode, "len(output)",
+		len(output), "tag", tag)
+	defer func() {
+		zeroPos := bytes.Index(output, []byte{0})
+		if zeroPos == -1 {
+			endTrace("output", output)
+		} else {
+			endTrace("output", output[0:zeroPos])
+		}
+	}()
+
 	var outputUintptr uintptr
 	if len(output) > 0 {
 		outputUintptr = uintptr(unsafe.Pointer(&output[0]))
@@ -90,6 +116,9 @@ func (u *linkUnityBridgeImpl) SendEvent(eventCode uint64, output []byte,
 
 func (u *linkUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
 	tag uint64) {
+	defer u.l.Trace("SendEventWithString", "eventCode", eventCode,
+		"data", data, "tag", tag)()
+
 	cData := C.CString(data)
 	defer C.free(unsafe.Pointer(cData))
 
@@ -98,21 +127,33 @@ func (u *linkUnityBridgeImpl) SendEventWithString(eventCode uint64, data string,
 
 func (u *linkUnityBridgeImpl) SendEventWithNumber(eventCode, data,
 	tag uint64) {
+	defer u.l.Trace("SendEventWithNumber", "eventCode", eventCode, "data",
+		data, "tag", tag)()
+
 	C.UnitySendEventWithNumber(C.uint64_t(eventCode), C.uint64_t(data),
 		C.uint64_t(tag))
 }
 
-func (u *linkUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) string {
-	cKey := C.UnityGetSecurityKeyByKeyChainIndex(C.int(index))
-	defer C.free(unsafe.Pointer(uintptr(cKey)))
+func (u *linkUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(index int) (securityKey string) {
+	endTrace := u.l.Trace("GetSecurityKeyByKeyChainIndex", "index", index)
+	defer func() {
+		endTrace("securityKey", securityKey)
+	}()
 
-	return C.GoString((*C.char)(unsafe.Pointer(uintptr(cKey))))
+	cKey := C.UnityGetSecurityKeyByKeyChainIndex(C.int(index))
+	defer C.free(unsafe.Pointer(cKey))
+
+	return C.GoString((*C.char)(unsafe.Pointer(cKey)))
 }
 
 func (u *linkUnityBridgeImpl) Uninitialize() {
+	defer u.l.Trace("Uninitialize")()
+
 	C.UnityBridgeUninitialze()
 }
 
 func (u *linkUnityBridgeImpl) Destroy() {
+	defer u.l.Trace("Destroy")()
+
 	C.DestroyUnityBridge()
 }

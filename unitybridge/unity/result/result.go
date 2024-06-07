@@ -100,6 +100,10 @@ func (r *Result) Succeeded() bool {
 
 // String returns a string representation of this result.
 func (r *Result) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+
 	return fmt.Sprintf("Result{Key: %s, Tag: %d, ErrorCode: %d, ErrorDesc: "+
 		"%s, Value: %v}", r.key, r.tag, r.errorCode, r.errorDesc, r.value)
 }

@@ -107,7 +107,7 @@ func init() {
 		UnityBridgeImpl.getSymbol("UnitySendEventWithNumber")
 	UnityBridgeImpl.unitySetEventCallback =
 		UnityBridgeImpl.getSymbol("UnitySetEventCallback")
-	UnityBridgeImpl.UnityGetSecurityKeyByKeyChainIndex =
+	UnityBridgeImpl.unityGetSecurityKeyByKeyChainIndex =
 		UnityBridgeImpl.getSymbol("UnityGetSecurityKeyByKeyChainIndex")
 }
 
@@ -122,7 +122,7 @@ type dlOpenUnityBridgeImpl struct {
 	unitySendEventWithString           unsafe.Pointer
 	unitySendEventWithNumber           unsafe.Pointer
 	unitySetEventCallback              unsafe.Pointer
-	UnityGetSecurityKeyByKeyChainIndex unsafe.Pointer
+	unityGetSecurityKeyByKeyChainIndex unsafe.Pointer
 
 	l *logger.Logger
 	m *internal_callback.Manager
@@ -137,6 +137,8 @@ func Get(l *logger.Logger) (unityBridge *dlOpenUnityBridgeImpl) {
 
 	UnityBridgeImpl.l = l
 	UnityBridgeImpl.m = internal_callback.NewManager(l)
+
+	l.Debug("Unity Bridge implementation loaded", "implememntation", "dlopen")
 
 	return UnityBridgeImpl
 }
@@ -232,7 +234,7 @@ func (d *dlOpenUnityBridgeImpl) GetSecurityKeyByKeyChainIndex(
 	}()
 
 	cKey := C.UnityGetSecurityKeyByKeyChainIndexCaller(
-		unsafe.Pointer(d.UnityGetSecurityKeyByKeyChainIndex), C.int(index))
+		unsafe.Pointer(d.unityGetSecurityKeyByKeyChainIndex), C.int(index))
 	defer C.free(unsafe.Pointer(cKey))
 
 	return C.GoString(cKey)
