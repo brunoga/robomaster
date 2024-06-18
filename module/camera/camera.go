@@ -1,10 +1,12 @@
 package camera
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"log/slog"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/brunoga/robomaster/module"
@@ -31,9 +33,12 @@ type Camera struct {
 
 	tg *token.Generator
 
-	m             sync.RWMutex
-	callbacks     map[token.Token]VideoCallback
-	recordingTime time.Duration
+	recordingTime atomic.Pointer[time.Duration]
+
+	glTextureData atomic.Pointer[value.GLTextureData]
+
+	m         sync.RWMutex
+	callbacks map[token.Token]VideoCallback
 }
 
 var _ module.Module = (*Camera)(nil)
@@ -68,12 +73,6 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			}
 
 			if connectedValue.Value {
-				// Ask for video texture information.
-				if err := c.UB().SendEvent(event.NewFromType(
-					event.TypeGetNativeTexture)); err != nil {
-					l.Error("error sending event", "event",
-						event.TypeGetNativeTexture.String(), "error", err)
-				}
 				l.Debug("Camera Connected.")
 			} else {
 				l.Debug("Camera Disconnected.")
@@ -247,9 +246,8 @@ func (c *Camera) StartRecordingVideo() error {
 				return
 			}
 
-			c.m.Lock()
-			c.recordingTime = time.Duration(r.Value().(*value.Uint64).Value) * time.Second
-			c.m.Unlock()
+			duration := time.Duration(r.Value().(*value.Uint64).Value) * time.Second
+			c.recordingTime.Store(&duration)
 		}, true)
 
 	return err
@@ -268,10 +266,7 @@ func (c *Camera) IsRecordingVideo() (bool, error) {
 
 // RecordingTime returns the current recording time in seconds.
 func (c *Camera) RecordingTime() time.Duration {
-	c.m.RLock()
-	defer c.m.RUnlock()
-
-	return c.recordingTime
+	return *c.recordingTime.Load()
 }
 
 // StopRecordingVideo stops recording video to the robot's internal storage.
@@ -283,6 +278,26 @@ func (c *Camera) StopRecordingVideo() error {
 
 	return c.UB().RemoveKeyListener(key.KeyCameraCurrentRecordingTimeInSeconds,
 		c.crToken)
+}
+
+// RenderNextFrame requests the next frame to be rendered. This is used by iOS
+// and the frame will be rendered to a texture associated with an OpenGLES 2.0
+// context that was current when Start() is called. This should be called for
+// for each frame to be rendered (up to 60 times per second).
+func (c *Camera) RenderNextFrame() {
+	c.UB().RenderNextFrame()
+}
+
+// GLTextureData returns information about the current texture used for
+// rendering frames. See RenderNextFrame() above.
+func (c *Camera) GLTextureData() (value.GLTextureData, error) {
+	glTextureData := c.glTextureData.Load()
+	if glTextureData == nil || *glTextureData == (value.GLTextureData{}) {
+		return *glTextureData, fmt.Errorf("no GLTextureData available. Did " +
+			"you call RenderNextFrame?")
+	}
+
+	return *glTextureData, nil
 }
 
 // Stop stops the camera manager.
@@ -322,7 +337,17 @@ func (c *Camera) Stop() error {
 }
 
 func (c *Camera) onGetNativeTexture(data []byte, dataType event.DataType) {
-	c.Logger().Debug("onGetNativeTexture", "data", data, "dataType", dataType)
+	endTrace := c.Logger().Trace("onGetNativeTexture", "data", string(data), "dataType", dataType)
+	defer endTrace()
+
+	var glTextureData value.GLTextureData
+	err := json.Unmarshal(data, &glTextureData)
+	if err != nil {
+		c.Logger().Error("onGetNativeTexture", "error", err)
+		return
+	}
+
+	c.glTextureData.Store(&glTextureData)
 }
 
 func (c *Camera) onVideoTransferSpeed(data []byte, dataType event.DataType) {
