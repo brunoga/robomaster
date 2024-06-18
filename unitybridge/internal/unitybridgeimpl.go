@@ -540,6 +540,14 @@ func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 	return nil
 }
 
+func (u *UnityBridgeImpl) RenderNextFrame() {
+	endTrace := u.l.Trace("RenderNextFrame")
+	defer endTrace()
+
+	e := event.NewFromType(event.TypeRender)
+	u.uw.SendEvent(e.Code(), nil, 0)
+}
+
 func (u *UnityBridgeImpl) Stop() (err error) {
 	endTrace := u.l.Trace("Stop")
 	defer func() {

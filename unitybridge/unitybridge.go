@@ -82,6 +82,9 @@ type UnityBridge interface {
 	// token for events of the given type.
 	RemoveEventTypeListener(t event.Type, token token.Token) error
 
+	// RenderNextFrame renders the next frame in the Unity Bridge.
+	RenderNextFrame()
+
 	// Stop cleans up and stops the Unity Bridge.
 	Stop() error
 }
