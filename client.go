@@ -270,7 +270,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 	}
 
 	// Enable Unity Bridge debug logging if the logger level is trace.
-	unityBridgeDebugEnabled := l.Level() == logger.LevelTrace
+	unityBridgeDebugEnabled := l.Level() <= slog.LevelDebug
 
 	ub := unitybridge.Get(wrapper.Get(l), unityBridgeDebugEnabled, l)
 
