@@ -293,7 +293,7 @@ func (c *Camera) RenderNextFrame() {
 func (c *Camera) GLTextureData() (value.GLTextureData, error) {
 	glTextureData := c.glTextureData.Load()
 	if glTextureData == nil || *glTextureData == (value.GLTextureData{}) {
-		return *glTextureData, fmt.Errorf("no GLTextureData available. Did " +
+		return value.GLTextureData{}, fmt.Errorf("no GLTextureData available. Did " +
 			"you call RenderNextFrame?")
 	}
 
