@@ -1,4 +1,4 @@
-//go:build ios && arm64
+//go:build android && (arm || arm64)
 
 package implementations
 

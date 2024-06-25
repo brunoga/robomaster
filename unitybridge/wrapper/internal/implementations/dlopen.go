@@ -1,4 +1,4 @@
-//go:build (android && (arm || arm64)) || (darwin && amd64)
+//go:build (ios && arm64) || (darwin && amd64)
 
 package implementations
 
@@ -65,6 +65,7 @@ var (
 		"android/arm":   "./lib/android/arm/libunitybridge.so",
 		"android/arm64": "./lib/android/arm64/libunitybridge.so",
 		"darwin/amd64":  "./lib/darwin/amd64/unitybridge.bundle/Contents/MacOS/unitybridge",
+		"ios/arm64":     "./Frameworks/unityBridge.framework/unityBridge",
 	}
 
 	UnityBridgeImpl *dlOpenUnityBridgeImpl = &dlOpenUnityBridgeImpl{}
