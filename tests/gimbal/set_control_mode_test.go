@@ -7,19 +7,16 @@ import (
 )
 
 func TestSetControlMode(t *testing.T) {
-	cm, err := gimbalModule.ControlMode()
-	if err != nil {
-		t.Errorf("Error getting control mode: %s", err)
-	}
+	cm := gimbalModule.ControlMode()
 
 	t.Logf("Current control mode: %d", cm)
 
-	err = gimbalModule.SetControlMode(gimbal.ControlMode2)
+	err := gimbalModule.SetControlMode(gimbal.ControlMode2)
 	if err != nil {
 		t.Errorf("Error setting control mode: %s", err)
 	}
 
-	cm, err = gimbalModule.ControlMode()
+	cm = gimbalModule.ControlMode()
 	if err != nil {
 		t.Errorf("Error getting control mode: %s", err)
 	}

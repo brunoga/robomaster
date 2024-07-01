@@ -1,22 +1,28 @@
 package gimbal
 
 import (
+	"log/slog"
 	"os"
 	"testing"
 
 	"github.com/brunoga/robomaster"
 	"github.com/brunoga/robomaster/module"
+	"github.com/brunoga/robomaster/module/chassis"
 	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/module/gimbal"
+	"github.com/brunoga/robomaster/module/robot"
 	"github.com/brunoga/robomaster/support"
 	"github.com/brunoga/robomaster/support/logger"
 )
 
 var gimbalModule *gimbal.Gimbal
+var chassisModule *chassis.Chassis
+var robotModule *robot.Robot
+var controllerModule *controller.Controller
 
 func TestMain(m *testing.M) {
-	c, err := robomaster.NewWithModules(logger.New(logger.LevelTrace, "wrapper"), support.AnyAppID,
-		module.TypeConnection|module.TypeRobot|module.TypeController|module.TypeGimbal)
+	c, err := robomaster.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
+		module.TypeConnection|module.TypeRobot|module.TypeController|module.TypeGimbal|module.TypeChassis)
 	if err != nil {
 		panic(err)
 	}
@@ -31,18 +37,9 @@ func TestMain(m *testing.M) {
 	}()
 
 	gimbalModule = c.Gimbal()
-
-	// Set controller mode to SDK for the tests here.
-	err = c.Controller().SetMode(controller.ModeSDK)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err := c.Controller().SetMode(controller.ModeFPV)
-		if err != nil {
-			panic(err)
-		}
-	}()
+	chassisModule = c.Chassis()
+	robotModule = c.Robot()
+	controllerModule = c.Controller()
 
 	os.Exit(m.Run())
 }
