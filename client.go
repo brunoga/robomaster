@@ -16,6 +16,7 @@ import (
 	"github.com/brunoga/robomaster/module/gimbal"
 	"github.com/brunoga/robomaster/module/gun"
 	"github.com/brunoga/robomaster/module/robot"
+	"github.com/brunoga/robomaster/module/sdcard"
 	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge"
 	"github.com/brunoga/robomaster/unitybridge/wrapper"
@@ -28,6 +29,7 @@ type Client struct {
 
 	connectionModule *connection.Connection
 	cameraModule     *camera.Camera
+	sdCardModule     *sdcard.Module
 	chassisModule    *chassis.Chassis
 	gimbalModule     *gimbal.Gimbal
 	robotModule      *robot.Robot
@@ -115,6 +117,12 @@ func (c *Client) Start() error {
 		return err
 	}
 
+	// SDCard.
+	err = c.changeStateIfNonNil(c.sdCardModule, waitTimeout, true)
+	if err != nil {
+		return err
+	}
+
 	// Chassis.
 	err = c.changeStateIfNonNil(c.chassisModule, waitTimeout, true)
 	if err != nil {
@@ -191,6 +199,11 @@ func (c *Client) Controller() *controller.Controller {
 	return c.controllerModule
 }
 
+// SDCard returns the SDCard module. The SDCard is optional and may be nil.
+func (c *Client) SDCard() *sdcard.Module {
+	return c.sdCardModule
+}
+
 // Stop stops the client and all associated modules.
 func (c *Client) Stop() error {
 	c.m.Lock()
@@ -218,6 +231,12 @@ func (c *Client) Stop() error {
 
 	// Chassis.
 	err = c.changeStateIfNonNil(c.chassisModule, waitTime, false)
+	if err != nil {
+		return err
+	}
+
+	// SDCard.
+	err = c.changeStateIfNonNil(c.sdCardModule, waitTime, false)
 	if err != nil {
 		return err
 	}
@@ -292,6 +311,14 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		}
 	}
 
+	var sdCardModule *sdcard.Module
+	if modules&module.TypeSDCard != 0 {
+		sdCardModule, err = sdcard.New(ub, l, connectionModule, cameraModule)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	var chassisModule *chassis.Chassis
 	if modules&module.TypeChassis != 0 {
 		chassisModule, err = chassis.New(ub, l, connectionModule, robotModule)
@@ -338,6 +365,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		connectionModule: connectionModule,
 		robotModule:      robotModule,
 		cameraModule:     cameraModule,
+		sdCardModule:     sdCardModule,
 		gimbalModule:     gimbalModule,
 		chassisModule:    chassisModule,
 		gunModule:        gunModule,

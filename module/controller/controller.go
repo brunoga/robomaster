@@ -33,7 +33,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	c := &Controller{}
 
-	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis",
+	c.BaseModule = internal.NewBaseModule(ub, l, "Controller",
 		key.KeyMainControllerConnection, func(r *result.Result) {
 			if !r.Succeeded() {
 				c.Logger().Error("Connection: Unsuccessfull result.", "result", r)
