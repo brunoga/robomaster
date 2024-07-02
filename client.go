@@ -28,7 +28,7 @@ type Client struct {
 	ub unitybridge.UnityBridge
 
 	connectionModule *connection.Connection
-	cameraModule     *camera.Camera
+	cameraModule     *camera.Module
 	sdCardModule     *sdcard.Module
 	chassisModule    *chassis.Chassis
 	gimbalModule     *gimbal.Gimbal
@@ -165,7 +165,7 @@ func (c *Client) Connection() *connection.Connection {
 }
 
 // Camera returns the Camera module.
-func (c *Client) Camera() *camera.Camera {
+func (c *Client) Camera() *camera.Module {
 	return c.cameraModule
 }
 
@@ -303,7 +303,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		return nil, err
 	}
 
-	var cameraModule *camera.Camera
+	var cameraModule *camera.Module
 	if modules&module.TypeCamera != 0 {
 		cameraModule, err = camera.New(ub, l, connectionModule)
 		if err != nil {

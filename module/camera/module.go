@@ -21,8 +21,8 @@ import (
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
-// Camera provides support for managing the camera attached to the robot.
-type Camera struct {
+// Module provides support for managing the camera attached to the robot.
+type Module struct {
 	*internal.BaseModule
 
 	gntToken token.Token
@@ -41,24 +41,24 @@ type Camera struct {
 	callbacks map[token.Token]VideoCallback
 }
 
-var _ module.Module = (*Camera)(nil)
+var _ module.Module = (*Module)(nil)
 
 // New creates a new Camera instance with the given UnityBridge instance and
 // logger.
 func New(ub unitybridge.UnityBridge, l *logger.Logger,
-	cm *connection.Connection) (*Camera, error) {
+	cm *connection.Connection) (*Module, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
 
 	l = l.WithGroup("camera_module")
 
-	c := &Camera{
+	m := &Module{
 		tg:        token.NewGenerator(),
 		callbacks: make(map[token.Token]VideoCallback),
 	}
 
-	c.BaseModule = internal.NewBaseModule(ub, l, "Camera",
+	m.BaseModule = internal.NewBaseModule(ub, l, "Camera",
 		key.KeyCameraConnection, func(r *result.Result) {
 			if !r.Succeeded() {
 				l.Error("Camera Connection: Unsuccessfull result.", "result", r)
@@ -79,53 +79,53 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			}
 		}, cm)
 
-	return c, nil
+	return m, nil
 }
 
-// Start starts the camera manager.
-func (c *Camera) Start() error {
+// Start starts the camera module.
+func (m *Module) Start() error {
 	var err error
 
-	c.gntToken, err = c.UB().AddEventTypeListener(event.TypeGetNativeTexture,
-		c.onGetNativeTexture)
+	m.gntToken, err = m.UB().AddEventTypeListener(event.TypeGetNativeTexture,
+		m.onGetNativeTexture)
 	if err != nil {
 		return err
 	}
 
-	c.vtsToken, err = c.UB().AddEventTypeListener(event.TypeVideoTransferSpeed,
-		c.onVideoTransferSpeed)
+	m.vtsToken, err = m.UB().AddEventTypeListener(event.TypeVideoTransferSpeed,
+		m.onVideoTransferSpeed)
 	if err != nil {
 		return err
 	}
 
-	c.vdrToken, err = c.UB().AddEventTypeListener(event.TypeVideoDataRecv,
-		c.onVideoDataRecv)
+	m.vdrToken, err = m.UB().AddEventTypeListener(event.TypeVideoDataRecv,
+		m.onVideoDataRecv)
 	if err != nil {
 		return err
 	}
 
-	return c.BaseModule.Start()
+	return m.BaseModule.Start()
 }
 
 // AddVideoCallback adds a callback function to be called when a new video frame
 // is received from the robot. The callback function will be called in a
 // separate goroutine. Returns a token that can be used to remove the callback
 // later.
-func (c *Camera) AddVideoCallback(vc VideoCallback) (token.Token, error) {
+func (m *Module) AddVideoCallback(vc VideoCallback) (token.Token, error) {
 	if vc == nil {
 		return 0, fmt.Errorf("callback must not be nil")
 	}
 
-	c.m.Lock()
-	defer c.m.Unlock()
+	m.m.Lock()
+	defer m.m.Unlock()
 
-	t := c.tg.Next()
+	t := m.tg.Next()
 
-	c.callbacks[t] = vc
+	m.callbacks[t] = vc
 
-	if len(c.callbacks) == 1 {
+	if len(m.callbacks) == 1 {
 		// We just added the first callback. Start video stream.
-		err := c.UB().SendEvent(event.NewFromType(event.TypeStartVideo))
+		err := m.UB().SendEvent(event.NewFromType(event.TypeStartVideo))
 		if err != nil {
 			return 0, err
 		}
@@ -136,20 +136,20 @@ func (c *Camera) AddVideoCallback(vc VideoCallback) (token.Token, error) {
 
 // RemoveVideoCallback removes the callback function associated with the given
 // token.
-func (c *Camera) RemoveVideoCallback(t token.Token) error {
-	c.m.Lock()
-	defer c.m.Unlock()
+func (m *Module) RemoveVideoCallback(t token.Token) error {
+	m.m.Lock()
+	defer m.m.Unlock()
 
-	_, ok := c.callbacks[t]
+	_, ok := m.callbacks[t]
 	if !ok {
 		return fmt.Errorf("no callback added for token %d", t)
 	}
 
-	delete(c.callbacks, t)
+	delete(m.callbacks, t)
 
-	if len(c.callbacks) == 0 {
+	if len(m.callbacks) == 0 {
 		// We just removed the last callback. Stop video stream.
-		err := c.UB().SendEvent(event.NewFromType(event.TypeStopVideo))
+		err := m.UB().SendEvent(event.NewFromType(event.TypeStopVideo))
 		if err != nil {
 			return err
 		}
@@ -159,8 +159,8 @@ func (c *Camera) RemoveVideoCallback(t token.Token) error {
 }
 
 // VideoFormat returns the currently set video format.
-func (c *Camera) VideoFormat() (VideoFormat, error) {
-	r, err := c.UB().GetKeyValueSync(key.KeyCameraVideoFormat, true)
+func (m *Module) VideoFormat() (VideoFormat, error) {
+	r, err := m.UB().GetKeyValueSync(key.KeyCameraVideoFormat, true)
 	if err != nil {
 		return 0, err
 	}
@@ -175,18 +175,18 @@ func (c *Camera) VideoFormat() (VideoFormat, error) {
 // there might be some setup that is needed and is not being done. It might be
 // that this is only for the video recorded in the robot and not for the
 // video being streamed from it.
-func (c *Camera) SetVideoFormat(format VideoFormat) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraVideoFormat, format)
+func (m *Module) SetVideoFormat(format VideoFormat) error {
+	return m.UB().SetKeyValueSync(key.KeyCameraVideoFormat, format)
 }
 
 // SetVideoQuality sets the video quality.
-func (c *Camera) SetVideoQuality(quality VideoQuality) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraVideoTransRate, &value.Float64{Value: float64(quality)})
+func (m *Module) SetVideoQuality(quality VideoQuality) error {
+	return m.UB().SetKeyValueSync(key.KeyCameraVideoTransRate, &value.Float64{Value: float64(quality)})
 }
 
 // Mode returns the current camera mode.
-func (c *Camera) Mode() (Mode, error) {
-	r, err := c.UB().GetKeyValueSync(key.KeyCameraMode, true)
+func (m *Module) Mode() (Mode, error) {
+	r, err := m.UB().GetKeyValueSync(key.KeyCameraMode, true)
 	if err != nil {
 		return 0, err
 	}
@@ -195,14 +195,14 @@ func (c *Camera) Mode() (Mode, error) {
 }
 
 // SetMode sets the camera mode.
-func (c *Camera) SetMode(mode Mode) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraMode,
+func (m *Module) SetMode(mode Mode) error {
+	return m.UB().SetKeyValueSync(key.KeyCameraMode,
 		&value.Uint64{Value: uint64(mode)})
 }
 
 // ExposureMode returns the current digital zoom factor.
-func (c *Camera) DigitalZoomFactor() (uint64, error) {
-	r, err := c.UB().GetKeyValueSync(key.KeyCameraDigitalZoomFactor,
+func (m *Module) DigitalZoomFactor() (uint64, error) {
+	r, err := m.UB().GetKeyValueSync(key.KeyCameraDigitalZoomFactor,
 		true)
 	if err != nil {
 		return 0, err
@@ -212,42 +212,42 @@ func (c *Camera) DigitalZoomFactor() (uint64, error) {
 }
 
 // SetDigitalZoomFactor sets the digital zoom factor.
-func (c *Camera) SetDigitalZoomFactor(factor uint64) error {
-	return c.UB().SetKeyValueSync(key.KeyCameraDigitalZoomFactor, factor)
+func (m *Module) SetDigitalZoomFactor(factor uint64) error {
+	return m.UB().SetKeyValueSync(key.KeyCameraDigitalZoomFactor, factor)
 }
 
 // StartRecordingVideo starts recording video to the robot's internal storage.
-func (c *Camera) StartRecordingVideo() error {
+func (m *Module) StartRecordingVideo() error {
 	var err error
 
-	currentMode, err := c.Mode()
+	currentMode, err := m.Mode()
 	if err != nil {
 		return err
 	}
 
 	if currentMode != ModeVideo {
-		err = c.SetMode(ModeVideo)
+		err = m.SetMode(ModeVideo)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = c.UB().PerformActionForKeySync(key.KeyCameraStartRecordVideo, nil)
+	err = m.UB().PerformActionForKeySync(key.KeyCameraStartRecordVideo, nil)
 	if err != nil {
 		return err
 	}
 
-	c.crToken, err = c.UB().AddKeyListener(
+	m.crToken, err = m.UB().AddKeyListener(
 		key.KeyCameraCurrentRecordingTimeInSeconds,
 		func(r *result.Result) {
 			if !r.Succeeded() {
-				c.Logger().Error("error getting current recording time", "error",
+				m.Logger().Error("error getting current recording time", "error",
 					r.ErrorDesc())
 				return
 			}
 
 			duration := time.Duration(r.Value().(*value.Uint64).Value) * time.Second
-			c.recordingTime.Store(&duration)
+			m.recordingTime.Store(&duration)
 		}, true)
 
 	return err
@@ -255,8 +255,8 @@ func (c *Camera) StartRecordingVideo() error {
 
 // IsRecordingVideo returns whether the robot is currently recording video to
 // its internal storage.
-func (c *Camera) IsRecordingVideo() (bool, error) {
-	r, err := c.UB().GetKeyValueSync(key.KeyCameraIsRecording, true)
+func (m *Module) IsRecordingVideo() (bool, error) {
+	r, err := m.UB().GetKeyValueSync(key.KeyCameraIsRecording, true)
 	if err != nil {
 		return false, err
 	}
@@ -265,32 +265,32 @@ func (c *Camera) IsRecordingVideo() (bool, error) {
 }
 
 // RecordingTime returns the current recording time in seconds.
-func (c *Camera) RecordingTime() time.Duration {
-	return *c.recordingTime.Load()
+func (m *Module) RecordingTime() time.Duration {
+	return *m.recordingTime.Load()
 }
 
 // StopRecordingVideo stops recording video to the robot's internal storage.
-func (c *Camera) StopRecordingVideo() error {
-	err := c.UB().PerformActionForKeySync(key.KeyCameraStopRecordVideo, nil)
+func (m *Module) StopRecordingVideo() error {
+	err := m.UB().PerformActionForKeySync(key.KeyCameraStopRecordVideo, nil)
 	if err != nil {
 		return err
 	}
 
-	return c.UB().RemoveKeyListener(key.KeyCameraCurrentRecordingTimeInSeconds,
-		c.crToken)
+	return m.UB().RemoveKeyListener(key.KeyCameraCurrentRecordingTimeInSeconds,
+		m.crToken)
 }
 
 // RenderNextFrame requests the next frame to be rendered. This is used by iOS
 // and the frame will be rendered to a texture associated with an OpenGLES 2.0
 // context that was current when Start() is called. This should be called for
 // for each frame to be rendered (up to 60 times per second).
-func (c *Camera) RenderNextFrame() {
-	c.UB().RenderNextFrame()
+func (m *Module) RenderNextFrame() {
+	m.UB().RenderNextFrame()
 }
 
 // GLTextureData returns information about the current texture used for
 // rendering frames. See RenderNextFrame() above.
-func (c *Camera) GLTextureData() (value.GLTextureData, error) {
+func (c *Module) GLTextureData() (value.GLTextureData, error) {
 	glTextureData := c.glTextureData.Load()
 	if glTextureData == nil || *glTextureData == (value.GLTextureData{}) {
 		return value.GLTextureData{}, fmt.Errorf("no GLTextureData available. Did " +
@@ -301,67 +301,67 @@ func (c *Camera) GLTextureData() (value.GLTextureData, error) {
 }
 
 // Stop stops the camera manager.
-func (c *Camera) Stop() error {
-	c.m.Lock()
+func (m *Module) Stop() error {
+	m.m.Lock()
 
-	if len(c.callbacks) > 0 {
-		c.callbacks = make(map[token.Token]VideoCallback)
+	if len(m.callbacks) > 0 {
+		m.callbacks = make(map[token.Token]VideoCallback)
 
-		err := c.UB().SendEvent(event.NewFromType(event.TypeStopVideo))
+		err := m.UB().SendEvent(event.NewFromType(event.TypeStopVideo))
 		if err != nil {
-			c.m.Unlock()
+			m.m.Unlock()
 			return err
 		}
 	}
 
-	c.m.Unlock()
+	m.m.Unlock()
 
-	err := c.UB().RemoveEventTypeListener(event.TypeGetNativeTexture,
-		c.gntToken)
+	err := m.UB().RemoveEventTypeListener(event.TypeGetNativeTexture,
+		m.gntToken)
 	if err != nil {
 		return err
 	}
 
-	err = c.UB().RemoveEventTypeListener(event.TypeVideoTransferSpeed,
-		c.vtsToken)
+	err = m.UB().RemoveEventTypeListener(event.TypeVideoTransferSpeed,
+		m.vtsToken)
 	if err != nil {
 		return err
 	}
 
-	err = c.UB().RemoveEventTypeListener(event.TypeVideoDataRecv, c.vdrToken)
+	err = m.UB().RemoveEventTypeListener(event.TypeVideoDataRecv, m.vdrToken)
 	if err != nil {
 		return err
 	}
 
-	return c.BaseModule.Stop()
+	return m.BaseModule.Stop()
 }
 
-func (c *Camera) onGetNativeTexture(data []byte, dataType event.DataType) {
-	endTrace := c.Logger().Trace("onGetNativeTexture", "data", string(data), "dataType", dataType)
+func (m *Module) onGetNativeTexture(data []byte, dataType event.DataType) {
+	endTrace := m.Logger().Trace("onGetNativeTexture", "data", string(data), "dataType", dataType)
 	defer endTrace()
 
 	var glTextureData value.GLTextureData
 	err := json.Unmarshal(data, &glTextureData)
 	if err != nil {
-		c.Logger().Error("onGetNativeTexture", "error", err)
+		m.Logger().Error("onGetNativeTexture", "error", err)
 		return
 	}
 
-	c.glTextureData.Store(&glTextureData)
+	m.glTextureData.Store(&glTextureData)
 }
 
-func (c *Camera) onVideoTransferSpeed(data []byte, dataType event.DataType) {
-	c.Logger().Debug("onVideoTransferSpeed", "data", data, "dataType", dataType)
+func (m *Module) onVideoTransferSpeed(data []byte, dataType event.DataType) {
+	m.Logger().Debug("onVideoTransferSpeed", "data", data, "dataType", dataType)
 }
 
-func (c *Camera) onVideoDataRecv(data []byte, dataType event.DataType) {
+func (m *Module) onVideoDataRecv(data []byte, dataType event.DataType) {
 	rgb := NewRGBFromBytes(data, image.Rect(0, 0, 1280, 720))
 
-	c.m.RLock()
+	m.m.RLock()
 
-	for _, vc := range c.callbacks {
+	for _, vc := range m.callbacks {
 		go vc(rgb)
 	}
 
-	c.m.RUnlock()
+	m.m.RUnlock()
 }

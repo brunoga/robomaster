@@ -20,7 +20,7 @@ type Module struct {
 
 // New creates a new SDCard module instance.
 func New(ub unitybridge.UnityBridge, l *logger.Logger,
-	conm *connection.Connection, camm *camera.Camera) (*Module, error) {
+	conm *connection.Connection, camm *camera.Module) (*Module, error) {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
