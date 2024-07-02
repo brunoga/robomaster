@@ -1,7 +1,6 @@
 package gimbal
 
 import (
-	"log/slog"
 	"os"
 	"testing"
 
@@ -21,7 +20,7 @@ var robotModule *robot.Robot
 var controllerModule *controller.Controller
 
 func TestMain(m *testing.M) {
-	c, err := robomaster.NewWithModules(logger.New(slog.LevelDebug), support.AnyAppID,
+	c, err := robomaster.NewWithModules(logger.New(logger.LevelTrace), support.AnyAppID,
 		module.TypeConnection|module.TypeRobot|module.TypeController|module.TypeGimbal|module.TypeChassis)
 	if err != nil {
 		panic(err)

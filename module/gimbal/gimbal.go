@@ -73,7 +73,8 @@ func (g *Gimbal) Start() error {
 }
 
 // SetRotationSpeed sets the gimbal rotation speed for the pitch and yaw axis in
-// degrees per second.
+// degrees per second. The gimbal will move until either it can not move anymore
+// due to pgysical constraints or StopRotation() is called.
 func (g *Gimbal) SetRotationSpeed(pitch, yaw int16) error {
 	if pitch < -360 || pitch > 360 {
 		return fmt.Errorf("invalid pitch value %d", pitch)
@@ -83,13 +84,13 @@ func (g *Gimbal) SetRotationSpeed(pitch, yaw int16) error {
 	}
 
 	// TODO(bga): Check if this is needed all the time.
-	//err := g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotationEnabled, &value.Uint64{Value: 1})
-	//if err != nil {
-	//	return err
-	//}
+	err := g.UB().PerformActionForKey(key.KeyGimbalSpeedRotationEnabled, &value.Uint64{Value: 1}, nil)
+	if err != nil {
+		return err
+	}
 
-	return g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotation,
-		&value.GimbalSpeedRotation{Pitch: pitch, Yaw: yaw})
+	return g.UB().PerformActionForKey(key.KeyGimbalSpeedRotation,
+		&value.GimbalSpeedRotation{Pitch: pitch * 10, Yaw: yaw * 10, Roll: 0}, nil)
 }
 
 // SetRelativeAngleRotation sets the gimbal rotation relative to the current
@@ -155,12 +156,45 @@ func (g *Gimbal) StopRotation() error {
 		return err
 	}
 
-	return g.UB().PerformActionForKeySync(key.KeyGimbalSpeedRotationEnabled, 0)
+	return g.UB().PerformActionForKey(key.KeyGimbalSpeedRotationEnabled, &value.Uint64{Value: 0}, nil)
 }
 
 // ResetPosition resets the gimbal position.
-func (g *Gimbal) ResetPosition() {
-	g.UB().PerformActionForKeySync(key.KeyGimbalResetPosition, nil)
+func (g *Gimbal) ResetPosition() error {
+	err := g.UB().PerformActionForKeySync(key.KeyGimbalResetPosition, nil)
+	if err != nil {
+		return err
+	}
+
+	gimbalReset := 0
+	c := make(chan struct{})
+
+	t, err := g.UB().AddKeyListener(key.KeyGimbalResetPositionState, func(r *result.Result) {
+		g.Logger().Debug("Reset position state", "result", r)
+		if !r.Succeeded() {
+			g.Logger().Error("Error resetting gimbal position", "error", r.ErrorDesc())
+			return
+		}
+
+		value, ok := r.Value().(*value.Uint64)
+		if !ok {
+			g.Logger().Error("Unexpected value", "key", r.Key(), "value", r.Value())
+			return
+		}
+
+		if value.Value == 0 && gimbalReset == 1 {
+			g.Logger().Debug("Reset position done")
+			close(c)
+			return
+		}
+
+		gimbalReset = int(value.Value)
+	}, true)
+	defer g.UB().RemoveKeyListener(key.KeyGimbalResetPositionState, t)
+
+	<-c
+
+	return nil
 }
 
 func (g *Gimbal) ControlMode() ControlMode {

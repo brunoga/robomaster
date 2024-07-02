@@ -313,7 +313,7 @@ var (
 	KeyGimbalWorkMode                = newKey("KeyGimbalWorkMode", 67108868, AccessTypeRead|AccessTypeWrite, &value.Uint64{})
 	KeyGimbalControlMode             = newKey("KeyGimbalControlMode", 67108869, AccessTypeRead|AccessTypeWrite, &value.Uint64{})
 	KeyGimbalResetPosition           = newKey("KeyGimbalResetPosition", 67108870, AccessTypeAction, &value.Void{})
-	KeyGimbalResetPositionState      = newKey("KeyGimbalResetPositionState", 67108871, AccessTypeRead, nil)
+	KeyGimbalResetPositionState      = newKey("KeyGimbalResetPositionState", 67108871, AccessTypeRead, &value.Uint64{})
 	KeyGimbalCalibration             = newKey("KeyGimbalCalibration", 67108872, AccessTypeAction, nil)
 	KeyGimbalSpeedRotation           = newKey("KeyGimbalSpeedRotation", 67108873, AccessTypeAction, &value.GimbalSpeedRotation{})
 	KeyGimbalSpeedRotationEnabled    = newKey("KeyGimbalSpeedRotationEnabled", 67108874, AccessTypeWrite|AccessTypeAction /*Added*/, &value.Uint64{})

@@ -382,11 +382,11 @@ func (u *UnityBridgeImpl) PerformActionForKey(k *key.Key, value any,
 
 	tag := u.tg.Next()
 
-	u.m.Lock()
-
-	u.callbackListener[tag] = c
-
-	u.m.Unlock()
+	if c != nil {
+		u.m.Lock()
+		u.callbackListener[tag] = c
+		u.m.Unlock()
+	}
 
 	if value != nil {
 		u.uw.SendEventWithString(ev.Code(), string(data), uint64(tag))
