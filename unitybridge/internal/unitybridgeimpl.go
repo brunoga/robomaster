@@ -404,8 +404,6 @@ func (u *UnityBridgeImpl) PerformActionForKeySync(k *key.Key,
 		endTrace("error", err)
 	}()
 
-	u.l.Trace("PerformActionForKeySync", "key", k, "value", value)
-
 	done := make(chan struct{})
 
 	err = u.PerformActionForKey(k, value, func(r *result.Result) {
