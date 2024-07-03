@@ -99,13 +99,18 @@ func (g *Gimbal) SetRotationSpeed(pitch, yaw int16) error {
 // TODO(bga): Figure out units.
 func (g *Gimbal) SetRelativeAngleRotation(angle int16, axis Axis,
 	duration time.Duration) error {
+	if duration > 10*time.Second {
+		return fmt.Errorf("invalid duration %s, max is 10s", duration/time.Second)
+	}
+
 	gimbalIncrementRotation := value.GimbalAngleRotation{
 		Time: int16(duration / time.Millisecond),
 	}
 
 	if axis == AxisPitch {
 		if angle < -60 || angle > 60 {
-			return fmt.Errorf("invalid pitch angle %d", angle)
+			return fmt.Errorf("invalid pitch angle %d, should be between -60 "+
+				"and 60 degrees", angle)
 		}
 
 		gimbalIncrementRotation.Pitch = angle * 10
@@ -114,8 +119,9 @@ func (g *Gimbal) SetRelativeAngleRotation(angle int16, axis Axis,
 		// TODO(bga): Fix this. It might be just something that needs to be set
 		//            before this is called, like the the chassis or gimbal
 		//            modes.
-		gimbalIncrementRotation.Pitch = 0
-		gimbalIncrementRotation.Yaw = angle * 10
+		return fmt.Errorf("yaw axis not supported yet")
+		//gimbalIncrementRotation.Pitch = 0
+		//gimbalIncrementRotation.Yaw = angle * 10
 	}
 
 	return g.UB().PerformActionForKeySync(key.KeyGimbalAngleIncrementRotation,
@@ -169,7 +175,8 @@ func (g *Gimbal) ResetPosition() error {
 	gimbalReset := 0
 	c := make(chan struct{})
 
-	t, err := g.UB().AddKeyListener(key.KeyGimbalResetPositionState, func(r *result.Result) {
+	var t token.Token
+	t, err = g.UB().AddKeyListener(key.KeyGimbalResetPositionState, func(r *result.Result) {
 		g.Logger().Debug("Reset position state", "result", r)
 		if !r.Succeeded() {
 			g.Logger().Error("Error resetting gimbal position", "error", r.ErrorDesc())
@@ -190,6 +197,10 @@ func (g *Gimbal) ResetPosition() error {
 
 		gimbalReset = int(value.Value)
 	}, true)
+	if err != nil {
+		return err
+	}
+
 	defer g.UB().RemoveKeyListener(key.KeyGimbalResetPositionState, t)
 
 	<-c

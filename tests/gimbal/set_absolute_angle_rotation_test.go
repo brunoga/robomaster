@@ -4,18 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brunoga/robomaster/module/chassis"
-	"github.com/brunoga/robomaster/module/controller"
 	"github.com/brunoga/robomaster/module/gimbal"
 )
 
 func TestSetAbsoluteAngleRotation(t *testing.T) {
 	gimbalModule.ResetPosition()
-
-	time.Sleep(5 * time.Second)
-
-	controllerModule.SetMode(controller.ModeSDK)
-	chassisModule.SetMode(chassis.ModeFPV)
 
 	err := gimbalModule.SetAbsoluteAngleRotation(15, gimbal.AxisPitch, 1*time.Second)
 	if err != nil {
