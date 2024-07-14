@@ -65,7 +65,7 @@ var (
 		"android/arm":   "./lib/android/arm/libunitybridge.so",
 		"android/arm64": "./lib/android/arm64/libunitybridge.so",
 		"darwin/amd64":  "./lib/darwin/amd64/unitybridge.bundle/Contents/MacOS/unitybridge",
-		"ios/arm64":     "./Frameworks/unityBridge.framework/unityBridge",
+		"ios/arm64":     "./Frameworks/unitybridge.framework/unitybridge",
 	}
 
 	UnityBridgeImpl *dlOpenUnityBridgeImpl = &dlOpenUnityBridgeImpl{}
