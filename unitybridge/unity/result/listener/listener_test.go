@@ -1,4 +1,4 @@
-package support
+package listener
 
 import (
 	"encoding/json"
@@ -23,12 +23,12 @@ func TestNewResultListener(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 	assert.NotNil(t, rl.l) // Asserts that a nil logger creates a internal one.
 
 	l := logger.New(slog.LevelError)
-	rl2 := NewResultListener(ub, l, key.KeyAirLinkConnection, nil)
+	rl2 := New(ub, l, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl2)
 
 	// A new logger is created nased on the given one.
@@ -42,7 +42,7 @@ func TestResultListenerStart_AddListenerError(t *testing.T) {
 	defer cleanupUnityBridge(t, uw, ub)
 
 	// Key is write only.
-	rl := NewResultListener(ub, nil, key.KeyCameraVideoTransRate, nil)
+	rl := New(ub, nil, key.KeyCameraVideoTransRate, nil)
 	assert.NotNil(t, rl)
 
 	err := rl.Start()
@@ -55,7 +55,7 @@ func TestResultListenerStart_Success(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -78,7 +78,7 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -109,7 +109,7 @@ func TestResultListenerStart_Success_Immediate(t *testing.T) {
 
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
-	assert.Equal(t, int32(0), r.ErrorCode())
+	assert.Equal(t, int64(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
 	assert.Equal(t, &value.Bool{}, r.Value())
 
@@ -120,7 +120,7 @@ func TestResultListenerStart_AlreadyStarted(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -146,7 +146,7 @@ func TestResultListenerStop_NotStarted(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	err := rl.Stop()
@@ -159,7 +159,7 @@ func TestResultListenerStop_Success(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -189,7 +189,7 @@ func TestWaitForNewResult_NotStarted(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	r := rl.WaitForNewResult(0)
@@ -202,7 +202,7 @@ func TestWaitForNewResult_Success(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	rl := NewResultListener(ub, nil, key.KeyAirLinkConnection, nil)
+	rl := New(ub, nil, key.KeyAirLinkConnection, nil)
 	assert.NotNil(t, rl)
 
 	ev := event.NewFromTypeAndSubType(event.TypeStartListening,
@@ -224,7 +224,7 @@ func TestWaitForNewResult_Success(t *testing.T) {
 	assert.NotNil(t, r)
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
-	assert.Equal(t, int32(0), r.ErrorCode())
+	assert.Equal(t, int64(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
 	assert.Equal(t, &value.Bool{}, r.Value())
 
@@ -235,8 +235,8 @@ func TestWaitForAnyResult_AvailableResult(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	var rl *ResultListener
-	rl = NewResultListener(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
+	var rl *Listener
+	rl = New(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
 		rl.m.Lock()
 		rl.r = r
 		rl.m.Unlock()
@@ -262,7 +262,7 @@ func TestWaitForAnyResult_AvailableResult(t *testing.T) {
 	assert.NotNil(t, r)
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(0), r.Tag())
-	assert.Equal(t, int32(0), r.ErrorCode())
+	assert.Equal(t, int64(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
 	assert.Equal(t, &value.Bool{Value: true}, r.Value())
 
@@ -273,8 +273,8 @@ func TestWaitForAnyResult_NoAvailableResult(t *testing.T) {
 	uw, ub := setupUnityBridge(t)
 	defer cleanupUnityBridge(t, uw, ub)
 
-	var rl *ResultListener
-	rl = NewResultListener(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
+	var rl *Listener
+	rl = New(ub, nil, key.KeyAirLinkConnection, func(r *result.Result) {
 		rl.m.Lock()
 		rl.r = r
 		rl.m.Unlock()
@@ -302,7 +302,7 @@ func TestWaitForAnyResult_NoAvailableResult(t *testing.T) {
 	assert.NotNil(t, r)
 	assert.Equal(t, key.KeyAirLinkConnection, r.Key())
 	assert.Equal(t, uint64(1), r.Tag())
-	assert.Equal(t, int32(0), r.ErrorCode())
+	assert.Equal(t, int64(0), r.ErrorCode())
 	assert.Equal(t, "", r.ErrorDesc())
 	assert.Equal(t, &value.Bool{Value: true}, r.Value())
 

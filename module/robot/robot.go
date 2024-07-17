@@ -10,11 +10,11 @@ import (
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/connection"
 	"github.com/brunoga/robomaster/module/internal"
-	"github.com/brunoga/robomaster/support"
 	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/listener"
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
@@ -27,9 +27,9 @@ type Robot struct {
 	workingDevices      atomic.Pointer[map[DeviceType]struct{}]
 	batteryPowerPercent atomic.Pointer[uint8]
 
-	workingDevicesRL      *support.ResultListener
-	batteryPowerPercentRL *support.ResultListener
-	actionStatusRL        *support.ResultListener
+	workingDevicesRL      *listener.Listener
+	batteryPowerPercentRL *listener.Listener
+	actionStatusRL        *listener.Listener
 }
 
 var _ module.Module = (*Robot)(nil)
@@ -111,17 +111,17 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 	wds := make(map[DeviceType]struct{})
 	rb.workingDevices.Store(&wds)
 
-	rb.workingDevicesRL = support.NewResultListener(ub, l,
+	rb.workingDevicesRL = listener.New(ub, l,
 		key.KeyRobomasterSystemWorkingDevices, func(res *result.Result) {
 			rb.onWorkingDevices(res)
 		})
 
-	rb.batteryPowerPercentRL = support.NewResultListener(ub, l,
+	rb.batteryPowerPercentRL = listener.New(ub, l,
 		key.KeyRobomasterBatteryPowerPercent, func(res *result.Result) {
 			rb.onBatteryPowerPercent(res)
 		})
 
-	rb.actionStatusRL = support.NewResultListener(ub, l,
+	rb.actionStatusRL = listener.New(ub, l,
 		key.KeyRobomasterSystemTaskStatus, func(res *result.Result) {
 			rb.onActionStatus(res)
 		})

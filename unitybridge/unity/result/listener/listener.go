@@ -1,4 +1,4 @@
-package support
+package listener
 
 import (
 	"fmt"
@@ -14,11 +14,11 @@ import (
 	"github.com/brunoga/timedsignalwaiter"
 )
 
-// ResultListener is a helper class to listen for event results from the
+// Listener is a helper class to listen for event results from the
 // Unity Bridge. It allows callers to wait for new results, to get the last
 // result obtained and to register a callback to be called when a new result
 // is available. It is thread safe.
-type ResultListener struct {
+type Listener struct {
 	ub unitybridge.UnityBridge
 	l  *logger.Logger
 	k  *key.Key
@@ -33,9 +33,9 @@ type ResultListener struct {
 	started bool
 }
 
-// NewResultListener creates a new ResultListener instance.
-func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
-	k *key.Key, cb result.Callback) *ResultListener {
+// New creates a new Listener instance.
+func New(ub unitybridge.UnityBridge, l *logger.Logger,
+	k *key.Key, cb result.Callback) *Listener {
 	if l == nil {
 		l = logger.New(slog.LevelError)
 	}
@@ -43,7 +43,7 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 	l = l.WithGroup("result_listener").With(
 		slog.String("key", k.String()))
 
-	return &ResultListener{
+	return &Listener{
 		ub: ub,
 		l:  l,
 		k:  k,
@@ -54,7 +54,7 @@ func NewResultListener(ub unitybridge.UnityBridge, l *logger.Logger,
 
 // Start starts the listener. If cb is non nil, it will be called when a new
 // result is available.
-func (ls *ResultListener) Start() error {
+func (ls *Listener) Start() error {
 	ls.m.Lock()
 	defer ls.m.Unlock()
 
@@ -102,7 +102,7 @@ func (ls *ResultListener) Start() error {
 // example, if the listener is closed). If result is non nil, Callers should
 // inspect the result error code and description to check if the result is
 // valid.
-func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result {
+func (ls *Listener) WaitForNewResult(timeout time.Duration) *result.Result {
 	if ls.b.Wait(timeout) {
 		ls.m.Lock()
 		defer ls.m.Unlock()
@@ -117,7 +117,7 @@ func (ls *ResultListener) WaitForNewResult(timeout time.Duration) *result.Result
 // is nil, no result was available (for example, if the listener is closed). If
 // result is non nil, Callers should inspect the result error code and
 // description to check if the result is valid.
-func (ls *ResultListener) WaitForAnyResult(timeout time.Duration) *result.Result {
+func (ls *Listener) WaitForAnyResult(timeout time.Duration) *result.Result {
 	// Make sure we get a correct snapshot of the current channel and result
 	// state by obtaining them inside a lock. This guarantees that we either
 	// have a result or that, if we do not, we are going to be listening on a
@@ -142,7 +142,7 @@ func (ls *ResultListener) WaitForAnyResult(timeout time.Duration) *result.Result
 }
 
 // Result returns the current result.
-func (ls *ResultListener) Result() *result.Result {
+func (ls *Listener) Result() *result.Result {
 	ls.m.Lock()
 	defer ls.m.Unlock()
 
@@ -150,7 +150,7 @@ func (ls *ResultListener) Result() *result.Result {
 }
 
 // Stop stops the listener.
-func (ls *ResultListener) Stop() error {
+func (ls *Listener) Stop() error {
 	ls.m.Lock()
 	defer ls.m.Unlock()
 
@@ -173,7 +173,7 @@ func (ls *ResultListener) Stop() error {
 
 // notifyWaitersLocked closes the current channel and creates a new one.
 // The channel mutex must be locked when this is called.
-func (ls *ResultListener) notifyWaitersLocked() {
+func (ls *Listener) notifyWaitersLocked() {
 	ls.l.Debug("Notifying waiters.", "key", ls.k)
 	ls.b.Signal()
 	ls.l.Debug("Notified waiters.", "key", ls.k)

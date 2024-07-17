@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/brunoga/robomaster/module"
-	"github.com/brunoga/robomaster/support"
 	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/listener"
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
@@ -24,7 +24,7 @@ type BaseModule struct {
 	name string
 	deps []module.Module
 
-	rl *support.ResultListener
+	rl *listener.Listener
 	cb result.Callback
 }
 
@@ -37,10 +37,10 @@ func NewBaseModule(ub unitybridge.UnityBridge, l *logger.Logger,
 	name string, k *key.Key, cb result.Callback,
 	deps ...module.Module) *BaseModule {
 
-	var rl *support.ResultListener
+	var rl *listener.Listener
 	if k != nil {
 		// We have a key so we need a result listener.
-		rl = support.NewResultListener(ub, l, k, cb)
+		rl = listener.New(ub, l, k, cb)
 	}
 
 	return &BaseModule{

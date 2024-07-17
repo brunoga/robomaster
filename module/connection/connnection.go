@@ -8,13 +8,13 @@ import (
 
 	"github.com/brunoga/robomaster/module"
 	"github.com/brunoga/robomaster/module/internal"
-	"github.com/brunoga/robomaster/support"
 	"github.com/brunoga/robomaster/support/finder"
 	"github.com/brunoga/robomaster/support/logger"
 	"github.com/brunoga/robomaster/unitybridge"
 	"github.com/brunoga/robomaster/unitybridge/unity/event"
 	"github.com/brunoga/robomaster/unitybridge/unity/key"
 	"github.com/brunoga/robomaster/unitybridge/unity/result"
+	"github.com/brunoga/robomaster/unitybridge/unity/result/listener"
 	"github.com/brunoga/robomaster/unitybridge/unity/result/value"
 )
 
@@ -38,7 +38,7 @@ type Connection struct {
 
 	signalQuality atomic.Uint64
 
-	signalQualityRL *support.ResultListener
+	signalQualityRL *listener.Listener
 }
 
 var _ module.Module = (*Connection)(nil)
@@ -98,7 +98,7 @@ func New(ub unitybridge.UnityBridge,
 			}
 		})
 
-	c.signalQualityRL = support.NewResultListener(ub, l,
+	c.signalQualityRL = listener.New(ub, l,
 		key.KeyAirLinkSignalQuality, func(r *result.Result) {
 			c.onSignalQuality(r)
 		})
