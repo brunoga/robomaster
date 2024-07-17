@@ -149,6 +149,19 @@ func (ls *Listener) Result() *result.Result {
 	return ls.r
 }
 
+// AddCallback adds a callback to be called when a new result is available for
+// this listener key. The returned token can be used to remove the callback
+// later.
+func (ls *Listener) AddCallback(cb result.Callback) (token.Token, error) {
+	return ls.ub.AddKeyListener(ls.k, cb, true)
+}
+
+// RemoveCallback removes the callback associated with the likstener key and the
+// given token.
+func (ls *Listener) RemoveCallback(t token.Token) error {
+	return ls.ub.RemoveKeyListener(ls.k, t)
+}
+
 // Stop stops the listener.
 func (ls *Listener) Stop() error {
 	ls.m.Lock()
