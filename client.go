@@ -136,10 +136,15 @@ func (c *Client) Start() error {
 	}
 
 	// Gun.
-	err = c.changeStateIfNonNil(c.gunModule, waitTimeout, true)
-	if err != nil {
-		return err
-	}
+	go func() {
+		err = c.changeStateIfNonNil(c.gunModule, waitTimeout, true)
+		if err.Error() == "Gun connection not established" {
+			// Gun is optional so it is fine it did not connect.
+			c.l.Warn("Gun connection not established.")
+		} else {
+			c.l.Error("Gun connection error", "error", err)
+		}
+	}()
 
 	// GamePad.
 	go func() {
@@ -149,7 +154,7 @@ func (c *Client) Start() error {
 				// GamePad is optional so it is fine it did not connect.
 				c.l.Warn("GamePad connection not established.")
 			} else {
-				c.l.Error("GamePad connection error: %v", err)
+				c.l.Error("GamePad connection error", "error", err)
 			}
 		}
 	}()
