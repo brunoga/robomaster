@@ -326,7 +326,7 @@ var (
 	KeyGimbalCalibrationStatus       = newKey("KeyGimbalCalibrationStatus", 67108880, AccessTypeRead, nil)
 	KeyGimbalCalibrationProgress     = newKey("KeyGimbalCalibrationProgress", 67108881, AccessTypeRead, nil)
 	KeyGimbalOpenAttitudeUpdates     = newKey("KeyGimbalOpenAttitudeUpdates", 67108882, AccessTypeAction, &value.Void{})
-	KeyGimbalCloseAttitudeUpdates    = newKey("KeyGimbalCloseAttitudeUpdates", 67108883, AccessTypeAction, nil)
+	KeyGimbalCloseAttitudeUpdates    = newKey("KeyGimbalCloseAttitudeUpdates", 67108883, AccessTypeAction, &value.Void{})
 	KeyGimbalGetLinkAck              = newKey("KeyGimbalGetLinkAck", 83886092, AccessTypeRead, nil)
 
 	KeyVisionFirmwareVersion             = newKey("KeyVisionFirmwareVersion", 100663297, AccessTypeRead, nil)
