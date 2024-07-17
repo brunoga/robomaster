@@ -138,11 +138,13 @@ func (c *Client) Start() error {
 	// Gun.
 	go func() {
 		err = c.changeStateIfNonNil(c.gunModule, waitTimeout, true)
-		if err.Error() == "Gun connection not established" {
-			// Gun is optional so it is fine it did not connect.
-			c.l.Warn("Gun connection not established.")
-		} else {
-			c.l.Error("Gun connection error", "error", err)
+		if err != nil {
+			if err.Error() == "Gun connection not established" {
+				// Gun is optional so it is fine it did not connect.
+				c.l.Warn("Gun connection not established.")
+			} else {
+				c.l.Error("Gun connection error", "error", err)
+			}
 		}
 	}()
 
