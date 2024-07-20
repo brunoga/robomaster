@@ -154,22 +154,21 @@ func (u *UnityBridgeImpl) RemoveKeyListener(k *key.Key,
 	u.m.Lock()
 	defer u.m.Unlock()
 
-	if t == 0 {
-		// Remove all listeners for the given key.
-		delete(u.keyListeners, k)
-		return nil
-	}
-
 	if _, ok := u.keyListeners[k]; !ok {
 		return fmt.Errorf("no listeners registered for key %s", k)
 	}
 
-	if _, ok := u.keyListeners[k][t]; !ok {
-		return fmt.Errorf("no listener registered with token %d for key %s", t,
-			k)
-	}
+	if t == 0 {
+		// Remove all listeners for the given key.
+		delete(u.keyListeners, k)
+	} else {
+		if _, ok := u.keyListeners[k][t]; !ok {
+			return fmt.Errorf("no listener registered with token %d for key %s", t,
+				k)
+		}
 
-	delete(u.keyListeners[k], t)
+		delete(u.keyListeners[k], t)
+	}
 
 	if len(u.keyListeners[k]) == 0 {
 		ev := event.NewFromTypeAndSubType(event.TypeStopListening, k.SubType())
@@ -518,21 +517,21 @@ func (u *UnityBridgeImpl) RemoveEventTypeListener(t event.Type,
 	u.m.Lock()
 	defer u.m.Unlock()
 
-	if tk == 0 {
-		// Delete all listeners for the given event type.
-		delete(u.eventTypeListeners, t)
-	}
-
 	if _, ok := u.eventTypeListeners[t]; !ok {
 		return fmt.Errorf("no listeners registered for event type %s", t)
 	}
 
-	if _, ok := u.eventTypeListeners[t][tk]; !ok {
-		return fmt.Errorf("no listener registered with token %d for event type %s",
-			tk, t)
-	}
+	if tk == 0 {
+		// Delete all listeners for the given event type.
+		delete(u.eventTypeListeners, t)
+	} else {
+		if _, ok := u.eventTypeListeners[t][tk]; !ok {
+			return fmt.Errorf("no listener registered with token %d for event type %s",
+				tk, t)
+		}
 
-	delete(u.eventTypeListeners[t], tk)
+		delete(u.eventTypeListeners[t], tk)
+	}
 
 	if len(u.eventTypeListeners[t]) == 0 {
 		delete(u.eventTypeListeners, t)
