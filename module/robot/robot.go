@@ -223,17 +223,17 @@ func (r *Robot) BatteryPowerPercent() uint8 {
 }
 
 // ChassisSpeedLevel returns the current chassis speed level.
-func (r *Robot) ChassisSpeedLevel() (ChassisSpeedLevelType, error) {
+func (r *Robot) ChassisSpeedLevel() (ChassisSpeedLevel, error) {
 	res, err := r.UB().GetKeyValueSync(key.KeyRobomasterSystemChassisSpeedLevel, true)
 	if err != nil {
 		return 0, err
 	}
 
-	return ChassisSpeedLevelType(res.Value().(*value.Uint64).Value - 1), nil
+	return ChassisSpeedLevel(res.Value().(*value.Uint64).Value - 1), nil
 }
 
 // SetChassisSpeedLevel sets the chassis speed level.
-func (r *Robot) SetChassisSpeedLevel(speedLevel ChassisSpeedLevelType) error {
+func (r *Robot) SetChassisSpeedLevel(speedLevel ChassisSpeedLevel) error {
 	if speedLevel >= ChassisSpeedLevelTypeCount {
 		return fmt.Errorf("invalid chassis speed level: %d", speedLevel)
 	}

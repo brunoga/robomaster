@@ -1,11 +1,11 @@
 package robot
 
-// ChassisSpeedLevelType represents the speed level of the chassis.
-type ChassisSpeedLevelType int8
+// ChassisSpeedLevel represents the speed level of the chassis.
+type ChassisSpeedLevel int8
 
 const (
 	// ChassisSpeedLevelFast is the fast speed level.
-	ChassisSpeedLevelFast ChassisSpeedLevelType = iota
+	ChassisSpeedLevelFast ChassisSpeedLevel = iota
 	// ChassisSpeedLevelMedium is the medium speed level.
 	ChassisSpeedLevelMedium
 	// ChassisSpeedLevelSlow is the slow speed level.
