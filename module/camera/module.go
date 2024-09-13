@@ -336,8 +336,8 @@ func (m *Module) Stop() error {
 	return m.BaseModule.Stop()
 }
 
-func (m *Module) onGetNativeTexture(data []byte, dataType event.DataType) {
-	endTrace := m.Logger().Trace("onGetNativeTexture", "data", string(data), "dataType", dataType)
+func (m *Module) onGetNativeTexture(e *event.Event, data []byte, dataType event.DataType) {
+	endTrace := m.Logger().Trace("onGetNativeTexture", "event", e, "data", string(data), "dataType", dataType)
 	defer endTrace()
 
 	var glTextureData value.GLTextureData
@@ -350,11 +350,11 @@ func (m *Module) onGetNativeTexture(data []byte, dataType event.DataType) {
 	m.glTextureData.Store(&glTextureData)
 }
 
-func (m *Module) onVideoTransferSpeed(data []byte, dataType event.DataType) {
+func (m *Module) onVideoTransferSpeed(e *event.Event, data []byte, dataType event.DataType) {
 	m.Logger().Debug("onVideoTransferSpeed", "data", data, "dataType", dataType)
 }
 
-func (m *Module) onVideoDataRecv(data []byte, dataType event.DataType) {
+func (m *Module) onVideoDataRecv(e *event.Event, data []byte, dataType event.DataType) {
 	rgb := NewRGBFromBytes(data, image.Rect(0, 0, 1280, 720))
 
 	m.m.RLock()

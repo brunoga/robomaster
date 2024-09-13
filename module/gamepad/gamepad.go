@@ -110,6 +110,18 @@ func (m *GamePad) Start() error {
 	if err != nil {
 		return err
 	}
+	_, err = m.UB().AddKeyListener(key.KeyRobomasterGamePadActivationSettings, func(r *result.Result) {
+		m.Logger().Debug("Received GamePad activation settings.", "result", r)
+	}, true)
+	if err != nil {
+		return err
+	}
+	_, err = m.UB().AddKeyListener(key.KeyRobomasterGamePadFirmwareVersion, func(r *result.Result) {
+		m.Logger().Debug("Received GamePad firmware version.", "result", r)
+	}, true)
+	if err != nil {
+		return err
+	}
 
 	return m.BaseModule.Start()
 }
