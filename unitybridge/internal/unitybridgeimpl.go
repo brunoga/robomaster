@@ -632,7 +632,7 @@ func (u *UnityBridgeImpl) notifyEventTypeListeners(e *event.Event,
 
 	if _, ok := u.eventTypeListeners[e.Type()]; ok {
 		for _, c := range u.eventTypeListeners[e.Type()] {
-			go c(data, dataType)
+			go c(e, data, dataType)
 		}
 	} else {
 		u.l.Warn("No listeners registered for event type", "eventType",

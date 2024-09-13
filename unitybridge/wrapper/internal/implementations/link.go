@@ -1,4 +1,4 @@
-//go:build android && (arm || arm64)
+//go:build nope
 
 package implementations
 

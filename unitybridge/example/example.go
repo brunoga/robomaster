@@ -75,7 +75,7 @@ func main() {
 
 	// Listen for VideoTransferSpeed type events as these starting comming right away.
 	token, err := ub.AddEventTypeListener(event.TypeVideoTransferSpeed,
-		func(data []byte, dataType event.DataType) {
+		func(e *event.Event, data []byte, dataType event.DataType) {
 			// VideoTransferSpeed always have a uint64 value, but we leave this
 			// his to ilustrate how dataType can be used.
 			switch dataType {
