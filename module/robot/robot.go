@@ -126,6 +126,9 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			rb.onActionStatus(res)
 		})
 
+	// Make sure we have a valid value for battery power percent.
+	rb.batteryPowerPercent.Store(new(uint8))
+
 	return rb, nil
 }
 
