@@ -59,7 +59,7 @@ var (
 	KeyCameraRequestIFrame                 = newKey("KeyCameraRequestIFrame", 16777246, AccessTypeAction, nil)
 	KeyCameraAntiLarsenAlgorithmEnable     = newKey("KeyCameraAntiLarsenAlgorithmEnable", 16777247, AccessTypeWrite, nil)
 
-	KeyCameraFormatSDCard                          = newKey("KeyCameraFormatSDCard", 16777234, AccessTypeAction, &value.Bool{})
+	KeyCameraFormatSDCard                          = newKey("KeyCameraFormatSDCard", 16777234, AccessTypeAction, &value.Void{})
 	KeyCameraSDCardIsFormatting                    = newKey("KeyCameraSDCardIsFormatting", 16777235, AccessTypeRead, &value.Bool{})
 	KeyCameraSDCardIsFull                          = newKey("KeyCameraSDCardIsFull", 16777236, AccessTypeRead, &value.Bool{})
 	KeyCameraSDCardHasError                        = newKey("KeyCameraSDCardHasError", 16777237, AccessTypeRead, &value.Bool{})
