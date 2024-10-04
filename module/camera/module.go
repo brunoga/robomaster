@@ -165,7 +165,7 @@ func (m *Module) VideoFormat() (VideoFormat, error) {
 		return 0, err
 	}
 
-	return VideoFormat(r.Value().(float64)), nil
+	return VideoFormat(r.Value().(*value.Uint64).Value), nil
 }
 
 // SetVideoFormat sets the video resolution.
@@ -176,7 +176,7 @@ func (m *Module) VideoFormat() (VideoFormat, error) {
 // that this is only for the video recorded in the robot and not for the
 // video being streamed from it.
 func (m *Module) SetVideoFormat(format VideoFormat) error {
-	return m.UB().SetKeyValueSync(key.KeyCameraVideoFormat, format)
+	return m.UB().SetKeyValueSync(key.KeyCameraVideoFormat, &value.Uint64{Value: uint64(format)})
 }
 
 // SetVideoQuality sets the video quality.
@@ -208,12 +208,12 @@ func (m *Module) DigitalZoomFactor() (uint64, error) {
 		return 0, err
 	}
 
-	return uint64(r.Value().(float64)), nil
+	return r.Value().(*value.Uint64).Value, nil
 }
 
 // SetDigitalZoomFactor sets the digital zoom factor.
 func (m *Module) SetDigitalZoomFactor(factor uint64) error {
-	return m.UB().SetKeyValueSync(key.KeyCameraDigitalZoomFactor, factor)
+	return m.UB().SetKeyValueSync(key.KeyCameraDigitalZoomFactor, &value.Uint64{Value: factor})
 }
 
 // StartRecordingVideo starts recording video to the robot's internal storage.

@@ -47,7 +47,7 @@ var (
 	KeyCameraCurrentRecordingTimeInSeconds = newKey("KeyCameraCurrentRecordingTimeInSeconds", 16777225, AccessTypeRead, &value.Uint64{})
 	KeyCameraVideoFormat                   = newKey("KeyCameraVideoFormat", 16777226, AccessTypeRead|AccessTypeWrite, &value.Uint64{})
 	KeyCameraMode                          = newKey("KeyCameraMode", 16777227, AccessTypeRead|AccessTypeWrite, &value.Uint64{})
-	KeyCameraDigitalZoomFactor             = newKey("KeyCameraDigitalZoomFactor", 16777228, AccessTypeRead|AccessTypeWrite, nil)
+	KeyCameraDigitalZoomFactor             = newKey("KeyCameraDigitalZoomFactor", 16777228, AccessTypeRead|AccessTypeWrite, &value.Uint64{})
 	KeyCameraAntiFlicker                   = newKey("KeyCameraAntiFlicker", 16777229, AccessTypeRead|AccessTypeWrite, nil)
 	KeyCameraSwitch                        = newKey("KeyCameraSwitch", 16777230, AccessTypeAction, nil)
 	KeyCameraCurrentCameraIndex            = newKey("KeyCameraCurrentCameraIndex", 16777231, AccessTypeRead, nil)
