@@ -278,6 +278,8 @@ func (c *Client) Stop() error {
 		return err
 	}
 
+	c.started = false
+
 	return nil
 }
 
