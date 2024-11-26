@@ -183,8 +183,14 @@ func (c *Connection) SignalQualityBars() uint8 {
 func (cm *Connection) Stop() error {
 	e := event.NewFromType(event.TypeConnection)
 
+	err := cm.signalQualityRL.Stop()
+	if err != nil {
+		cm.Logger().Error("Connection: Failed to stop signal quality listener. Ignoring.",
+			"error", err)
+	}
+
 	e.ResetSubType(subTypeConnectionClose)
-	err := cm.UB().SendEvent(e)
+	err = cm.UB().SendEvent(e)
 	if err != nil {
 		return err
 	}
