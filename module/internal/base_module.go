@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"fmt"
+	"sync"
 	"time"
 
 	"github.com/brunoga/robomaster/module"
@@ -24,8 +26,12 @@ type BaseModule struct {
 	name string
 	deps []module.Module
 
-	rl *listener.Listener
-	cb result.Callback
+	mRl sync.Mutex
+	rls []*listener.Listener
+	rlm map[*key.Key]struct{}
+
+	m       sync.Mutex
+	started bool
 }
 
 var _ module.Module = (*BaseModule)(nil)
@@ -35,37 +41,88 @@ var _ module.Module = (*BaseModule)(nil)
 // will be called whenever a new result is received.
 func NewBaseModule(ub unitybridge.UnityBridge, l *logger.Logger,
 	name string, k *key.Key, cb result.Callback,
-	deps ...module.Module) *BaseModule {
+	deps ...module.Module) (*BaseModule, error) {
 
-	var rl *listener.Listener
-	if k != nil {
-		// We have a key so we need a result listener.
-		rl = listener.New(ub, l, k, cb)
+	if k != nil && cb == nil {
+		return nil, fmt.Errorf("if a key is provided, a callback must be provided")
 	}
 
-	return &BaseModule{
+	m := &BaseModule{
 		ub:   ub,
 		l:    l,
 		name: name,
 		deps: deps,
-		rl:   rl,
-		cb:   cb,
+		rls:  make([]*listener.Listener, 1),
+		rlm:  make(map[*key.Key]struct{}, 1),
 	}
+
+	if k != nil {
+		// We have a key so we need a result listener.
+		err := m.AddKeyListener(k, cb, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add key listener: %w", err)
+		}
+	} else {
+		// No connection key.
+		m.rls[0] = nil
+	}
+
+	return m, nil
+}
+
+func (g *BaseModule) AddKeyListener(k *key.Key, cb func(*result.Result), async bool) error {
+	if k == nil || cb == nil {
+		return fmt.Errorf("key and callback must not be nil")
+	}
+
+	g.m.Lock()
+	defer g.m.Unlock()
+
+	if g.started {
+		return fmt.Errorf("module already started")
+	}
+
+	g.mRl.Lock()
+	defer g.mRl.Unlock()
+
+	if _, ok := g.rlm[k]; ok {
+		return fmt.Errorf("key already registered")
+	}
+
+	g.rls = append(g.rls, listener.New(g.ub, g.l, k, cb))
+	g.rlm[k] = struct{}{}
+
+	return nil
 }
 
 // Start starts the module by starting the connection result listener.
 func (g *BaseModule) Start() error {
-	if g.rl == nil {
-		if g.cb != nil {
-			defer func() {
-				g.cb(result.New(nil, 0, 0, "", &value.Bool{Value: true}))
-			}()
-		}
+	g.m.Lock()
+	defer g.m.Unlock()
 
-		return nil
+	if g.started {
+		return fmt.Errorf("module already started")
 	}
 
-	return g.rl.Start()
+	g.started = true
+
+	for i, rl := range g.rls {
+		if rl != nil {
+			err := rl.Start()
+			if err != nil {
+				// Stop all started listeners.
+				for j := i - 1; j >= 0; j-- {
+					if g.rls[j] != nil {
+						g.rls[j].Stop()
+					}
+				}
+
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 // Connected returns true if the module is connected, false otherwise.
@@ -78,13 +135,20 @@ func (g *BaseModule) Connected() bool {
 // returns true if the module is connected, false otherwise (including
 // if the timeout period is reached or an error happens).
 func (g *BaseModule) WaitForConnection(timeout time.Duration) bool {
+	g.m.Lock()
+	if !g.started {
+		g.m.Unlock()
+		return false
+	}
+	defer g.m.Unlock()
+
 	if g.isConnected() {
 		return true
 	}
 
 	start := time.Now()
 
-	if g.rl.WaitForAnyResult(timeout) == nil {
+	if g.rls[0].WaitForAnyResult(timeout) == nil {
 		return false
 	}
 
@@ -100,17 +164,28 @@ func (g *BaseModule) WaitForConnection(timeout time.Duration) bool {
 
 // Stop stops the module by stopping the connection result listener.
 func (g *BaseModule) Stop() error {
-	if g.rl == nil {
-		if g.cb != nil {
-			defer func() {
-				g.cb(result.New(nil, 0, 0, "", &value.Bool{Value: false}))
-			}()
-		}
+	g.m.Lock()
+	defer g.m.Unlock()
 
-		return nil
+	if !g.started {
+		return fmt.Errorf("module not started")
 	}
 
-	return g.rl.Stop()
+	g.started = false
+
+	for i := len(g.rls) - 1; i >= 0; i-- {
+		if g.rls[i] != nil {
+			err := g.rls[i].Stop()
+			if err != nil {
+				g.l.Warn("Failed to stop result listener.", "error", err)
+			}
+		}
+	}
+
+	g.rls = make([]*listener.Listener, 1)
+	g.rlm = make(map[*key.Key]struct{}, 1)
+
+	return nil
 }
 
 // String returns the module name.
@@ -129,8 +204,12 @@ func (g *BaseModule) Logger() *logger.Logger {
 }
 
 func (g *BaseModule) isConnected() bool {
-	if g.rl != nil {
-		r := g.rl.Result()
+	if !g.started {
+		return false
+	}
+
+	if g.rls[0] != nil {
+		r := g.rls[0].Result()
 
 		if !r.Succeeded() {
 			return false

@@ -45,7 +45,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	rb := &Robot{}
 
-	rb.BaseModule = internal.NewBaseModule(ub, l, "Robot",
+	bm, err := internal.NewBaseModule(ub, l, "Robot",
 		key.KeyRobomasterSystemConnection, func(r *result.Result) {
 			if !r.Succeeded() {
 				rb.Logger().Error(
@@ -104,6 +104,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 				}
 			}
 		}, cm)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create base module: %w", err)
+	}
+
+	rb.BaseModule = bm
 
 	functions := make(map[FunctionType]bool)
 	rb.functions.Store(&functions)

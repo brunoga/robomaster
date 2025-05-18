@@ -123,7 +123,7 @@ func writeDspFile(baseFileName, extension string) error {
 		return err
 	}
 
-	err = f.Save(filepath.Dir(baseFileName))
+	_, err = f.Save(filepath.Dir(baseFileName), true)
 	if err != nil {
 		return err
 	}

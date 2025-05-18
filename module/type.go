@@ -12,6 +12,7 @@ const (
 	TypeSDCard
 	TypeGun
 	TypeGamePad
+	TypeLab
 
 	TypeAllButGamePad = TypeConnection | TypeRobot | TypeController |
 		TypeChassis | TypeGimbal | TypeCamera | TypeSDCard | TypeGun

@@ -3,11 +3,18 @@ package module
 import (
 	"fmt"
 	"time"
+
+	"github.com/brunoga/robomaster/unitybridge/unity/key"
+	"github.com/brunoga/robomaster/unitybridge/unity/result"
 )
 
 // Module is the interface implemented by all modules.
 type Module interface {
 	fmt.Stringer
+
+	// Add a listener for the given key. Listeners will be automatically
+	// removed when the module is stopped.
+	AddKeyListener(*key.Key, func(*result.Result), bool) error
 
 	// Start starts the module.
 	Start() error

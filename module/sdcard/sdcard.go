@@ -29,7 +29,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	m := &Module{}
 
-	m.BaseModule = internal.NewBaseModule(ub, l, "SDCard", nil, func(r *result.Result) {
+	bm, err := internal.NewBaseModule(ub, l, "SDCard", nil, func(r *result.Result) {
 		if !r.Succeeded() {
 			m.Logger().Error("Connection: Unsuccessfull result.", "result", r)
 			return
@@ -47,6 +47,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			m.Logger().Debug("Disconnected.")
 		}
 	}, conm, camm)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create base module: %w", err)
+	}
+
+	m.BaseModule = bm
 
 	return m, nil
 }

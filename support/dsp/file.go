@@ -61,7 +61,7 @@ func NewWithPythonCode(creator, title, pythonCode string) (*File, error) {
 			Attribute: internal.Attribute{
 				Creator:                   trimmedCreator,
 				CreationDate:              now.Format("2006/01/02"),
-				ModifyTime:                "",
+				ModifyTime:                now.Format("2006/01/02 15:04:05"),
 				FirmwareVersionDependency: "00.00.0000",
 				Title:                     trimmedTitle,
 				Guid:                      computeGuid(),
@@ -80,6 +80,8 @@ func NewWithPythonCode(creator, title, pythonCode string) (*File, error) {
 			},
 		},
 	}
+
+	f.computeSignature()
 
 	return f, nil
 }
@@ -124,41 +126,54 @@ func (f *File) PythonCode() string {
 	return f.dji.Code.PythonCode.Cdata
 }
 
+func (f *File) GUID() string {
+	return f.dji.Attribute.Guid
+}
+
+func (f *File) Sign() string {
+	return f.dji.Attribute.Sign
+}
+
 // Save serializes and saves the File instance to disk at the given path as an
 // encrypted RoboMaster S1 program file (.dsp). Returns a nil error on success
 // or a non-nil error on failure.
-func (f *File) Save(path string) error {
-	// Generate final filename. i.e: /path/filenameguid.dsp
-	fileName := filepath.Join(path, f.fileName+f.dji.Attribute.Guid+
-		".dsp")
-	fd, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0644)
+func (f *File) Save(path string, encode bool) (string, error) {
+	xmlData, err := xml.Marshal(f.dji)
 	if err != nil {
-		return err
+		return "", err
+	}
+
+	var dspData []byte
+
+	if encode {
+		dspData, err = encodeDsp(xmlData)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		dspData = xmlData
+	}
+
+	fullPath := filepath.Join(path, "dsp_projects", f.GUID())
+	err = os.MkdirAll(fullPath, 0755)
+	if err != nil {
+		return "", err
+	}
+
+	fullPath = filepath.Join(fullPath, f.dji.Attribute.Title+".dsp")
+
+	fd, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return "", err
 	}
 	defer fd.Close()
 
-	// Set modified time.
-	now := time.Now()
-	f.dji.Attribute.ModifyTime = now.Format("01/02/2006 15:04:05")
-
-	f.computeSignature()
-
-	xmlData, err := xml.Marshal(f.dji)
-	if err != nil {
-		return err
-	}
-
-	dspData, err := encodeDsp(xmlData)
-	if err != nil {
-		return err
-	}
-
 	_, err = fd.Write(dspData)
 	if err != nil {
-		return err
+		return fullPath, err
 	}
 
-	return nil
+	return fullPath, nil
 }
 
 func (f *File) computeSignature() {

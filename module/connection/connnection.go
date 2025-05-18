@@ -60,7 +60,7 @@ func New(ub unitybridge.UnityBridge,
 		f:     finder.New(appID, l),
 	}
 
-	c.BaseModule = internal.NewBaseModule(ub, l, "Connection",
+	bm, err := internal.NewBaseModule(ub, l, "Connection",
 		key.KeyAirLinkConnection, func(r *result.Result) {
 			if r == nil || !r.Succeeded() {
 				c.Logger().Error(
@@ -97,6 +97,11 @@ func New(ub unitybridge.UnityBridge,
 				}
 			}
 		})
+	if err != nil {
+		return nil, err
+	}
+
+	c.BaseModule = bm
 
 	c.signalQualityRL = listener.New(ub, l,
 		key.KeyAirLinkSignalQuality, func(r *result.Result) {

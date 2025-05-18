@@ -105,7 +105,7 @@ func (r *Result) String() string {
 	}
 
 	return fmt.Sprintf("Result{Key: %s, Tag: %d, ErrorCode: %d, ErrorDesc: "+
-		"%s, Value: %v}", r.key, r.tag, r.errorCode, r.errorDesc, r.value)
+		"%s, Value: %#+v}", r.key, r.tag, r.errorCode, r.errorDesc, r.value)
 }
 
 func (r *Result) UnmarshalJSON(data []byte) error {

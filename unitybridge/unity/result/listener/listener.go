@@ -77,6 +77,7 @@ func (ls *Listener) Start() error {
 			ls.cb(r)
 		} else {
 			ls.l.Debug("Not calling ResultListener callback.", "key", ls.k, "result", r, "nil_callback", ls.cb == nil)
+			fmt.Println("**RESULT**", ls.k, *r)
 		}
 
 		// Now we are going to change our state, so we need to lock.

@@ -31,7 +31,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 	cm *connection.Connection) (*Gimbal, error) {
 	g := &Gimbal{}
 
-	g.BaseModule = internal.NewBaseModule(ub, l, "Gimbal",
+	bm, err := internal.NewBaseModule(ub, l, "Gimbal",
 		key.KeyGimbalConnection, func(r *result.Result) {
 			if r == nil || !r.Succeeded() {
 				g.Logger().Error("Error connecting to gimbal", "error", r.ErrorDesc())
@@ -56,6 +56,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 				}
 			}
 		}, cm)
+	if err != nil {
+		return nil, err
+	}
+
+	g.BaseModule = bm
 
 	return g, nil
 }

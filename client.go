@@ -15,6 +15,7 @@ import (
 	"github.com/brunoga/robomaster/module/gamepad"
 	"github.com/brunoga/robomaster/module/gimbal"
 	"github.com/brunoga/robomaster/module/gun"
+	"github.com/brunoga/robomaster/module/lab"
 	"github.com/brunoga/robomaster/module/robot"
 	"github.com/brunoga/robomaster/module/sdcard"
 	"github.com/brunoga/robomaster/support/logger"
@@ -36,6 +37,7 @@ type Client struct {
 	gunModule        *gun.Gun
 	gamePadModule    *gamepad.GamePad
 	controllerModule *controller.Controller
+	labModule        *lab.Module
 
 	m       sync.RWMutex
 	started bool
@@ -161,6 +163,12 @@ func (c *Client) Start() error {
 		}
 	}()
 
+	// Lab.
+	err = c.changeStateIfNonNil(c.labModule, waitTimeout, true)
+	if err != nil {
+		return err
+	}
+
 	c.started = true
 
 	return nil
@@ -211,6 +219,10 @@ func (c *Client) SDCard() *sdcard.Module {
 	return c.sdCardModule
 }
 
+func (c *Client) Lab() *lab.Module {
+	return c.labModule
+}
+
 // Stop stops the client and all associated modules.
 func (c *Client) Stop() error {
 	c.m.Lock()
@@ -224,8 +236,14 @@ func (c *Client) Stop() error {
 
 	waitTime := 5 * time.Second
 
+	// Lab.
+	err := c.changeStateIfNonNil(c.labModule, waitTime, false)
+	if err != nil {
+		return err
+	}
+
 	// Gamepad.
-	err := c.changeStateIfNonNil(c.gamePadModule, waitTime, false)
+	err = c.changeStateIfNonNil(c.gamePadModule, waitTime, false)
 	if err != nil {
 		return err
 	}
@@ -346,7 +364,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 
 	var gunModule *gun.Gun
 	if modules&module.TypeGun != 0 {
-		gunModule, err = gun.New(ub, l, connectionModule, robotModule)
+		gunModule, err = gun.New(ub, l, robotModule)
 		if err != nil {
 			return nil, err
 		}
@@ -368,6 +386,14 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		}
 	}
 
+	var labModule *lab.Module
+	if modules&module.TypeLab != 0 {
+		labModule, err = lab.New(ub, l)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Client{
 		ub:               ub,
 		l:                l,
@@ -380,6 +406,7 @@ func new(l *logger.Logger, appID uint64, typ connection.Type,
 		gunModule:        gunModule,
 		gamePadModule:    gamePadModule,
 		controllerModule: controllerModule,
+		labModule:        labModule,
 	}, nil
 }
 

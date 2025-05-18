@@ -58,7 +58,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 		callbacks: make(map[token.Token]VideoCallback),
 	}
 
-	m.BaseModule = internal.NewBaseModule(ub, l, "Camera",
+	bm, err := internal.NewBaseModule(ub, l, "Camera",
 		key.KeyCameraConnection, func(r *result.Result) {
 			if !r.Succeeded() {
 				l.Error("Camera Connection: Unsuccessfull result.", "result", r)
@@ -78,6 +78,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 				l.Debug("Camera Disconnected.")
 			}
 		}, cm)
+	if err != nil {
+		return nil, err
+	}
+
+	m.BaseModule = bm
 
 	return m, nil
 }

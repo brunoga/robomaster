@@ -36,7 +36,7 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 
 	c := &Chassis{}
 
-	c.BaseModule = internal.NewBaseModule(ub, l, "Chassis", nil, func(r *result.Result) {
+	bm, err := internal.NewBaseModule(ub, l, "Chassis", nil, func(r *result.Result) {
 		if !r.Succeeded() {
 			c.Logger().Error("Connection: Unsuccessfull result.", "result", r)
 			return
@@ -54,6 +54,11 @@ func New(ub unitybridge.UnityBridge, l *logger.Logger,
 			c.Logger().Debug("Disconnected.")
 		}
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	c.BaseModule = bm
 
 	return c, nil
 }
